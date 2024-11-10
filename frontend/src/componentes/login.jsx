@@ -43,11 +43,10 @@ export default function Login() {
                     <div className="text-center mb-4">
                         <h1>Login</h1>
                     </div>
-                    
                     {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
                     
                     <Form onSubmit={handleSubmit} className="shadow p-4 rounded bg-light">
-                        <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Group className="mb-3" >
                             <Form.Label>Email</Form.Label>
                             <Form.Control
                                 type="email"
