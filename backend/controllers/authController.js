@@ -12,8 +12,6 @@ const register = async  (req,res)=>{
 
 }
 
-//teste git
-
 const login = async (req,res)=>{
 
     const {email,password}=req.body;

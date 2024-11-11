@@ -1,66 +1,38 @@
 import { Button, Nav, NavItem } from "reactstrap";
 import { Link, useLocation } from "react-router-dom";
+import {jwtDecode} from 'jwt-decode'
+import { useState, useEffect } from "react";
 import user1 from "../componentes/assets/images/users/user4.jpg";
 import probg from "../componentes/assets/images/bg/download.jpg";
 
 const navigation = [
-  {
-    title: "Dashboard",
-    href: "/starter",
-    icon: "bi bi-speedometer2",
-  },
-  {
-    title: "Alert",
-    href: "/alerts",
-    icon: "bi bi-bell",
-  },
-  {
-    title: "Badges",
-    href: "/badges",
-    icon: "bi bi-patch-check",
-  },
-  {
-    title: "Buttons",
-    href: "/buttons",
-    icon: "bi bi-hdd-stack",
-  },
-  {
-    title: "Cards",
-    href: "/cards",
-    icon: "bi bi-card-text",
-  },
-  {
-    title: "Grid",
-    href: "/grid",
-    icon: "bi bi-columns",
-  },
-  {
-    title: "Table",
-    href: "/table",
-    icon: "bi bi-layout-split",
-  },
-  {
-    title: "Forms",
-    href: "/forms",
-    icon: "bi bi-textarea-resize",
-  },
-  {
-    title: "Breadcrumbs",
-    href: "/breadcrumbs",
-    icon: "bi bi-link",
-  },
-  {
-    title: "About",
-    href: "/about",
-    icon: "bi bi-people",
-  },
+  { title: "Dashboard", href: "/starter", icon: "bi bi-speedometer2" },
+  { title: "Alert", href: "/alerts", icon: "bi bi-bell" },
+  { title: "Badges", href: "/badges", icon: "bi bi-patch-check" },
+  { title: "Buttons", href: "/buttons", icon: "bi bi-hdd-stack" },
+  { title: "Cards", href: "/cards", icon: "bi bi-card-text" },
+  { title: "Grid", href: "/grid", icon: "bi bi-columns" },
+  { title: "Table", href: "/table", icon: "bi bi-layout-split" },
+  { title: "Forms", href: "/forms", icon: "bi bi-textarea-resize" },
+  { title: "Breadcrumbs", href: "/breadcrumbs", icon: "bi bi-link" },
+  { title: "About", href: "/about", icon: "bi bi-people" },
 ];
 
 const Sidebar = () => {
+  const [userName, setUserName] = useState("");
+  const location = useLocation();
+
   const showMobilemenu = () => {
     document.getElementById("sidebarArea").classList.toggle("showSidebar");
   };
-  let location = useLocation();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded = jwtDecode(token);
+      setUserName(decoded.nome);
+    }
+  }, []);
 
   return (
     <div>
@@ -79,7 +51,9 @@ const Sidebar = () => {
             <i className="bi bi-x"></i>
           </Button>
         </div>
-        <div className="bg-dark text-white p-2 opacity-75">Steave Rojer</div>
+        <div className="bg-dark text-white p-2 opacity-75">
+          {userName ? userName : ""}
+        </div>
       </div>
       <div className="p-3 mt-2">
         <Nav vertical className="sidebarNav">
@@ -98,15 +72,6 @@ const Sidebar = () => {
               </Link>
             </NavItem>
           ))}
-          <Button
-            color="danger"
-            tag="a"
-            target="_blank"
-            className="mt-3"
-            href="https://wrappixel.com/templates/materialpro-react-admin/?ref=33"
-          >
-            Upgrade To Pro
-          </Button>
         </Nav>
       </div>
     </div>
