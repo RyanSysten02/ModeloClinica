@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Cabecalho from "../componentes/Cabecalho";
 import { Container } from "reactstrap";
+import Calendario from "../componentes/Calendario";
 
 const FullLayout = () => {
   return (
@@ -17,6 +18,7 @@ const FullLayout = () => {
         <div className="contentArea">
           {/********Middle Content**********/}
           <Container className="p-4" fluid>
+          <Calendario/>
             <Outlet />
           </Container>
         </div>

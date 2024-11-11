@@ -1,34 +1,39 @@
-.tela{
+.tela {
     display: flex;
-    background-color: #262626;
+    background-color: #f5f5f5;
 }
 
-.calendario{
+.calendario {
     height: 100vh;
     width: 80%;
     overflow: auto;
+    background-color: #ffffff;
 }
-.toolbar{
+
+.toolbar {
     height: 100vh;
     width: 20%;
     min-width: 300px;
-    color: #ffffff;
-    background-color: #1a1a1a;
-    border-right: 1px solid #bbb;
+    color: #333333;
+    background-color: #e9e9e9;
+    border-right: 1px solid #777777;
 }
-/*HEADER MOD*/
-.toolbar-container{
+
+/* HEADER MOD */
+.toolbar-container {
     display: flex;
     height: 10vh;
     align-items: center;
     padding-left: 50px;
 }
-.mesAno{
+
+.mesAno {
     width: 50%;
-    color: #f3f3f3;
+    color: #333333;
     justify-content: flex-start;
 }
-.dirtop{
+
+.dirtop {
     width: 50%;
     justify-content: end;
     display: flex;
@@ -43,7 +48,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.578);
+    background-color: rgba(255, 255, 255, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -51,72 +56,83 @@
 }
 
 .modal-content {
-    background-color: aliceblue;
+    background-color: #ffffff;
     padding: 20px;
     border-radius: 6px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.081);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     z-index: 10000;
 }
 
-
-/*Calendario*/
-/*Header e botoes*/
-.rbc-toolbar{
+/* Calendário */
+/* Header e botões */
+.rbc-toolbar {
     height: 10vh;
-    color: #bbb;
+    color: #333333;
     font-size: 25px;
 }
-.rbc-btn-group > button{
+
+.rbc-btn-group > button {
     border: 0;
 }
-.rbc-toolbar button{
-    color: #cecece;
-    border: 1px solid #cccccc4f;
-}
-.rbc-toolbar button:active,
-.rbc-toolbar button.rbc-active{
-    background-color: #56565686;
-    border-color: #bbb;
+
+.rbc-toolbar button {
+    color: #333333;
+    border: 1px solid #999999;
 }
 
-/*Corpo*/
-/*Linhas*/
-.rbc-month-view{
-    border-color: #eeeeee5f;
+.rbc-toolbar button:active,
+.rbc-toolbar button.rbc-active {
+    background-color: #d9d9d9;
+    border-color: #777777;
 }
-.rbc-month-row+ .rbc-month-row {
-    border-color: #dddddd73;
+
+/* Corpo */
+/* Linhas */
+.rbc-month-view {
+    border-color: #cccccc;
 }
+
+.rbc-month-row + .rbc-month-row {
+    border-color: #bbbbbb;
+}
+
 .rbc-day-bg + .rbc-day-bg {
-    border-color: #dddddd73;
+    border-color: #bbbbbb;
 }
-/*Mes*/
-.rbc-header{
-    color: #eeeeeeee;
-    border-color: #dddddd73;
+
+/* Mês */
+.rbc-header {
+    color: #333333;
+    border-color: #bbbbbb;
 }
-.rbc-header + .rbc-header{
+
+.rbc-header + .rbc-header {
     border-top: 0px;
     border-left: 0px;
     border-right: 0px;
-    border-color: #dddddd73;
+    border-color: #bbbbbb;
 }
-.rbc-off-range-bg{
-    background-color: #313131;
+
+.rbc-off-range-bg {
+    background-color: #f0f0f0;
 }
-.rbc-today{
-    background-color: #1a1a1a;
+
+.rbc-today {
+    background-color: #e0e0e0;
 }
-.rbc-button-link{
+
+.rbc-button-link {
     margin: 5px;
     font-size: 15px;
-    color: #eeeeeee5;
+    color: #333333;
 }
-.rbc-off-range .rbc-button-link{
-    color: #eeeeee37;
+
+.rbc-off-range .rbc-button-link {
+    color: #aaaaaa;
 }
-.rbc-now .rbc-button-link{
-    background-color: #f15550;
+
+.rbc-now .rbc-button-link {
+    background-color: #d9534f;
     color: #ffffff;
     border-radius: 2px;
     padding-left: 2px;
@@ -124,22 +140,28 @@
     margin: 5px;
     font-size: 16px;
 }
-.rbc-time-content,.rbc-time-content > .rbc-day-slot,.rbc-timeslot-group, .rbc-time-slot{
-    color: #bbb;
-    border-color: #b0b0b036;
+
+.rbc-time-content, .rbc-time-content > .rbc-day-slot, .rbc-timeslot-group, .rbc-time-slot {
+    color: #333333;
+    border-color: #cccccc;
 }
-.rbc-day-slot .rbc-time-slot{
-    border-top: 1px solid #c8c8c80a;
+
+.rbc-day-slot .rbc-time-slot {
+    border-top: 1px solid #e0e0e0;
 }
-/*Agenda*/
-.rbc-agenda-content, .rbc-agenda-view{
-    color: #aaa;
+
+/* Agenda */
+.rbc-agenda-content, .rbc-agenda-view {
+    color: #333333;
 }
-.rbc-agenda-date-cell, .rbc-agenda-time-cell{
-    background-color: #262626;
+
+.rbc-agenda-date-cell, .rbc-agenda-time-cell {
+    background-color: #ffffff;
 }
-.rbc-agenda-event-cell{
+
+.rbc-agenda-event-cell {
     border-radius: 20px;
     font-weight: bold;
-    color: #e0e0e0;
+    color: #333333;
+    background-color: #e9e9e9;
 }
