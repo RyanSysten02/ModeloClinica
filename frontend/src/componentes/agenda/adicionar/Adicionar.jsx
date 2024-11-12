@@ -58,7 +58,7 @@ function Adicionar({ onAdicionar }) {
                 const data = await response.json();
 
                 if (response.ok) {
-                    onAdicionar(); // Chama a função para atualizar o calendário
+                    onAdicionar(novoEvento); // Chama a função para atualizar o calendário
                     setNovoEvento({
                         title: '',
                         start: '',

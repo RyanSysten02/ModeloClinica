@@ -1,7 +1,6 @@
 const consultasservices = require('../services/consultaservices');
 const jwt = require('jsonwebtoken');
 
-// Função para criar uma consulta
 const createConsulta = async (req, res) => {
     const {title, start, end, desc, color, tipo} = req.body;
 
@@ -21,7 +20,6 @@ const createConsulta = async (req, res) => {
     }
 };
 
-// Função para buscar todos os tipos
 const getConsultasTipo = async (req, res) => {
     try {
         const consultas = await consultasservices.getConsultasTipo();
@@ -32,12 +30,11 @@ const getConsultasTipo = async (req, res) => {
     }
 };
 
-// Função para buscar todas as consultas
 const getConsultas = async (req, res) => {
     try {
         const consultas = await consultasservices.getConsultas();
-        const consultasPlano = consultas[0] || [];  // Pega o primeiro array
-        res.status(200).json(consultasPlano);  // Retorna apenas o primeiro array
+        const consultasPlano = consultas[0] || [];  
+        res.status(200).json(consultasPlano); 
     } catch (error) {
         console.error("Erro ao buscar consultas:", error);
         res.status(400).json({ message: error.message });
@@ -45,7 +42,6 @@ const getConsultas = async (req, res) => {
 };
 
 
-// Função para buscar uma consulta pelo ID
 const getConsultaById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -59,7 +55,6 @@ const getConsultaById = async (req, res) => {
     }
 };
 
-// Função para editar uma consulta
 const updateConsulta = async (req, res) => {
     const { id } = req.params;
     const { title, start, end, desc, color, tipo } = req.body;
