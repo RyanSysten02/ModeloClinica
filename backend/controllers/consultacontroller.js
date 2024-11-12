@@ -21,8 +21,6 @@ const createConsulta = async (req, res) => {
     }
 };
 
-//teste
-
 // Função para buscar todos os tipos
 const getConsultasTipo = async (req, res) => {
     try {

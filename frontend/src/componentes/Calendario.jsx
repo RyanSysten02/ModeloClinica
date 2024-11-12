@@ -110,7 +110,7 @@ function Calendario() {
 
     return (
         <div className='tela'>
-            <div className='toolbar p-4' style={{ maxHeight: '100vh', overflowY: 'auto' }}>
+            <div className='toolbar p-4' style={{ overflowY: 'auto' }}>
                 <Adicionar onAdicionar={handleAdicionar} />
                 {/* Passar tipos de atividades para o FiltroAtividades */}
                 <FiltroAtividades

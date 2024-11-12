@@ -18,8 +18,9 @@ const FullLayout = () => {
         <div className="contentArea">
           {/********Middle Content**********/}
           <Container className="p-4" fluid>
-          <Calendario/>
+          
             <Outlet />
+            <Calendario/>
           </Container>
         </div>
       </div>
