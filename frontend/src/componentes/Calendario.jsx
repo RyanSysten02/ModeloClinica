@@ -15,10 +15,10 @@ const DragAndDropCalendar = withDragAndDrop(Calendar);
 const localizer = momentLocalizer(moment);
 
 function Calendario() {
-    const [eventos, setEventos] = useState([]); // Eventos completos
-    const [eventosFiltrados, setEventosFiltrados] = useState([]); // Eventos filtrados
+    const [eventos, setEventos] = useState([]);
+    const [eventosFiltrados, setEventosFiltrados] = useState([]);
     const [eventoSelecionado, setEventoSelecionado] = useState(null);
-    const [tiposAtividades, setTiposAtividades] = useState([]); // Tipos de atividades
+    const [tiposAtividades, setTiposAtividades] = useState([]);
 
     useEffect(() => {
         const fetchEventos = async () => {
@@ -26,7 +26,6 @@ function Calendario() {
                 const response = await fetch('http://localhost:5001/api/consulta/allconsultas');
                 const data = await response.json();
 
-                // Formata os dados para o calendário
                 const eventosFormatados = data.map((consultas) => ({
                     id: consultas.id,
                     title: consultas.title,
@@ -37,12 +36,10 @@ function Calendario() {
                     tipo: consultas.tipo
                 }));
 
-                // Extrair tipos únicos de atividades
-                const tiposUnicos = [...new Set(eventosFormatados.map(evento => evento.tipo))].filter(tipo => tipo !== '');
-
-                // Atualizar os estados
                 setEventos(eventosFormatados);
                 setEventosFiltrados(eventosFormatados);
+
+                const tiposUnicos = [...new Set(eventosFormatados.map(evento => evento.tipo))].filter(tipo => tipo !== '');
                 setTiposAtividades(tiposUnicos);
             } catch (error) {
                 console.error("Erro ao buscar eventos:", error);
@@ -82,39 +79,30 @@ function Calendario() {
     };
 
     const handleAdicionar = (novoEvento) => {
-        // Lógica para adicionar novo evento
-        setEventos([...eventos, { ...novoEvento, id: eventos.length + 1 }]);
-    };
+        const novoId = eventos.length > 0 ? Math.max(...eventos.map(e => e.id)) + 1 : 1;
+        const eventoComId = { ...novoEvento, id: novoId };
 
-    const handleEventDelete = (eventId) => {
-        const updatedEvents = eventos.filter((event) => event.id !== eventId);
-        setEventos(updatedEvents);
-        setEventoSelecionado(null);
-    };
+        const eventosAtualizados = [...eventos, eventoComId];
+        setEventos(eventosAtualizados);
+        setEventosFiltrados(eventosAtualizados);
 
-    const handleEventUpdate = (updatedEvent) => {
-        const updatedEvents = eventos.map((event) => {
-            if (event.id === updatedEvent.id) {
-                return updatedEvent;
-            }
-            return event;
-        });
-        setEventos(updatedEvents);
-        setEventoSelecionado(null);
+        const tiposAtualizados = [...new Set(eventosAtualizados.map(evento => evento.tipo))].filter(tipo => tipo !== '');
+        setTiposAtividades(tiposAtualizados);
     };
 
     const handleSelecionarAtividades = useCallback((atividadesSelecionadas) => {
-        setEventosFiltrados(atividadesSelecionadas);
-    }, []);
-    
+        if (atividadesSelecionadas.length === 0) {
+            setEventosFiltrados(eventos);
+        } else {
+            setEventosFiltrados(eventos.filter(evento => atividadesSelecionadas.includes(evento.tipo)));
+        }
+    }, [eventos]);
 
     return (
         <div className='tela'>
             <div className='toolbar p-4' style={{ overflowY: 'auto' }}>
                 <Adicionar onAdicionar={handleAdicionar} />
-                {/* Passar tipos de atividades para o FiltroAtividades */}
                 <FiltroAtividades
-                    atividades={eventos}
                     tiposAtividades={tiposAtividades}
                     onSelecionarAtividades={handleSelecionarAtividades}
                 />
@@ -141,8 +129,18 @@ function Calendario() {
                 <EventModal
                     evento={eventoSelecionado}
                     onClose={handleEventClose}
-                    onDelete={handleEventDelete}
-                    onUpdate={handleEventUpdate}
+                    onDelete={(eventId) => {
+                        const updatedEvents = eventos.filter((event) => event.id !== eventId);
+                        setEventos(updatedEvents);
+                        setEventosFiltrados(updatedEvents);
+                        setEventoSelecionado(null);
+                    }}
+                    onUpdate={(updatedEvent) => {
+                        const updatedEvents = eventos.map((event) => (event.id === updatedEvent.id ? updatedEvent : event));
+                        setEventos(updatedEvents);
+                        setEventosFiltrados(updatedEvents);
+                        setEventoSelecionado(null);
+                    }}
                 />
             )}
         </div>
