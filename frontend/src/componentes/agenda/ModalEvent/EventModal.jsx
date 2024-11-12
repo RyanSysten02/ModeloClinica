@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form, Collapse } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
     const [editedEvent, setEditedEvent] = useState({ ...evento });
     const [collapsed, setCollapsed] = useState(true);
+    const [mensagemErro, setMensagemErro] = useState('');
+    const navigate = useNavigate();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -27,37 +30,41 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
             setEditedEvent({ ...editedEvent, end: endDate });
         }
     };
-}
-    const handleDelete = async (e) => {
-        e.preventDefault();
-        setMensagemErro('');
 
-        try {
-            // Obtenha o token armazenado no localStorage
-            const token = localStorage.getItem('token');
-            if (!token) {
-                setMensagemErro('Token de autenticação não encontrado. Faça login novamente.');
-                navigate('/login');
-                return;
-            }
+const handleDelete = async (e) => {
+    e.preventDefault();
+    setMensagemErro('');
 
-            // Envie a requisição com o token no cabeçalho Authorization
-            const response = await fetch('http://localhost:5001/api/consulta/consultas/:id', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`, // Adiciona o token aqui
-                },
-                body: JSON.stringify(novoEvento),
-            });
+    try {
+        
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setMensagemErro('Token de autenticação não encontrado. Faça login novamente.');
+            navigate('/login');
+            return;
+        }
 
+       
+        const response = await fetch(`http://localhost:5001/api/consulta/consultas/${evento.id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (response.ok) {
+            onDelete(evento.id); 
+            navigate('/paginicial');
+        } else {
             const data = await response.json();
+            setMensagemErro(data.message || 'Erro ao deletar evento.');
+        }
+    } catch (error) {
+        setMensagemErro('Ocorreu um erro ao tentar deletar o evento.');
+    }
+};
 
-            if (response.ok) {
-                onDelete(evento.id);
-                
-                navigate('/paginicial');
-    };
         
     const handleUpdate = () => {
         onUpdate(editedEvent);
