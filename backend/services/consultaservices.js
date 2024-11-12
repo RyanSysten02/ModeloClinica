@@ -15,9 +15,15 @@ const getConsultasTipo =async (tipo)=>{
     return consulta
     }
 
+const deleteConsulta =async (id)=>{
+    const  consulta = await consultamodel.deleteConsulta(id);
+    return consulta
+    }
+
 module.exports={
     createConsulta,
     getConsultas,
     getConsultasTipo,
+    deleteConsulta,
 
 }

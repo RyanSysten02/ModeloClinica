@@ -27,7 +27,7 @@ function Adicionar({ onAdicionar }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMensagemErro(''); // Limpar mensagem de erro antes de nova tentativa
+        setMensagemErro(''); 
 
         if (novoEvento.title && novoEvento.start && novoEvento.end) {
             const startDate = new Date(novoEvento.start);
@@ -39,7 +39,6 @@ function Adicionar({ onAdicionar }) {
             }
 
             try {
-                // Obtenha o token armazenado no localStorage
                 const token = localStorage.getItem('token');
                 if (!token) {
                     setMensagemErro('Token de autenticação não encontrado. Faça login novamente.');
@@ -47,12 +46,11 @@ function Adicionar({ onAdicionar }) {
                     return;
                 }
 
-                // Envie a requisição com o token no cabeçalho Authorization
                 const response = await fetch('http://localhost:5001/api/consulta/x', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`, // Adiciona o token aqui
+                        'Authorization': `Bearer ${token}`,
                     },
                     body: JSON.stringify(novoEvento),
                 });
@@ -60,7 +58,7 @@ function Adicionar({ onAdicionar }) {
                 const data = await response.json();
 
                 if (response.ok) {
-                    onAdicionar(novoEvento);
+                    onAdicionar(); // Chama a função para atualizar o calendário
                     setNovoEvento({
                         title: '',
                         start: '',
