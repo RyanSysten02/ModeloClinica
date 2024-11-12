@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Button, Form, Collapse } from 'react-bootstrap';
+import { Modal, Button, Form, Collapse, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
 const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
@@ -31,44 +31,88 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
         }
     };
 
-const handleDelete = async (e) => {
-    e.preventDefault();
-    setMensagemErro('');
+    const handleDelete = async (e) => {
+        e.preventDefault();
+        setMensagemErro('');
 
-    try {
-        
-        const token = localStorage.getItem('token');
-        if (!token) {
-            setMensagemErro('Token de autenticação não encontrado. Faça login novamente.');
-            navigate('/login');
-            return;
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setMensagemErro('Token de autenticação não encontrado. Faça login novamente.');
+                navigate('/login');
+                return;
+            }
+
+            const response = await fetch(`http://localhost:5001/api/consulta/consultas/${evento.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                onDelete(evento.id);
+                navigate('/paginicial');
+            } else {
+                const data = await response.json();
+                setMensagemErro(data.message || 'Erro ao deletar evento.');
+            }
+        } catch (error) {
+            setMensagemErro('Ocorreu um erro ao tentar deletar o evento.');
         }
+    };
 
-       
-        const response = await fetch(`http://localhost:5001/api/consulta/consultas/${evento.id}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
+    const formatDateForMySQL = (isoDate) => {
+        const date = new Date(isoDate);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
 
-        if (response.ok) {
-            onDelete(evento.id); 
-            navigate('/paginicial');
-        } else {
-            const data = await response.json();
-            setMensagemErro(data.message || 'Erro ao deletar evento.');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    };
+
+    const handleUpdate = async (e) => {
+        e.preventDefault();
+        setMensagemErro('');
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setMensagemErro('Token de autenticação não encontrado. Faça login novamente.');
+                navigate('/login');
+                return;
+            }
+
+            const response = await fetch(`http://localhost:5001/api/consulta/consultas/${editedEvent.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    title: editedEvent.title,
+                    start: formatDateForMySQL(editedEvent.start),
+                    end: formatDateForMySQL(editedEvent.end),
+                    desc: editedEvent.desc,
+                    color: editedEvent.color,
+                    tipo: editedEvent.tipo
+                }),
+            });
+
+            if (response.ok) {
+                onUpdate(editedEvent);
+                onClose();
+            } else {
+                const data = await response.json();
+                setMensagemErro(data.message || 'Erro ao atualizar evento.');
+            }
+        } catch (error) {
+            setMensagemErro('Ocorreu um erro ao tentar atualizar o evento.');
         }
-    } catch (error) {
-        setMensagemErro('Ocorreu um erro ao tentar deletar o evento.');
-    }
-};
-
-        
-    const handleUpdate = () => {
-        onUpdate(editedEvent);
-        onClose();
     };
 
     const adjustDate = (date) => {
@@ -129,6 +173,7 @@ const handleDelete = async (e) => {
                     Salvar Alterações
                 </Button>
             </Modal.Footer>
+            {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
         </Modal>
     );
 };

@@ -84,7 +84,7 @@ const updateConsulta = async (req, res) => {
     }
 };
 
-// Função para deletar uma consulta
+
 const deleteConsulta = async (req, res) => {
     const { id } = req.params;
 

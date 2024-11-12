@@ -27,7 +27,7 @@ const getConsultasTipo = async () => {
 
 const getConsultaById = async (id) => {
     const result = await pool.query('SELECT * FROM consultas WHERE id = ?', [id]);
-    return result[0]; 
+   return result[0]; 
 };
 
 const updateConsulta = async (id, title, start, end, desc, color, tipo) => {
