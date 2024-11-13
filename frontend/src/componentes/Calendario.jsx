@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import moment from 'moment';
+import 'moment/locale/pt-br'; // Importa o locale em português
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -11,8 +12,9 @@ import Adicionar from './agenda/adicionar/Adicionar.jsx';
 import CustomTollbar from './agenda/CustomCalendar/CustomTollbar.jsx';
 import FiltroAtividades from './agenda/filtro/FiltroAtividades.jsx';
 
-const DragAndDropCalendar = withDragAndDrop(Calendar);
+moment.locale('pt-br'); // Define o idioma do Moment para português
 const localizer = momentLocalizer(moment);
+const DragAndDropCalendar = withDragAndDrop(Calendar);
 
 function Calendario() {
     const [eventos, setEventos] = useState([]);
@@ -55,19 +57,53 @@ function Calendario() {
         },
     });
 
-    const moverEventos = (data) => {
+    const moverEventos = async (data) => {
         const { start, end } = data;
-        const updatedEvents = eventos.map((event) => {
-            if (event.id === data.event.id) {
-                return {
-                    ...event,
-                    start: new Date(start),
-                    end: new Date(end),
-                };
+        const eventToUpdate = eventos.find((event) => event.id === data.event.id);
+    
+        if (eventToUpdate) {
+            const updatedEvent = {
+                ...eventToUpdate,
+                start: new Date(start),
+                end: new Date(end),
+            };
+    
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('Token de autenticação não encontrado.');
+                    return;
+                }
+    
+                const response = await fetch(`http://localhost:5001/api/consulta/consultas/${updatedEvent.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        title: updatedEvent.title,
+                        start: moment(updatedEvent.start).format("YYYY-MM-DD HH:mm:ss"),
+                        end: moment(updatedEvent.end).format("YYYY-MM-DD HH:mm:ss"),
+                        desc: updatedEvent.desc,
+                        color: updatedEvent.color,
+                        tipo: updatedEvent.tipo,
+                    }),
+                });
+    
+                if (response.ok) {
+                    const updatedEvents = eventos.map((event) =>
+                        event.id === updatedEvent.id ? updatedEvent : event
+                    );
+                    setEventos(updatedEvents);
+                    setEventosFiltrados(updatedEvents);
+                } else {
+                    console.error('Erro ao atualizar o evento:', await response.json());
+                }
+            } catch (error) {
+                console.error('Erro ao tentar mover o evento:', error);
             }
-            return event;
-        });
-        setEventos(updatedEvents);
+        }
     };
 
     const handleEventClick = (evento) => {
