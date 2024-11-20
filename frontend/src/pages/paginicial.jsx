@@ -3,6 +3,7 @@ import Sidebar from "./Sidebar";
 import Cabecalho from "../componentes/Cabecalho";
 import { Container } from "reactstrap";
 import Calendario from "../componentes/Calendario";
+import Paciente from "../componentes/Paciente";
 
 const FullLayout = () => {
   return (
@@ -21,6 +22,7 @@ const FullLayout = () => {
           
             <Outlet />
             <Calendario/>
+            <Paciente/>
           </Container>
         </div>
       </div>
