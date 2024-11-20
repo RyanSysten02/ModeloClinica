@@ -3,7 +3,7 @@ import Sidebar from "./Sidebar";
 import Cabecalho from "../componentes/Cabecalho";
 import { Container } from "reactstrap";
 import Calendario from "../componentes/Calendario";
-import Paciente from "../componentes/Paciente";
+import Paciente from "../componentes/paciente/Paciente";
 
 const FullLayout = () => {
   return (
