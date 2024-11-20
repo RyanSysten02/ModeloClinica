@@ -34,7 +34,7 @@ const updatePaciente = async ( id,
 nome,cpf,rg,dataNascimento,sexo,numeroBeneficio,planoSaude,endereco,num,complemento,
 celular,telefone,email,contatoEmergencia,observacoes
 ) => { const result = await pool.query(
-`UPDATE Paciente SET nome = ?,cpf = ?,rg = ?,dataNascimento = ?,sexo = ?,numeroBeneficio = ?,planoSaude = ?,
+`UPDATE paciente SET nome = ?,cpf = ?,rg = ?,dataNascimento = ?,sexo = ?,numeroBeneficio = ?,planoSaude = ?,
 endereco = ?,num = ?,complemento = ?,celular = ?,telefone = ?,email = ?,contatoEmergencia = ?,observacoes = ? 
 WHERE id = ?`,        [
             nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, planoSaude,

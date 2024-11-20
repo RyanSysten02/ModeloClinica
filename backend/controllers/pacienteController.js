@@ -50,7 +50,8 @@ const getPacienteById = async (req, res) => {
 
 const updatePaciente = async (req, res) => {
     const { id } = req.params;
-    const { title, start, end, desc, color, tipo } = req.body;
+    const { nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, planoSaude, endereco, num, complemento, 
+        celular, telefone, email, contatoEmergencia, observacoes } = req.body;
 
     const token = req.header('Authorization');
     if (!token) return res.status(401).json({ message: 'Token não fornecido' });
@@ -65,7 +66,8 @@ const updatePaciente = async (req, res) => {
             return res.status(404).json({ message: 'Não foi possivel localizar o paciente' });
         }
 
-        await pacienteservices.updatePaciente(id, title, start, end, desc, color, tipo);
+        await pacienteservices.updatePaciente(id, nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, planoSaude, endereco, num, complemento, 
+            celular, telefone, email, contatoEmergencia, observacoes);
         res.status(200).json({ message: 'Dados do paciente atualizados com sucesso' });
     } catch (error) {
         res.status(400).json({ message: error.message });

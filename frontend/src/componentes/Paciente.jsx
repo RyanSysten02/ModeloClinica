@@ -1,11 +1,26 @@
 import React, { useState } from "react";
 import { Form, Button, Container, Row, Col } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
+import ListaPaciente from "../componentes/ListaPacientes";
+import DetalhesPaciente from "./PacienteDetalhesModal";
 
-function FormularioPaciente({onPaciente}){
+function FormularioPaciente(){
   const [paciente, setPaciente] = useState({
     nome: "",
     cpf: "",
+    rg: "", 
+    dataNascimento: "", 
+    sexo: "",
+    numeroBeneficio: "", 
+    planoSaude: "", 
+    endereco: "", 
+    num: "", 
+    complemento: "", 
+    celular: "", 
+    telefone: "", 
+    email: "", 
+    contatoEmergencia: "",
+    observacoes: "",
   });
 
   const [mensagemErro, setMensagemErro] = useState('');
@@ -57,10 +72,22 @@ function FormularioPaciente({onPaciente}){
         console.log("Resposta recebida:", data);
 
         if (response.ok) {
-            onPaciente(paciente);
             setPaciente({
                 nome: "",
                 cpf: "",
+                rg: "", 
+                dataNascimento: "", 
+                sexo: "",
+                numeroBeneficio: "", 
+                planoSaude: "", 
+                endereco: "", 
+                num: "", 
+                complemento: "", 
+                celular: "", 
+                telefone: "", 
+                email: "", 
+                contatoEmergencia: "",
+                observacoes: "",
                 
             });
             navigate('/paginicial');
@@ -164,9 +191,9 @@ function FormularioPaciente({onPaciente}){
                 onChange={handleChange}
               >
                 <option value="">Selecione</option>
-                <option value="M">Masculino</option>
-                <option value="F">Feminino</option>
-                <option value="O">Outro</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+                <option value="Outros">Outro</option>
               </Form.Select>
             </Form.Group>
           </Col>
@@ -292,6 +319,7 @@ function FormularioPaciente({onPaciente}){
           Salvar
         </Button>
       </Form>
+      <ListaPaciente/>
     </Container>
   );
 };
