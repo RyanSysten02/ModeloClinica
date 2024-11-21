@@ -4,6 +4,7 @@ import Cabecalho from "../componentes/Cabecalho";
 import { Container } from "reactstrap";
 import Calendario from "../componentes/Calendario";
 import Paciente from "../componentes/paciente/Paciente";
+import Funcionario from "../componentes/funcionario/Funcionario";
 
 const FullLayout = () => {
   return (
@@ -23,6 +24,7 @@ const FullLayout = () => {
             <Outlet />
             <Calendario/>
             <Paciente/>
+            <Funcionario/>
           </Container>
         </div>
       </div>
