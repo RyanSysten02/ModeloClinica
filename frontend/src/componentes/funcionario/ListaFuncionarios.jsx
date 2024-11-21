@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Container, Table, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import PacienteDetalhesModal from './PacienteDetalhesModal';
+import FuncionarioDetalhesModal from './FuncionarioDetalhesModal';
 import { format } from 'date-fns';
 
-const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
-  const [pacientes, setPacientes] = useState([]);
+const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
+  const [funcionarios, setFuncionarios] = useState([]);
   const [mensagemErro, setMensagemErro] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [pacienteSelecionado, setPacienteSelecionado] = useState(null);
+  const [funcionarioSelecionado, setFuncionarioSelecionado] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchPacientes = async () => {
+    const fetchFuncionarios = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -21,7 +21,7 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
           return;
         }
 
-        const response = await fetch("http://localhost:5001/api/paciente/allpaciente", {
+        const response = await fetch("http://localhost:5001/api/funcionario/allfuncionario", {
           headers: {
             "Authorization": `Bearer ${token}`,
           },
@@ -29,16 +29,16 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
 
         if (response.ok) {
           const data = await response.json();
-          setPacientes(data);
+          setFuncionarios(data);
         } else {
-          setMensagemErro("Erro ao carregar os pacientes.");
+          setMensagemErro("Erro ao carregar os funcionarios.");
         }
       } catch (error) {
         setMensagemErro("Erro ao conectar com o servidor.");
       }
     };
 
-    fetchPacientes();
+    fetchFuncionarios();
   }, [navigate]);
 
   const handleDetalhes = async (id) => {
@@ -50,7 +50,7 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/paciente/paciente/${id}`, {
+      const response = await fetch(`http://localhost:5001/api/funcionario/funcionario/${id}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -59,13 +59,13 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
-          setPacienteSelecionado(data[0]);
+          setFuncionarioSelecionado(data[0]);
           setShowModal(true);
         } else {
-          setMensagemErro("Dados do paciente não encontrados.");
+          setMensagemErro("Dados do funcionario não encontrados.");
         }
       } else {
-        setMensagemErro("Erro ao carregar detalhes do paciente.");
+        setMensagemErro("Erro ao carregar detalhes do funcionario.");
       }
     } catch (error) {
       setMensagemErro("Erro ao conectar com o servidor.");
@@ -89,7 +89,7 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/paciente/paciente/${formData.id}`, {
+      const response = await fetch(`http://localhost:5001/api/funcionario/funcionario/${formData.id}`, {
         method: 'PUT',
         headers: {
           "Content-Type": "application/json",
@@ -102,13 +102,13 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
       console.log('Resposta do servidor:', data);
 
       if (response.ok) {
-        setPacientes(prevState =>
+        setFuncionarios(prevState =>
           prevState.map(p =>
             p.id === formData.id ? formData : p
           )
         );
       } else {
-        setMensagemErro("Erro ao salvar alterações do paciente.");
+        setMensagemErro("Erro ao salvar alterações do funcionario.");
       }
     } catch (error) {
       console.error("Erro na atualização:", error.message);
@@ -125,7 +125,7 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/paciente/paciente/${id}`, {
+      const response = await fetch(`http://localhost:5001/api/funcionario/funcionario/${id}`, {
         method: 'DELETE',
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -133,11 +133,11 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
       });
 
       if (response.ok) {
-        setPacientes(prevState =>
+        setFuncionarios(prevState =>
           prevState.filter(p => p.id !== id)
         );
       } else {
-        setMensagemErro("Erro ao apagar o paciente.");
+        setMensagemErro("Erro ao apagar o funcionario.");
       }
     } catch (error) {
       setMensagemErro("Erro ao conectar com o servidor.");
@@ -146,13 +146,13 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
 
   const closeModal = () => {
     setShowModal(false);
-    setPacienteSelecionado(null);
+    setFuncionarioSelecionado(null);
   };
 
   return (
     <Modal show={show} onHide={onHide} size="xl">
       <Modal.Header closeButton>
-        <Modal.Title>Lista de Pacientes</Modal.Title>
+        <Modal.Title>Lista de Funcionarios</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
@@ -160,25 +160,25 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
           <thead>
             <tr>
               <th>Nome</th>
-              <th>CPF</th>
-              <th>Plano de Saúde</th>
+              <th>Matricula</th>
+              <th>Função</th>
               <th>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {pacientes.map((paciente) => (
-              <tr key={paciente.id}>
-                <td>{paciente.nome}</td>
-                <td>{paciente.cpf}</td>
-                <td>{paciente.planoSaude}</td>
+            {funcionarios.map((funcionario) => (
+              <tr key={funcionario.id}>
+                <td>{funcionario.nome}</td>
+                <td>{funcionario.matricula}</td>
+                <td>{funcionario.funcao}</td>
                 <td>
-                  <Button variant="primary" onClick={() => handleDetalhes(paciente.id)}>
+                  <Button variant="primary" onClick={() => handleDetalhes(funcionario.id)}>
                     Detalhes
                   </Button>
-                  <Button variant="danger" onClick={() => handleDelete(paciente.id)} style={{ marginLeft: '10px' }}>
+                  <Button variant="danger" onClick={() => handleDelete(funcionario.id)} style={{ marginLeft: '10px' }}>
                     Apagar
                   </Button>
-                  <Button variant="success" onClick={() => onSelectPaciente(paciente)} style={{ marginLeft: '10px' }}>
+                  <Button variant="success" onClick={() => onSelectFuncionario(funcionario)} style={{ marginLeft: '10px' }}>
                     Selecionar
                   </Button>
                 </td>
@@ -187,7 +187,7 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
           </tbody>
         </Table>
         {showModal && (
-          <PacienteDetalhesModal show={showModal} onHide={closeModal} paciente={pacienteSelecionado} onSave={handleSave} />
+          <FuncionarioDetalhesModal show={showModal} onHide={closeModal} funcionario={funcionarioSelecionado} onSave={handleSave} />
         )}
       </Modal.Body>
       <Modal.Footer>
@@ -197,4 +197,4 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
   );
 };
 
-export default ListaPacientesModal;
+export default ListaFuncionariosModal;

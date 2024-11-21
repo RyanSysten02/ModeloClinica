@@ -1,17 +1,17 @@
 const funcionariomodel = require('../models/funcionarioModel');
 
-const createFuncionario = async (nome, matricula, funcao, habilitacao) => {
-    const funcionario = await funcionariomodel.createFuncionario(nome, matricula, funcao, habilitacao);
+const createFuncionario = async (nome, matricula, funcao, habilitacao,  dataNascimento) => {
+    const funcionario = await funcionariomodel.createFuncionario(nome, matricula, funcao, habilitacao,  dataNascimento);
     return funcionario;
 };
 
-const getFuncionario = async (nome, matricula, funcao, habilitacao) => {
-    const funcionario = await funcionariomodel.getFuncionario(nome, matricula, funcao, habilitacao);
+const getFuncionario = async (nome, matricula, funcao, habilitacao,  dataNascimento) => {
+    const funcionario = await funcionariomodel.getFuncionario(nome, matricula, funcao, habilitacao,  dataNascimento);
     return funcionario;
 };
 
-const updateFuncionario = async (id, nome, matricula, funcao, habilitacao) => {
-    const funcionario = await funcionariomodel.updateFuncionario(id, nome, matricula, funcao, habilitacao);
+const updateFuncionario = async (id, nome, matricula, funcao, habilitacao,  dataNascimento) => {
+    const funcionario = await funcionariomodel.updateFuncionario(id, nome, matricula, funcao, habilitacao,  dataNascimento);
     return funcionario;
 };
 

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Container, Row, Col } from 'react-bootstrap';
 
-const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
-  const [formData, setFormData] = useState(paciente);
+const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
+  const [formData, setFormData] = useState(funcionario);
 
   useEffect(() => {
-    setFormData(paciente);
-  }, [paciente]);
+    setFormData(funcionario);
+  }, [funcionario]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,7 +21,7 @@ const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
   return (
     <Modal show={show} onHide={onHide} size="xl"> {/* Aumentando a largura do modal */}
       <Modal.Header closeButton>
-        <Modal.Title>Detalhes do Paciente</Modal.Title>
+        <Modal.Title>Detalhes do Funcionario</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container className="mt-4">
@@ -40,28 +40,39 @@ const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>CPF</Form.Label>
+                  <Form.Label>Matricula</Form.Label>
                   <Form.Control
                     type="text"
-                    name="cpf"
-                    value={formData.cpf || ''}
+                    name="matricula"
+                    value={formData.matricula || ''}
                     onChange={handleChange}
                   />
                 </Form.Group>
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>RG</Form.Label>
+                  <Form.Label>Funcao</Form.Label>
                   <Form.Control
                     type="text"
-                    name="rg"
-                    value={formData.rg || ''}
+                    name="funcao"
+                    value={formData.funcao || ''}
                     onChange={handleChange}
                   />
                 </Form.Group>
               </Col>
-            </Row>
-            <Row>
+
+              <Col md={4}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Habilitação</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="habilitacao"
+                    value={formData.habilitacao || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+
               <Col md={2}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Dt Nascimento</Form.Label>
@@ -73,6 +84,9 @@ const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
                   />
                 </Form.Group>
               </Col>
+            </Row>
+            {/* <Row>
+              
               <Col md={2}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Sexo</Form.Label>
@@ -99,17 +113,7 @@ const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
                   />
                 </Form.Group>
               </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Plano de Saúde</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="planoSaude"
-                    value={formData.planoSaude || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
+              
             </Row>
             <Row>
               <Col md={6}>
@@ -203,7 +207,7 @@ const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
                 value={formData.observacoes || ''}
                 onChange={handleChange}
               />
-            </Form.Group>
+            </Form.Group> */}
           </Form>
         </Container>
       </Modal.Body>
@@ -215,4 +219,4 @@ const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
   );
 };
 
-export default PacienteDetalhesModal;
+export default FuncionarioDetalhesModal;

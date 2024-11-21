@@ -2,7 +2,7 @@ const funcionarioservices = require('../services/pacienteservices');
 const jwt = require('jsonwebtoken');
 
 const createFuncionario = async (req, res) => {
-    const { nome, matricula, funcao, habilitacao} = req.body;
+    const { nome, matricula, funcao, habilitacao,  dataNascimento } = req.body;
 
     const token = req.header('Authorization');
     if (!token) return res.status(401).json({ message: 'Token não fornecido' });
@@ -13,7 +13,7 @@ const createFuncionario = async (req, res) => {
         req.user = decoded;
         const id = req.user.id;
 
-        await funcionarioservices.createFuncionario( nome, matricula, funcao, habilitacao);
+        await funcionarioservices.createFuncionario( nome, matricula, funcao, habilitacao,  dataNascimento);
         res.status(201).json({ message: 'Funcionario cadastrado com sucesso' });
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -48,7 +48,7 @@ const getFuncionarioById = async (req, res) => {
 
 const updateFuncionario = async (req, res) => {
     const { id } = req.params;
-    const { nome, matricula, funcao, habilitacao } = req.body;
+    const { nome, matricula, funcao, habilitacao,  dataNascimento } = req.body;
 
     const token = req.header('Authorization');
     if (!token) return res.status(401).json({ message: 'Token não fornecido' });
@@ -63,7 +63,7 @@ const updateFuncionario = async (req, res) => {
             return res.status(404).json({ message: 'Não foi possivel localizar o funcionario' });
         }
 
-        await funcionarioservices.updateFuncionario(id, nome, matricula, funcao, habilitacao);
+        await funcionarioservices.updateFuncionario(id, nome, matricula, funcao, habilitacao,  dataNascimento);
         res.status(200).json({ message: 'Dados do funcionario atualizados com sucesso' });
     } catch (error) {
         res.status(400).json({ message: error.message });

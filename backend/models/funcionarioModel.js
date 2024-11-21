@@ -1,14 +1,14 @@
 const pool = require('../db.js');
 
 const createFuncionario = async (
-    nome, matricula, funcao, habilitacao
+    nome, matricula, funcao, habilitacao,  dataNascimento
 ) => {
     const result = await pool.query(
         `INSERT INTO Funcionario (
-            nome, matricula, funcao, habilitacao
-        ) VALUES (?, ?, ?, ?)`,
+            nome, matricula, funcao, habilitacao,  dataNascimento
+        ) VALUES (?, ?, ?, ?, ?)`,
         [
-            nome, matricula, funcao, habilitacao
+            nome, matricula, funcao, habilitacao,  dataNascimento
         ]
     );
     return result;
@@ -28,11 +28,11 @@ const getFuncionarioById = async (id) => {
 };
 
 const updateFuncionario = async ( id,
-    nome, matricula, funcao, habilitacao,
+    nome, matricula, funcao, habilitacao,  dataNascimento,
 ) => { const result = await pool.query(
-`UPDATE funcionario SET nome = ?, 
+`UPDATE funcionario SET nome = ?, matricula = ?, funcao = ?, habilitacao = ?,  dataNascimento = ?
 WHERE id = ?`,        [
-    nome, matricula, funcao, habilitacao, id
+    nome, matricula, funcao, habilitacao,  dataNascimento, id
         ]
     );
     return result;
