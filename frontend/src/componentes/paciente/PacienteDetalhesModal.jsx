@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form, Container, Row, Col } from 'react-bootstrap';
 
 const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
   const [formData, setFormData] = useState(paciente);
@@ -14,130 +14,198 @@ const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
   };
 
   const handleSubmit = () => {
-    console.log('Enviando dados para salvar:', formData);  // Log para verificar dados antes de enviar
     onSave(formData);
     onHide();
-};
-
-
-  if (!paciente) return null;
+  };
 
   return (
-    <Modal show={show} onHide={onHide}>
+    <Modal show={show} onHide={onHide} size="xl"> {/* Aumentando a largura do modal */}
       <Modal.Header closeButton>
         <Modal.Title>Detalhes do Paciente</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form>
-          <Form.Group controlId="nome">
-            <Form.Label>Nome</Form.Label>
-            <Form.Control
-              type="text"
-              name="nome"
-              value={formData.nome || ''}
-              onChange={handleChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="cpf">
-            <Form.Label>CPF</Form.Label>
-            <Form.Control
-              type="text"
-              name="cpf"
-              value={formData.cpf || ''}
-              onChange={handleChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="rg">
-            <Form.Label>RG</Form.Label>
-            <Form.Control
-              type="text"
-              name="rg"
-              value={formData.rg || ''}
-              onChange={handleChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="dataNascimento">
-            <Form.Label>Data de Nascimento</Form.Label>
-            <Form.Control
-              type="date"
-              name="dataNascimento"
-              value={formData.dataNascimento ? formData.dataNascimento.split('T')[0] : ''}
-              onChange={handleChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="sexo">
-            <Form.Label>Sexo</Form.Label>
-            <Form.Control
-              type="text"
-              name="sexo"
-              value={formData.sexo || ''}
-              onChange={handleChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="numeroBeneficio">
-            <Form.Label>Número do Benefício</Form.Label>
-            <Form.Control
-              type="text"
-              name="numeroBeneficio"
-              value={formData.numeroBeneficio || ''}
-              onChange={handleChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="planoSaude">
-            <Form.Label>Plano de Saúde</Form.Label>
-            <Form.Control
-              type="text"
-              name="planoSaude"
-              value={formData.planoSaude || ''}
-              onChange={handleChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="endereco">
-            <Form.Label>Endereço</Form.Label>
-            <Form.Control
-              type="text"
-              name="endereco"
-              value={formData.endereco || ''}
-              onChange={handleChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="email">
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              type="email"
-              name="email"
-              value={formData.email || ''}
-              onChange={handleChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="telefone">
-            <Form.Label>Telefone</Form.Label>
-            <Form.Control
-              type="text"
-              name="telefone"
-              value={formData.telefone || ''}
-              onChange={handleChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="contatoEmergencia">
-            <Form.Label>Contato de Emergência</Form.Label>
-            <Form.Control
-              type="text"
-              name="contatoEmergencia"
-              value={formData.contatoEmergencia || ''}
-              onChange={handleChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="observacoes">
-            <Form.Label>Observações</Form.Label>
-            <Form.Control
-              as="textarea"
-              name="observacoes"
-              value={formData.observacoes || ''}
-              onChange={handleChange}
-            />
-          </Form.Group>
-        </Form>
+        <Container className="mt-4">
+          <Form>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Nome</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="nome"
+                    value={formData.nome || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>CPF</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="cpf"
+                    value={formData.cpf || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>RG</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="rg"
+                    value={formData.rg || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={2}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Dt Nascimento</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="dataNascimento"
+                    value={formData.dataNascimento ? formData.dataNascimento.split('T')[0] : ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={2}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Sexo</Form.Label>
+                  <Form.Select
+                    name="sexo"
+                    value={formData.sexo || ''}
+                    onChange={handleChange}
+                  >
+                    <option value="">Selecione</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
+                    <option value="Outros">Outro</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Número do Benefício</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="numeroBeneficio"
+                    value={formData.numeroBeneficio || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Plano de Saúde</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="planoSaude"
+                    value={formData.planoSaude || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Endereço</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="endereco"
+                    value={formData.endereco || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={1}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Número</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="num"
+                    value={formData.num || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={5}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Complemento</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="complemento"
+                    value={formData.complemento || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={3}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Celular</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="celular"
+                    value={formData.celular || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Telefone</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="telefone"
+                    value={formData.telefone || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>E-mail</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={formData.email || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={12}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Contato de Emergência</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="contatoEmergencia"
+                    value={formData.contatoEmergencia || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Form.Group className="mb-3 text-start">
+              <Form.Label>Observações</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                name="observacoes"
+                value={formData.observacoes || ''}
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Form>
+        </Container>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>Fechar</Button>

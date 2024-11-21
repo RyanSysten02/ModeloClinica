@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Button, Form, Row, Col, Collapse, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import FormularioPaciente from '../../paciente/Paciente';
+import ListaPacientesModal from '../../paciente/ListaPacientes';
 
 function Adicionar({ onAdicionar }) {
     const [novoEvento, setNovoEvento] = useState({
@@ -13,6 +15,8 @@ function Adicionar({ onAdicionar }) {
     });
     const [expanded, setExpanded] = useState(false);
     const [mensagemErro, setMensagemErro] = useState('');
+    const [showPacienteModal, setShowPacienteModal] = useState(false);
+    const [showListaPacientesModal, setShowListaPacientesModal] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -75,6 +79,11 @@ function Adicionar({ onAdicionar }) {
                 setMensagemErro('Ocorreu um erro. Tente novamente.');
             }
         }
+    };
+
+    const handleSelectPaciente = (paciente) => {
+        setNovoEvento({ ...novoEvento, title: paciente.nome });
+        setShowListaPacientesModal(false);
     };
 
     return (
@@ -171,7 +180,25 @@ function Adicionar({ onAdicionar }) {
                 >
                     Salvar
                 </Button>
+                <Button
+                    variant="info"
+                    type="button"
+                    onClick={() => setShowPacienteModal(true)}
+                    style={{ marginTop: '10px', marginRight: '10px' }}
+                >
+                    Cadastrar Paciente
+                </Button>
+                <Button
+                    variant="secondary" 
+                    type="button" 
+                    onClick={() => setShowListaPacientesModal(true)}
+                    style={{ marginTop: '10px', marginRight: '10px' }}
+                >
+                    Pesquisar Paciente
+                </Button>
             </Form>
+            <FormularioPaciente show={showPacienteModal} onHide={() => setShowPacienteModal(false)} />
+            <ListaPacientesModal show={showListaPacientesModal} onHide={() => setShowListaPacientesModal(false)} onSelectPaciente={handleSelectPaciente} />
         </div>
     );
 }

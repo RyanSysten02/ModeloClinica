@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Form, Button, Container, Row, Col } from "react-bootstrap";
+import { Modal, Button, Form, Container, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import ListaPaciente from "./ListaPacientes";
 
-function FormularioPaciente(){
+function FormularioPaciente({show, onHide}){
   const [paciente, setPaciente] = useState({
     nome: "",
     cpf: "",
@@ -43,6 +43,7 @@ function FormularioPaciente(){
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensagemErro('');
+    onHide();
     console.log("Paciente enviado:", paciente);
 
     if (erros.cpf) {
@@ -99,6 +100,8 @@ function FormularioPaciente(){
 };
 
 
+
+
   const validarCPF = (cpf) => {
     cpf = cpf.replace(/[^\d]/g, ""); // Remove caracteres não numéricos
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
@@ -126,6 +129,9 @@ function FormularioPaciente(){
   };
 
   return (
+    <Modal show={show} onHide={onHide} size="xl"> <Modal.Header closeButton> 
+    <Modal.Title>Formulário de Paciente</Modal.Title> </Modal.Header> 
+    <Modal.Body>
     <Container className="mt-4">
       <h1>Formulário de Paciente</h1>
       <Form onSubmit={handleSubmit}>
@@ -172,7 +178,7 @@ function FormularioPaciente(){
           
           <Col md={2}>
             <Form.Group className="mb-3 text-start">
-              <Form.Label>Data de Nascimento</Form.Label>
+              <Form.Label>Dt Nascimento</Form.Label>
               <Form.Control
                 type="date"
                 name="dataNascimento"
@@ -314,12 +320,14 @@ function FormularioPaciente(){
             onChange={handleChange}
           />
         </Form.Group>
-        <Button variant="primary" type="submit">
-          Salvar
-        </Button>
       </Form>
-      <ListaPaciente/>
     </Container>
+    </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={onHide}>Fechar</Button>
+        <Button variant="primary" onClick={handleSubmit}>Salvar</Button>
+      </Modal.Footer>
+    </Modal>
   );
 };
 
