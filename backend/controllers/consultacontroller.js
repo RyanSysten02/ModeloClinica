@@ -79,6 +79,30 @@ const updateConsulta = async (req, res) => {
     }
 };
 
+const updateConsultaCancelamento = async (req, res) => {
+    const { id } = req.params;
+    const {status} = req.body;
+
+    const token = req.header('Authorization');
+    if (!token) return res.status(401).json({ message: 'Token não fornecido' });
+
+    try {
+        const tokenLimpo = token.split(' ')[1];
+        const decoded = jwt.verify(tokenLimpo, process.env.JWT_SECRET);
+        req.user = decoded;
+        const consulta = await consultasservices.getConsultaById(id);
+
+        if (!consulta) {
+            return res.status(404).json({ message: 'Não foi possivel cancelar essa consulta' });
+        }
+
+        await consultasservices.updateConsultaCancelamento(id, status);
+        res.status(200).json({ message: 'Consulta cancelada com sucesso' });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 
 const deleteConsulta = async (req, res) => {
     const { id } = req.params;
@@ -111,5 +135,6 @@ module.exports = {
     getConsultas,
     getConsultaById,
     updateConsulta,
+    updateConsultaCancelamento,
     deleteConsulta
 };

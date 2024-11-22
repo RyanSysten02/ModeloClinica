@@ -115,6 +115,39 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
         }
     };
 
+    const handleCancel = async (e) => {
+        e.preventDefault();
+        setMensagemErro('');
+    
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setMensagemErro('Token de autenticação não encontrado. Faça login novamente.');
+                navigate('/login');
+                return;
+            }
+    
+            const response = await fetch(`http://localhost:5001/api/consulta/consultacancelamento/${evento.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+    
+            if (response.ok) {
+                const updatedEvent = { ...editedEvent, status: 'C' };
+                onUpdate(updatedEvent); // Atualiza o estado na aplicação
+                onClose();
+            } else {
+                const data = await response.json();
+                setMensagemErro(data.message || 'Erro ao cancelar a consulta.');
+            }
+        } catch (error) {
+            setMensagemErro('Ocorreu um erro ao tentar cancelar a consulta.');
+        }
+    };
+
     const adjustDate = (date) => {
         const adjustedDate = new Date(date);
         adjustedDate.setHours(adjustedDate.getHours() - 3);
@@ -172,6 +205,10 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
                 <Button variant="primary" onClick={handleUpdate}>
                     Salvar Alterações
                 </Button>
+                <Button variant="warning" onClick={handleCancel}>
+                    Cancelar Consulta
+                </Button>
+
             </Modal.Footer>
             {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
         </Modal>

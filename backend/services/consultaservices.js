@@ -25,6 +25,11 @@ const updateConsulta = async (id, title, start, end, desc, color, tipo) => {
     return consulta;
 };
 
+const updateConsultaCancelamento = async (id, status) => {
+    const consulta = await consultamodel.updateConsultaCancelamento(id, status);
+    return consulta;
+};
+
 const getConsultaById = async (id) => {
     return await consultamodel.getConsultaById(id);
 };
@@ -35,5 +40,6 @@ module.exports = {
     getConsultasTipo,
     deleteConsulta,
     updateConsulta,
+    updateConsultaCancelamento,
     getConsultaById,  
 };

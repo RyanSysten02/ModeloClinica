@@ -16,6 +16,7 @@ router.get('/consultas/:id', consultasController.getConsultaById);
 
 router.put('/consultas/:id', consultasController.updateConsulta);
 
+router.put('/consultacancelamento/:id', consultasController.updateConsultaCancelamento);
 
 router.delete('/consultas/:id', consultasController.deleteConsulta);
 

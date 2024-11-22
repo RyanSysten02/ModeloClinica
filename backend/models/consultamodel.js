@@ -38,6 +38,14 @@ const updateConsulta = async (id, title, start, end, desc, color, tipo) => {
     return result;
 };
 
+const updateConsultaCancelamento = async (id) => {
+    const result = await pool.query(
+        'UPDATE consultas SET `status` = ? WHERE id = ?',
+        ['C', id]
+    );
+    return result;
+};
+
 const deleteConsulta = async (id) => {
     const result = await pool.query('DELETE FROM consultas WHERE id = ?', [id]);
     return result;
@@ -49,5 +57,6 @@ module.exports = {
     getConsultas,
     getConsultaById,
     updateConsulta,
+    updateConsultaCancelamento,
     deleteConsulta
 };
