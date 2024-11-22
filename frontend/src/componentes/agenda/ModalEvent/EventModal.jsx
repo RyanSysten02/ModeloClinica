@@ -6,6 +6,10 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
     const [editedEvent, setEditedEvent] = useState({ ...evento });
     const [collapsed, setCollapsed] = useState(true);
     const [mensagemErro, setMensagemErro] = useState('');
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [motivoCancelamento, setMotivoCancelamento] = useState('');
+    const [motivoErro, setMotivoErro] = useState('');
+
     const navigate = useNavigate();
 
     const handleInputChange = (e) => {
@@ -115,14 +119,27 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
         }
     };
 
-    const handleCancel = async (e) => {
-        e.preventDefault();
+    const handleOpenCancelModal = () => {
+        setShowCancelModal(true); // Apenas exibe o modal de cancelamento
+    };
+
+    const handleCancelamento = async () => {
+        console.log('Iniciando o processo de cancelamento...');
+        if (motivoCancelamento.length < 15) {
+            setMotivoErro('O motivo deve ter pelo menos 15 caracteres.');
+            console.log('Erro: Motivo muito curto.');
+            return;
+        }
+    
         setMensagemErro('');
+        setMotivoErro('');
     
         try {
+            console.log('Enviando requisição para cancelar consulta...');
             const token = localStorage.getItem('token');
             if (!token) {
                 setMensagemErro('Token de autenticação não encontrado. Faça login novamente.');
+                console.log('Erro: Token não encontrado.');
                 navigate('/login');
                 return;
             }
@@ -133,20 +150,27 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
+                body: JSON.stringify({ motivocancelamento: motivoCancelamento }),
             });
     
+            console.log('Resposta da API:', response);
             if (response.ok) {
-                const updatedEvent = { ...editedEvent, status: 'C' };
-                onUpdate(updatedEvent); // Atualiza o estado na aplicação
+                const updatedEvent = { ...editedEvent, status: 'C', motivoCancelamento };
+                onUpdate(updatedEvent);
+                setShowCancelModal(false);
                 onClose();
+                console.log('Consulta cancelada com sucesso!');
             } else {
                 const data = await response.json();
                 setMensagemErro(data.message || 'Erro ao cancelar a consulta.');
+                console.log('Erro recebido da API:', data);
             }
         } catch (error) {
             setMensagemErro('Ocorreu um erro ao tentar cancelar a consulta.');
+            console.error('Erro inesperado:', error);
         }
     };
+    
 
     const adjustDate = (date) => {
         const adjustedDate = new Date(date);
@@ -155,63 +179,95 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
     };
 
     return (
-        <Modal show={true} onHide={onClose}>
-            <Modal.Header>
-                <Modal.Title>{editedEvent.title}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <Form>
-                    <Form.Group controlId="formTitle">
-                        <Form.Label>Título</Form.Label>
-                        <Form.Control type="text" name="title" value={editedEvent.title} onChange={handleInputChange} />
-                    </Form.Group>
-                    <Form.Group controlId="formDesc">
-                        <Form.Label>Descrição</Form.Label>
-                        <Form.Control as="textarea" rows={3} name="desc" value={editedEvent.desc} onChange={handleInputChange} />
-                    </Form.Group>
+        <>
+            <Modal show={true} onHide={onClose}>
+                <Modal.Header>
+                    <Modal.Title>{editedEvent.title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="formTitle">
+                            <Form.Label>Título</Form.Label>
+                            <Form.Control type="text" name="title" value={editedEvent.title} onChange={handleInputChange} />
+                        </Form.Group>
+                        <Form.Group controlId="formDesc">
+                            <Form.Label>Descrição</Form.Label>
+                            <Form.Control as="textarea" rows={3} name="desc" value={editedEvent.desc} onChange={handleInputChange} />
+                        </Form.Group>
 
-                    <Collapse in={!collapsed}>
-                        <div>
-                            <Form.Group controlId="formInicio">
-                                <Form.Label>Início</Form.Label>
-                                <Form.Control type="datetime-local" name="start" value={adjustDate(editedEvent.start)} onChange={handleStartDateChange} />
-                            </Form.Group>
+                        <Collapse in={!collapsed}>
+                            <div>
+                                <Form.Group controlId="formInicio">
+                                    <Form.Label>Início</Form.Label>
+                                    <Form.Control type="datetime-local" name="start" value={adjustDate(editedEvent.start)} onChange={handleStartDateChange} />
+                                </Form.Group>
 
-                            <Form.Group controlId="formEnd">
-                                <Form.Label>Fim</Form.Label>
-                                <Form.Control type="datetime-local" name="end" value={adjustDate(editedEvent.end)} onChange={handleEndDateChange} />
-                            </Form.Group>
+                                <Form.Group controlId="formEnd">
+                                    <Form.Label>Fim</Form.Label>
+                                    <Form.Control type="datetime-local" name="end" value={adjustDate(editedEvent.end)} onChange={handleEndDateChange} />
+                                </Form.Group>
 
-                            <Form.Group controlId="formColor">
-                                <Form.Label>Cor</Form.Label>
-                                <Form.Control type="color" name="color" value={editedEvent.color} onChange={handleColorChange} />
-                            </Form.Group>
+                                <Form.Group controlId="formColor">
+                                    <Form.Label>Cor</Form.Label>
+                                    <Form.Control type="color" name="color" value={editedEvent.color} onChange={handleColorChange} />
+                                </Form.Group>
 
-                            <Form.Group controlId="formTipo">
-                                <Form.Label>Tipo</Form.Label>
-                                <Form.Control type="text" name="tipo" value={editedEvent.tipo} onChange={handleInputChange} />
-                            </Form.Group>
-                        </div>
-                    </Collapse>
-                </Form>
-            </Modal.Body>
-            <Modal.Footer className="justify-content-between">
-                <Button variant="secondary" onClick={() => setCollapsed(!collapsed)}>
-                    {!collapsed ? 'Ocultar Detalhes' : 'Mostrar Detalhes'}
-                </Button>
-                <Button variant="danger" onClick={handleDelete}>
-                    Apagar
-                </Button>
-                <Button variant="primary" onClick={handleUpdate}>
-                    Salvar Alterações
-                </Button>
-                <Button variant="warning" onClick={handleCancel}>
-                    Cancelar Consulta
-                </Button>
+                                <Form.Group controlId="formTipo">
+                                    <Form.Label>Tipo</Form.Label>
+                                    <Form.Control type="text" name="tipo" value={editedEvent.tipo} onChange={handleInputChange} />
+                                </Form.Group>
+                            </div>
+                        </Collapse>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer className="justify-content-between">
+                    <Button variant="secondary" onClick={() => setCollapsed(!collapsed)}>
+                        {!collapsed ? 'Ocultar Detalhes' : 'Mostrar Detalhes'}
+                    </Button>
+                    <Button variant="danger" onClick={handleDelete}>
+                        Apagar
+                    </Button>
+                    <Button variant="primary" onClick={handleUpdate}>
+                        Salvar Alterações
+                    </Button>
+                    <Button variant="warning" onClick={handleOpenCancelModal}>
+                        Cancelar Consulta
+                    </Button>
+                </Modal.Footer>
+                {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
+            </Modal>
 
-            </Modal.Footer>
-            {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
-        </Modal>
+            {/* Modal de motivo do cancelamento */}
+            <Modal show={showCancelModal} onHide={() => setShowCancelModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Motivo do Cancelamento</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="formMotivoCancelamento">
+                            <Form.Label>Descreva o motivo do cancelamento:</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
+                                name="motivocancelamento"
+                                value={motivoCancelamento}
+                                onChange={(e) => setMotivoCancelamento(e.target.value)}
+                                isInvalid={!!motivoErro}
+                            />
+                            <Form.Control.Feedback type="invalid">{motivoErro}</Form.Control.Feedback>
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowCancelModal(false)}>
+                        Voltar
+                    </Button>
+                    <Button variant="danger" onClick={handleCancelamento}>
+                        Confirmar Cancelamento
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </>
     );
 };
 

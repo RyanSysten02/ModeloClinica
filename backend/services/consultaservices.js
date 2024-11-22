@@ -25,8 +25,8 @@ const updateConsulta = async (id, title, start, end, desc, color, tipo) => {
     return consulta;
 };
 
-const updateConsultaCancelamento = async (id, status) => {
-    const consulta = await consultamodel.updateConsultaCancelamento(id, status);
+const updateConsultaCancelamento = async (id, motivocancelamento) => {
+    const consulta = await consultamodel.updateConsultaCancelamento(id, motivocancelamento);
     return consulta;
 };
 

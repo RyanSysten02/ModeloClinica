@@ -38,10 +38,10 @@ const updateConsulta = async (id, title, start, end, desc, color, tipo) => {
     return result;
 };
 
-const updateConsultaCancelamento = async (id) => {
+const updateConsultaCancelamento = async (id, motivocancelamento) => {
     const result = await pool.query(
-        'UPDATE consultas SET `status` = ?, `dh_cancelamento` = NOW() WHERE id = ?',
-        ['C', id] 
+        'UPDATE consultas SET `status` = ?, `dh_cancelamento` = NOW(), `motivocancelamento`  = ? WHERE id = ?',
+        ['C', motivocancelamento, id] 
     );
     return result;
 };

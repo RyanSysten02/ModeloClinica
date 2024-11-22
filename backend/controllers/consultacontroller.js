@@ -81,7 +81,7 @@ const updateConsulta = async (req, res) => {
 
 const updateConsultaCancelamento = async (req, res) => {
     const { id } = req.params;
-    const {status} = req.body;
+    const {motivocancelamento} = req.body;
 
     const token = req.header('Authorization');
     if (!token) return res.status(401).json({ message: 'Token não fornecido' });
@@ -96,7 +96,7 @@ const updateConsultaCancelamento = async (req, res) => {
             return res.status(404).json({ message: 'Não foi possivel cancelar essa consulta' });
         }
 
-        await consultasservices.updateConsultaCancelamento(id, status);
+        await consultasservices.updateConsultaCancelamento(id, motivocancelamento);
         res.status(200).json({ message: 'Consulta cancelada com sucesso' });
     } catch (error) {
         res.status(400).json({ message: error.message });
