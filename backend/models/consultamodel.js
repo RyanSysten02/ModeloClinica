@@ -40,11 +40,12 @@ const updateConsulta = async (id, title, start, end, desc, color, tipo) => {
 
 const updateConsultaCancelamento = async (id) => {
     const result = await pool.query(
-        'UPDATE consultas SET `status` = ? WHERE id = ?',
-        ['C', id]
+        'UPDATE consultas SET `status` = ?, `dh_cancelamento` = NOW() WHERE id = ?',
+        ['C', id] 
     );
     return result;
 };
+
 
 const deleteConsulta = async (id) => {
     const result = await pool.query('DELETE FROM consultas WHERE id = ?', [id]);
