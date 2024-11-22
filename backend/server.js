@@ -13,7 +13,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes)
 app.use('/api/consulta', consultaRoutes)
 app.use('/api/paciente', pacienteRoutes)
-app.use('/api/paciente', funcionarioRoutes)
+app.use('/api/funcionario', funcionarioRoutes)
 
 const PORT =5001;
 app.listen(PORT, ()=> console.log('Servidor rodando:'+PORT))

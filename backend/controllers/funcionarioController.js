@@ -1,4 +1,4 @@
-const funcionarioservices = require('../services/pacienteservices');
+const funcionarioservices = require('../services/funcionarioservices');
 const jwt = require('jsonwebtoken');
 
 const createFuncionario = async (req, res) => {
