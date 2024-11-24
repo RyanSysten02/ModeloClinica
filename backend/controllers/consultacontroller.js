@@ -2,7 +2,29 @@ const consultasservices = require('../services/consultaservices');
 const jwt = require('jsonwebtoken');
 
 const createConsulta = async (req, res) => {
-    const {title, start, end, desc, color, tipo} = req.body;
+    const { title, start, end, desc, color, tipo } = req.body;
+    const token = req.header('Authorization');
+
+    if (!token) return res.status(401).json({ message: 'Token não fornecido' });
+
+    try {
+        const tokenLimpo = token.split(' ')[1];
+        const decoded = jwt.verify(tokenLimpo, process.env.JWT_SECRET);
+        req.user = decoded;
+
+        const id = req.user.id;
+        const consultaId = await consultasservices.createConsulta(title, start, end, desc, color, tipo);
+        return res.status(201).json({ message: 'Consulta criada com sucesso', consultaId });
+    } catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+};
+
+
+
+const adiarConsulta = async (req, res) => {
+    const { id } = req.params; // ID da consulta original
+    const { start, end, motivo_adiamento } = req.body;
 
     const token = req.header('Authorization');
     if (!token) return res.status(401).json({ message: 'Token não fornecido' });
@@ -11,14 +33,32 @@ const createConsulta = async (req, res) => {
         const tokenLimpo = token.split(' ')[1];
         const decoded = jwt.verify(tokenLimpo, process.env.JWT_SECRET);
         req.user = decoded;
-        const id = req.user.id;
+        const id_usuario_inclusao = req.user.id;
 
-        await consultasservices.createConsulta(title, start, end, desc, color, tipo);
-        res.status(201).json({ message: 'Consulta criada com sucesso' });
+        const consultaOriginal = await consultasservices.getConsultaById(id);
+
+        if (!consultaOriginal) {
+            return res.status(404).json({ message: 'Consulta original não encontrada' });
+        }
+
+        // Criar nova consulta com base na original
+        const novaConsulta = await consultasservices.adiarConsulta(
+            id, // Lote original
+            start,
+            end,
+            motivo_adiamento,
+            id_usuario_inclusao
+        );
+
+        res.status(201).json({
+            message: 'Consulta adiada com sucesso',
+            consulta: novaConsulta,
+        });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 const getConsultasTipo = async (req, res) => {
     try {
@@ -136,5 +176,6 @@ module.exports = {
     getConsultaById,
     updateConsulta,
     updateConsultaCancelamento,
-    deleteConsulta
+    deleteConsulta,
+    adiarConsulta
 };

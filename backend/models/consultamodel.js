@@ -1,17 +1,50 @@
 const pool = require('../db.js');
 
 const createConsulta = async (title, start, end, desc, color, tipo) => {
-    const result = await pool.query(
+    // Inserir a nova consulta
+    const [result] = await pool.query(
         'INSERT INTO consultas (title, start, end, `desc`, color, tipo) VALUES (?, ?, ?, ?, ?, ?)',
         [title, start, end, desc, color, tipo]
+    );
+
+    const insertedId = result.insertId; // Obter o ID da consulta recém-criada
+
+    // Atualizar o lote_agendamento com o ID da consulta
+    await pool.query(
+        'UPDATE consultas SET lote_agendamento = ? WHERE id = ?',
+        [insertedId, insertedId]
+    );
+
+    return insertedId; // Retornar o ID da consulta criada
+};
+
+
+const adiarConsulta = async (lote_agendamento, start, end, motivo_adiamento, id_usuario_inclusao) => {
+    const result = await pool.query(
+        `INSERT INTO consultas (title, start, end, \`desc\`, color, tipo, status, dh_adiamento, motivo_adiamento, lote_agendamento, id_usuario_inclusao)
+         SELECT title, ?, ?, \`desc\`, color, tipo, 'AD', NOW(), ?, ?, ?
+         FROM consultas WHERE id = ?`,
+        [start, end, motivo_adiamento, lote_agendamento, id_usuario_inclusao, lote_agendamento]
     );
     return result;
 };
 
+
 const getConsultas = async () => {
-    const result = await pool.query('SELECT * FROM consultas');
+    const result = await pool.query(`
+        SELECT c.*
+        FROM consultas c
+        INNER JOIN (
+            SELECT lote_agendamento, MAX(dh_inclusao) AS max_dh_inclusao
+            FROM consultas
+            WHERE status != 'C'
+            GROUP BY lote_agendamento
+        ) latest ON c.lote_agendamento = latest.lote_agendamento AND c.dh_inclusao = latest.max_dh_inclusao
+        WHERE c.status != 'C'
+    `);
     return result;
 };
+
 
 const getConsultasTipo = async () => {
     try {
@@ -59,5 +92,6 @@ module.exports = {
     getConsultaById,
     updateConsulta,
     updateConsultaCancelamento,
-    deleteConsulta
+    deleteConsulta,
+    adiarConsulta,
 };

@@ -5,6 +5,7 @@ const consultasController = require('../controllers/consultacontroller');
 
 router.post('/x', consultasController.createConsulta);
 
+router.post('/adiar/:id', consultasController.adiarConsulta);
 
 router.get('/tipo', consultasController.getConsultasTipo);
 
