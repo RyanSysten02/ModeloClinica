@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Form, Row, Col, Collapse, Alert } from 'react-bootstrap';
+import { Button, Form, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import FormularioPaciente from '../../paciente/Paciente';
 import ListaPacientesModal from '../../paciente/ListaPacientes';
@@ -10,10 +10,8 @@ function Adicionar({ onAdicionar }) {
         start: '',
         end: '',
         desc: '',
-        color: '',
         tipo: '',
     });
-    const [expanded, setExpanded] = useState(false);
     const [mensagemErro, setMensagemErro] = useState('');
     const [showPacienteModal, setShowPacienteModal] = useState(false);
     const [showListaPacientesModal, setShowListaPacientesModal] = useState(false);
@@ -21,27 +19,26 @@ function Adicionar({ onAdicionar }) {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setNovoEvento({ ...novoEvento, [name]: value });
-    };
-
-    const handleToggleExpanded = (e) => {
-        e.stopPropagation();
-        setExpanded(!expanded);
+    
+        if (name === "start") {
+            const startDate = new Date(value); // Convertendo a string para Date
+            const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Adiciona 1 hora
+    
+            setNovoEvento({
+                ...novoEvento,
+                start: value,
+                end: endDate.toISOString().slice(0, 16), // Formato para datetime-local
+            });
+        } else {
+            setNovoEvento({ ...novoEvento, [name]: value });
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMensagemErro(''); 
+        setMensagemErro('');
 
-        if (novoEvento.title && novoEvento.start && novoEvento.end) {
-            const startDate = new Date(novoEvento.start);
-            const endDate = new Date(novoEvento.end);
-
-            if (startDate >= endDate) {
-                alert('A data início deve ser anterior à data de término');
-                return;
-            }
-
+        if (novoEvento.title && novoEvento.start) {
             try {
                 const token = localStorage.getItem('token');
                 if (!token) {
@@ -68,7 +65,6 @@ function Adicionar({ onAdicionar }) {
                         start: '',
                         end: '',
                         desc: '',
-                        color: '',
                         tipo: '',
                     });
                     navigate('/paginicial');
@@ -87,114 +83,81 @@ function Adicionar({ onAdicionar }) {
     };
 
     return (
-        <div className="adicionar p-3 rounded border border-white" style={{ backgroundColor: '#e9ecef', color: '#212529' }}>
-            <h3>Nova consulta</h3>
+        <div className="adicionar p-3 rounded border border-white" style={{ backgroundColor: '#e9ecef', color: '#212529', width: '100%' }}>
+            <h3>Nova Consulta</h3>
             {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
-            <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="formBasicTitle">
-                    <Form.Label>Título do Evento</Form.Label>
+            <Form onSubmit={handleSubmit} style={{ maxWidth: '100%' }}>
+                <Form.Group controlId="formBasicTitle" className="mb-3">
+                    <Form.Label>Buscar Paciente</Form.Label>
+                    <div className="d-flex align-items-center">
+                        <Form.Control
+                            type="text"
+                            placeholder="Digite o nome do paciente"
+                            name="title"
+                            value={novoEvento.title}
+                            onChange={handleChange}
+                            style={{ flex: 1 }}
+                        />
+                        <Button
+                            variant="secondary"
+                            onClick={() => setShowListaPacientesModal(true)}
+                            className="ms-2"
+                        >
+                            <i className="bi bi-search"></i>
+                        </Button>
+                    </div>
+                </Form.Group>
+                <Form.Group controlId="formBasicStart" className="mb-3">
+                    <Form.Label>Início</Form.Label>
                     <Form.Control
-                        type="text"
-                        placeholder="Nome do Paciente"
-                        name="title"
-                        value={novoEvento.title}
+                        type="datetime-local"
+                        name="start"
+                        value={novoEvento.start}
                         onChange={handleChange}
                     />
                 </Form.Group>
-                <Row>
-                    <Col xs={6}>
-                        <Form.Group controlId="formBasicStart">
-                            <Form.Label>Início</Form.Label>
-                            <Form.Control
-                                type="datetime-local"
-                                name="start"
-                                value={novoEvento.start}
-                                onChange={handleChange}
-                            />
-                        </Form.Group>
-                    </Col>
-                    <Col xs={6}>
-                        <Form.Group controlId="formBasicEnd">
-                            <Form.Label>Término</Form.Label>
-                            <Form.Control
-                                type="datetime-local"
-                                name="end"
-                                value={novoEvento.end}
-                                onChange={handleChange}
-                            />
-                        </Form.Group>
-                    </Col>
-                </Row>
-                <Collapse in={expanded}>
-                    <div>
-                        <Form.Group controlId="formBasicDesc">
-                            <Form.Label>Descrição</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Digite a Descrição"
-                                name="desc"
-                                value={novoEvento.desc}
-                                onChange={handleChange}
-                            />
-                        </Form.Group>
-                        <Row>
-                            <Col xs={3}>
-                                <Form.Group controlId="formBasicColor">
-                                    <Form.Label>Cor</Form.Label>
-                                    <Form.Control
-                                        type="color"
-                                        name="color"
-                                        value={novoEvento.color}
-                                        onChange={handleChange}
-                                    />
-                                </Form.Group>
-                            </Col>
-                            <Col xs={9}>
-                                <Form.Group controlId="formBasicTipo">
-                                    <Form.Label>Especialidade</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Digite a especialidade"
-                                        name="tipo"
-                                        value={novoEvento.tipo}
-                                        onChange={handleChange}
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                    </div>
-                </Collapse>
-                <Button
-                    variant="primary"
-                    type="button"
-                    onClick={handleToggleExpanded}
-                    style={{ marginTop: '10px', float: 'right' }}
-                >
-                    {expanded ? <i className="bi bi-chevron-double-up"></i> : <i className="bi bi-chevron-double-down"></i>}
-                </Button>
+                <Form.Group controlId="formBasicTipo" className="mb-3">
+                    <Form.Label>Especialidade</Form.Label>
+                    <Form.Select
+                        name="tipo"
+                        value={novoEvento.tipo}
+                        onChange={handleChange}
+                    >
+                        <option value="">Selecione uma especialidade</option>
+                        <option value="Cardiologia">Cardiologia</option>
+                        <option value="Dermatologia">Dermatologia</option>
+                        <option value="Ginecologia">Ginecologia</option>
+                        <option value="Neurologia">Neurologia</option>
+                        <option value="Ortopedia">Ortopedia</option>
+                        <option value="Pediatria">Pediatria</option>
+                    </Form.Select>
+                </Form.Group>
+                <Form.Group controlId="formBasicDesc" className="mb-3">
+                    <Form.Label>Descrição</Form.Label>
+                    <Form.Control
+                        type="text"
+                        placeholder="Digite a descrição"
+                        name="desc"
+                        value={novoEvento.desc}
+                        onChange={handleChange}
+                    />
+                </Form.Group>
                 <Button
                     variant="success"
                     type="submit"
-                    style={{ marginTop: '10px', marginRight: '10px' }}
-                    disabled={!novoEvento.title || !novoEvento.start || !novoEvento.end}
+                    className="w-100"
+                    disabled={!novoEvento.title || !novoEvento.start}
                 >
                     Salvar
                 </Button>
                 <Button
                     variant="info"
                     type="button"
+                    className="w-100"
                     onClick={() => setShowPacienteModal(true)}
                     style={{ marginTop: '10px', marginRight: '10px' }}
                 >
                     Cadastrar Paciente
-                </Button>
-                <Button
-                    variant="secondary" 
-                    type="button" 
-                    onClick={() => setShowListaPacientesModal(true)}
-                    style={{ marginTop: '10px', marginRight: '10px' }}
-                >
-                    Pesquisar Paciente
                 </Button>
             </Form>
             <FormularioPaciente show={showPacienteModal} onHide={() => setShowPacienteModal(false)} />

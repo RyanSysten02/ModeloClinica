@@ -136,15 +136,8 @@ function Calendario() {
 
     return (
         <div className='tela'>
-            <div className='toolbar p-4' style={{ overflowY: 'auto' }}>
-                <Adicionar onAdicionar={handleAdicionar} />
-                <FiltroAtividades
-                    tiposAtividades={tiposAtividades}
-                    onSelecionarAtividades={handleSelecionarAtividades}
-                />
-            </div>
-
-            <div className='calendario'>
+         
+            <div className='calendario' size="xl">
                 <DragAndDropCalendar
                     defaultDate={moment().toDate()}
                     defaultView='month'

@@ -10,6 +10,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import PagLogin from './pages/login';
 import FullLayout from './pages/paginicial';
+import TelaFuncionario from './pages/telafuncionario'
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="/login" element={<PagLogin/>} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/paginicial" element={<ProtectedRoute><FullLayout/></ProtectedRoute>} />
+          <Route path="/pagFuncionario" element={<ProtectedRoute><TelaFuncionario/></ProtectedRoute>} />
         </Routes>
       </div>
     </Router>
