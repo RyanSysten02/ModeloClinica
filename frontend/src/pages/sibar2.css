@@ -1,0 +1,135 @@
+
+.profilebg {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+    background-size: cover; 
+    padding: 10px; 
+    text-align: center; 
+}
+
+.profilebg img {
+    margin-bottom: 10px; 
+    width: 50px; 
+    height: 50px; 
+    border-radius: 50%; 
+}
+
+  
+  .sidebarNav {
+    margin-top: 20px; 
+  }
+  
+  .sidebarNav .nav-link {
+    display: flex;
+    align-items: center; 
+    gap: 10px; 
+  }
+  
+  .sidebarNav .sidenav-bg {
+    text-align: left; 
+  }
+  
+
+  .bg-dark.text-white {
+    text-align: center; 
+  }
+  
+
+  .layout {
+    display: flex;
+    min-height: 100vh; 
+  }
+  
+  .sidebarArea {
+    flex-shrink: 0; 
+    width: 250px; 
+    background-color: #f8f9fa; 
+    height: 100vh; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); 
+  }
+  
+ 
+  .contentArea {
+    margin-left: 250px; 
+    padding: 20px; 
+    background-color: #fff; 
+    flex: 1; 
+  }
+  
+ 
+  @media (max-width: 991px) {
+    .sidebarArea {
+      position: fixed;
+      height: 100%;
+      overflow: auto;
+      top: 0;
+      z-index: 1; 
+      margin-left: -250px; 
+      transition: 0.2s ease-in;
+      &.showSidebar {
+        margin-left: 0px; 
+      }
+    }
+  
+    .contentArea {
+      margin-left: 0; 
+    }
+  }
+
+  .sidebarNav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.3s ease, color 0.3s ease; 
+  }
+  
+  .sidebarNav .nav-link:hover {
+    background-color: #f0f0f0; 
+    color: #007bff; 
+  }
+  
+  .sidebarNav .nav-link.active {
+    background-color: #007bff; 
+    color: white; 
+  }
+  
+  .sidebarNav .nav-link i {
+    font-size: 18px; 
+  }
+  
+  .sidebarNav .sidenav-bg {
+    text-align: left;
+  }
+  
+
+.sidebarNav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.3s ease, color 0.3s ease; 
+    cursor: pointer; 
+  }
+
+  .sidebarNav .nav-link:hover {
+    background-color: #f0f0f0; 
+    color: #007bff; 
+  }
+  
+  .sidebarNav .nav-link.active {
+    background-color: #007bff; 
+    color: white; 
+  }
+  
+  .sidebarNav .nav-link i {
+    font-size: 18px; 
+  }
+  
+  .sidebarNav .sidenav-bg {
+    text-align: left;
+  }
+  
