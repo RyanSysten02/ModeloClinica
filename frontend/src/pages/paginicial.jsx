@@ -7,7 +7,6 @@ import Pagina from "./PagPadrao";
 const FullLayout = () => {
   return (
     <Pagina>
-      <Adicionar/>
       <FormAdicionar/>
       <Calendario/>
     </Pagina>

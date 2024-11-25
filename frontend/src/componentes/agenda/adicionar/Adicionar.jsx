@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import FormularioPaciente from '../../paciente/Paciente';
 import ListaPacientesModal from '../../paciente/ListaPacientes';
 
-function Adicionar({ onAdicionar }) {
+function Adicionar() {
     const [novoEvento, setNovoEvento] = useState({
         title: '',
         start: '',
@@ -13,6 +13,7 @@ function Adicionar({ onAdicionar }) {
         tipo: '',
     });
     const [mensagemErro, setMensagemErro] = useState('');
+    const [mensagemSucesso, setMensagemSucesso] = useState('');
     const [showPacienteModal, setShowPacienteModal] = useState(false);
     const [showListaPacientesModal, setShowListaPacientesModal] = useState(false);
     const navigate = useNavigate();
@@ -20,26 +21,47 @@ function Adicionar({ onAdicionar }) {
     const handleChange = (e) => {
         const { name, value } = e.target;
     
-        if (name === "start") {
-            const startDate = new Date(value); // Convertendo a string para Date
+        if (name === 'start') {
+            const startDate = new Date(value); // Data de início do evento
             const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Adiciona 1 hora
+    
+            // Ajusta a hora de acordo com o fuso horário local
+            const timezoneOffset = startDate.getTimezoneOffset() * 60000; // Diferença de minutos para milissegundos
+            const adjustedStartDate = new Date(startDate.getTime() - timezoneOffset);
+            const adjustedEndDate = new Date(endDate.getTime() - timezoneOffset);
     
             setNovoEvento({
                 ...novoEvento,
-                start: value,
-                end: endDate.toISOString().slice(0, 16), // Formato para datetime-local
+                start: adjustedStartDate.toISOString().slice(0, 16), // Converte para formato de 'datetime-local'
+                end: adjustedEndDate.toISOString().slice(0, 16), // Converte para formato de 'datetime-local'
             });
         } else {
             setNovoEvento({ ...novoEvento, [name]: value });
         }
     };
+    
+
+    const handleAdicionarEvento = (evento) => {
+        console.log('Evento adicionado com sucesso:', evento);
+        setMensagemSucesso('Consulta adicionada com sucesso!');
+        // Aqui, você pode adicionar lógica para salvar localmente, como um array de eventos.
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMensagemErro('');
+        setMensagemSucesso('');
 
-        if (novoEvento.title && novoEvento.start) {
-            try {
+        try {
+            if (novoEvento.title && novoEvento.start) {
+                const startDate = new Date(novoEvento.start);
+                const endDate = new Date(novoEvento.end);
+
+                if (startDate >= endDate) {
+                    alert('A data início deve ser anterior à data de término');
+                    return;
+                }
+
                 const token = localStorage.getItem('token');
                 if (!token) {
                     setMensagemErro('Token de autenticação não encontrado. Faça login novamente.');
@@ -59,7 +81,7 @@ function Adicionar({ onAdicionar }) {
                 const data = await response.json();
 
                 if (response.ok) {
-                    onAdicionar(novoEvento); // Chama a função para atualizar o calendário
+                    handleAdicionarEvento(novoEvento); // Chama a função local
                     setNovoEvento({
                         title: '',
                         start: '',
@@ -67,13 +89,13 @@ function Adicionar({ onAdicionar }) {
                         desc: '',
                         tipo: '',
                     });
-                    navigate('/paginicial');
                 } else {
                     setMensagemErro(data.message || 'Falha ao adicionar consulta');
                 }
-            } catch (error) {
-                setMensagemErro('Ocorreu um erro. Tente novamente.');
             }
+        } catch (error) {
+            console.error('Erro no envio da consulta:', error);
+            setMensagemErro('Ocorreu um erro inesperado. Verifique os dados e tente novamente.');
         }
     };
 
@@ -86,6 +108,7 @@ function Adicionar({ onAdicionar }) {
         <div className="adicionar p-3 rounded border border-white" style={{ backgroundColor: '#e9ecef', color: '#212529', width: '100%' }}>
             <h3>Nova Consulta</h3>
             {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
+            {mensagemSucesso && <Alert variant="success">{mensagemSucesso}</Alert>}
             <Form onSubmit={handleSubmit} style={{ maxWidth: '100%' }}>
                 <Form.Group controlId="formBasicTitle" className="mb-3">
                     <Form.Label>Buscar Paciente</Form.Label>
@@ -153,9 +176,8 @@ function Adicionar({ onAdicionar }) {
                 <Button
                     variant="info"
                     type="button"
-                    className="w-100"
+                    className="w-100 mt-3"
                     onClick={() => setShowPacienteModal(true)}
-                    style={{ marginTop: '10px', marginRight: '10px' }}
                 >
                     Cadastrar Paciente
                 </Button>

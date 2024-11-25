@@ -5,9 +5,9 @@ export default function Pagina(props) {
     return (
         <div>
             <Cabecalho />
-            <div className="layout">
-               <Sidebar/>
-                <main >
+            <div className="d-flex bd-highlight">
+               <Sidebar className="p-2 flex-shrink-1 bd-highlight"/>
+                <main className="p-2 w-100 bd-highlight" >
                     {props.children}
                 </main>
             </div>

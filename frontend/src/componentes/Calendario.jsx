@@ -6,11 +6,10 @@ import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import './agenda/Calendario.css';
-
+import './paciente/calendario.css'
 import EventModal from './agenda/ModalEvent/EventModal.jsx';
-import Adicionar from './agenda/adicionar/Adicionar.jsx';
 import CustomTollbar from './agenda/CustomCalendar/CustomTollbar.jsx';
-import FiltroAtividades from './agenda/filtro/FiltroAtividades.jsx';
+
 
 moment.locale('pt-br'); // Define o idioma do Moment para português
 const localizer = momentLocalizer(moment);
@@ -135,9 +134,9 @@ function Calendario() {
     }, [eventos]);
 
     return (
-        <div className='tela'>
+        <div className='tela' >
          
-            <div className='calendario' size="xl">
+            <div className='tela'>
                 <DragAndDropCalendar
                     defaultDate={moment().toDate()}
                     defaultView='month'
@@ -149,9 +148,9 @@ function Calendario() {
                     onSelectEvent={handleEventClick}
                     eventPropGetter={eventStyle}
                     components={{
-                        toolbar: CustomTollbar,
+                    toolbar: CustomTollbar,
                     }}
-                    className='calendar'
+                    className='tela'
                 />
             </div>
             {eventoSelecionado && (
