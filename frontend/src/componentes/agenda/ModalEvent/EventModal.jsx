@@ -9,6 +9,11 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [motivoCancelamento, setMotivoCancelamento] = useState('');
     const [motivoErro, setMotivoErro] = useState('');
+    const [showAdiamentoModal, setShowAdiamentoModal] = useState(false);
+    const [novaDataInicio, setNovaDataInicio] = useState('');
+    const [novaDataFim, setNovaDataFim] = useState('');
+    const [motivoAdiamento, setMotivoAdiamento] = useState('');
+    const [erroAdiamento, setErroAdiamento] = useState('');
 
     const navigate = useNavigate();
 
@@ -171,6 +176,59 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
         }
     };
     
+    const handleAdiamento = async () => {
+        if (!motivoAdiamento || motivoAdiamento.length < 15) {
+            setErroAdiamento('O motivo deve ter pelo menos 15 caracteres.');
+            return;
+        }
+    
+        if (!novaDataInicio || !novaDataFim) {
+            setErroAdiamento('As datas de início e fim devem ser preenchidas.');
+            return;
+        }
+    
+        setMensagemErro('');
+        setErroAdiamento('');
+    
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setMensagemErro('Token de autenticação não encontrado. Faça login novamente.');
+                navigate('/login');
+                return;
+            }
+    
+            const response = await fetch(`http://localhost:5001/api/consulta/adiar/${evento.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    start: novaDataInicio,
+                    end: novaDataFim,
+                    motivo_adiamento: motivoAdiamento,
+                }),
+            });
+    
+            if (response.ok) {
+                const updatedEvent = {
+                    ...editedEvent,
+                    start: novaDataInicio,
+                    end: novaDataFim,
+                    motivo_adiamento: motivoAdiamento,
+                };
+                onUpdate(updatedEvent);
+                setShowAdiamentoModal(false);
+                onClose();
+            } else {
+                const data = await response.json();
+                setMensagemErro(data.message || 'Erro ao adiar a consulta.');
+            }
+        } catch (error) {
+            setMensagemErro('Ocorreu um erro ao tentar adiar a consulta.');
+        }
+    };
 
     const adjustDate = (date) => {
         const adjustedDate = new Date(date);
@@ -194,24 +252,24 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
                             <Form.Label>Descrição</Form.Label>
                             <Form.Control as="textarea" rows={3} name="desc" value={editedEvent.desc} onChange={handleInputChange} />
                         </Form.Group>
-
+    
                         <Collapse in={!collapsed}>
                             <div>
                                 <Form.Group controlId="formInicio">
                                     <Form.Label>Início</Form.Label>
                                     <Form.Control type="datetime-local" name="start" value={adjustDate(editedEvent.start)} onChange={handleStartDateChange} />
                                 </Form.Group>
-
+    
                                 <Form.Group controlId="formEnd">
                                     <Form.Label>Fim</Form.Label>
                                     <Form.Control type="datetime-local" name="end" value={adjustDate(editedEvent.end)} onChange={handleEndDateChange} />
                                 </Form.Group>
-
+    
                                 <Form.Group controlId="formColor">
                                     <Form.Label>Cor</Form.Label>
                                     <Form.Control type="color" name="color" value={editedEvent.color} onChange={handleColorChange} />
                                 </Form.Group>
-
+    
                                 <Form.Group controlId="formTipo">
                                     <Form.Label>Tipo</Form.Label>
                                     <Form.Control type="text" name="tipo" value={editedEvent.tipo} onChange={handleInputChange} />
@@ -233,11 +291,14 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
                     <Button variant="warning" onClick={handleOpenCancelModal}>
                         Cancelar Consulta
                     </Button>
+                    <Button variant="info" onClick={() => setShowAdiamentoModal(true)}>
+                        Adiar Consulta
+                    </Button>
                 </Modal.Footer>
                 {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
             </Modal>
-
-            {/* Modal de motivo do cancelamento */}
+    
+            {/* Modal de Cancelamento */}
             <Modal show={showCancelModal} onHide={() => setShowCancelModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Motivo do Cancelamento</Modal.Title>
@@ -267,8 +328,55 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
                     </Button>
                 </Modal.Footer>
             </Modal>
+    
+            {/* Modal de Adiamento */}
+            <Modal show={showAdiamentoModal} onHide={() => setShowAdiamentoModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Adiamento da Consulta</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="formNovaDataInicio">
+                            <Form.Label>Nova Data de Início:</Form.Label>
+                            <Form.Control
+                                type="datetime-local"
+                                value={novaDataInicio}
+                                onChange={(e) => setNovaDataInicio(e.target.value)}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="formNovaDataFim">
+                            <Form.Label>Nova Data de Fim:</Form.Label>
+                            <Form.Control
+                                type="datetime-local"
+                                value={novaDataFim}
+                                onChange={(e) => setNovaDataFim(e.target.value)}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="formMotivoAdiamento">
+                            <Form.Label>Motivo do Adiamento:</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
+                                value={motivoAdiamento}
+                                onChange={(e) => setMotivoAdiamento(e.target.value)}
+                                isInvalid={!!erroAdiamento}
+                            />
+                            <Form.Control.Feedback type="invalid">{erroAdiamento}</Form.Control.Feedback>
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowAdiamentoModal(false)}>
+                        Cancelar
+                    </Button>
+                    <Button variant="primary" onClick={handleAdiamento}>
+                        Confirmar Adiamento
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </>
     );
+    
 };
 
 export default EventModal;
