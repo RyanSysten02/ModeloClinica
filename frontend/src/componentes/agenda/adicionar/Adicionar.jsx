@@ -3,6 +3,8 @@ import { Button, Form, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import FormularioPaciente from '../../paciente/Paciente';
 import ListaPacientesModal from '../../paciente/ListaPacientes';
+import FormularioFuncionario from '../../funcionario/Funcionario';
+import ListaFuncionariosModal from '../../funcionario/ListaFuncionarios';
 
 function Adicionar() {
     const [novoEvento, setNovoEvento] = useState({
@@ -15,6 +17,8 @@ function Adicionar() {
     const [mensagemErro, setMensagemErro] = useState('');
     const [mensagemSucesso, setMensagemSucesso] = useState('');
     const [showPacienteModal, setShowPacienteModal] = useState(false);
+    const [showFuncionarioModal, setShowFuncionarioModal] = useState(false);
+    const [showListaFuncionariosModal, setShowListaFuncionariosModal] = useState(false);
     const [showListaPacientesModal, setShowListaPacientesModal] = useState(false);
     const navigate = useNavigate();
 
@@ -103,6 +107,10 @@ function Adicionar() {
         setNovoEvento({ ...novoEvento, title: paciente.nome });
         setShowListaPacientesModal(false);
     };
+    const handleSelectFuncionario = (funcionario) => {
+        setNovoEvento({ ...novoEvento, title: funcionario.nome });
+        setShowListaFuncionariosModal(false);
+    };
 
     return (
         <div className="adicionar p-3 rounded border border-white" style={{ backgroundColor: '#e9ecef', color: '#212529', width: '100%' }}>
@@ -124,6 +132,13 @@ function Adicionar() {
                         <Button
                             variant="secondary"
                             onClick={() => setShowListaPacientesModal(true)}
+                            className="ms-2"
+                        >
+                            <i className="bi bi-search"></i>
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            onClick={() => setShowListaFuncionariosModal(true)}
                             className="ms-2"
                         >
                             <i className="bi bi-search"></i>
@@ -181,8 +196,18 @@ function Adicionar() {
                 >
                     Cadastrar Paciente
                 </Button>
+                <Button
+                    variant="info"
+                    type="button"
+                    className="w-100 mt-3"
+                    onClick={() => setShowFuncionarioModal(true)}
+                >
+                    Cadastrar Funcionario
+                </Button>
             </Form>
             <FormularioPaciente show={showPacienteModal} onHide={() => setShowPacienteModal(false)} />
+            <FormularioFuncionario show={showFuncionarioModal} onHide={() => setShowFuncionarioModal(false)} />
+            <ListaFuncionariosModal show={showListaFuncionariosModal} onHide={() => setShowListaFuncionariosModal(false)} onSelectFuncionario={handleSelectFuncionario} />
             <ListaPacientesModal show={showListaPacientesModal} onHide={() => setShowListaPacientesModal(false)} onSelectPaciente={handleSelectPaciente} />
         </div>
     );

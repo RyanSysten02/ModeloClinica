@@ -1,5 +1,3 @@
-import Adicionar from "../componentes/agenda/adicionar/Adicionar";
-import FormAdicionar from "../componentes/agenda/adicionar/formadicionar";
 import Calendario from "../componentes/Calendario";
 import Pagina from "./PagPadrao";
 
@@ -7,7 +5,6 @@ import Pagina from "./PagPadrao";
 const FullLayout = () => {
   return (
     <Pagina>
-      <FormAdicionar/>
       <Calendario/>
     </Pagina>
   );

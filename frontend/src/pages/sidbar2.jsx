@@ -8,7 +8,7 @@ import './sibar2.css';
 
 
 const navigation = [
-  { title: "Agenda", href: "/alerts", icon: "bi bi-calendar-week" },
+  { title: "Agenda", href: "/paginicial", icon: "bi bi-calendar-week" },
   { title: "Agendar consultas", href: "/starter", icon: "bi bi-card-text" },
   { title: "Pacientes", href: "/alerts", icon: "bi bi-people" },
   { title: "Medicos", href: "/alerts", icon: "bi bi-person-square" },

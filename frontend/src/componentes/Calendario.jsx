@@ -6,7 +6,6 @@ import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import './agenda/Calendario.css';
-import './paciente/calendario.css'
 import EventModal from './agenda/ModalEvent/EventModal.jsx';
 import CustomTollbar from './agenda/CustomCalendar/CustomTollbar.jsx';
 
