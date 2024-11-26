@@ -1,23 +1,18 @@
 import { Button, Nav, NavItem } from "reactstrap";
-import { Link, useLocation } from "react-router-dom";
-import {jwtDecode} from 'jwt-decode'
 import { useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
 import user1 from "../componentes/assets/images/users/user4.jpg";
 import probg from "../componentes/assets/images/bg/download.jpg";
-import './sibar2.css';
-
-
-const navigation = [
-  { title: "Agenda", href: "/paginicial", icon: "bi bi-calendar-week" },
-  { title: "Agendar consultas", href: "/starter", icon: "bi bi-card-text" },
-  { title: "Pacientes", href: "/alerts", icon: "bi bi-people" },
-  { title: "Medicos", href: "/alerts", icon: "bi bi-person-square" },
-  { title: "Funcionarios", href: "/alerts", icon: "bi bi-person-badge" },
-];
+import "./sibar2.css";
+import Adicionar from "../componentes/agenda/adicionar/Adicionar";
+import ListaFuncionariosModal from "../componentes/funcionario/ListaFuncionarios";
+import ListaPacientesModal from "../componentes/paciente/ListaPacientes";
 
 const Sidebar = () => {
   const [userName, setUserName] = useState("");
-  const location = useLocation();
+  const [showAdicionarModal, setShowAdicionarModal] = useState(false);
+  const [showFuncionariosModal, setShowFuncionariosModal] = useState(false);
+  const [showPacientesModal, setShowPacientesModal] = useState(false);
 
   const showMobilemenu = () => {
     document.getElementById("sidebarArea").classList.toggle("showSidebar");
@@ -39,7 +34,7 @@ const Sidebar = () => {
         style={{ background: `url(${probg}) no-repeat` }}
       >
         <div className="p-3 ">
-          <img src={user1} alt="user" width="50" className="rounded-circle  " />
+          <img src={user1} alt="user" width="50" className="rounded-circle" />
           <Button
             color="white"
             className="ms-auto text-white d-lg-none"
@@ -54,23 +49,52 @@ const Sidebar = () => {
       </div>
       <div className="p-3 mt-2">
         <Nav vertical className="sidebarNav">
-          {navigation.map((navi, index) => (
-            <NavItem key={index} className="sidenav-bg">
-              <Link
-                to={navi.href}
-                className={
-                  location.pathname === navi.href
-                    ? "active nav-link py-3"
-                    : "nav-link text-secondary py-3"
-                }
-              >
-                <i className={navi.icon}></i>
-                <span className="ms-3 d-inline-block">{navi.title}</span>
-              </Link>
-            </NavItem>
-          ))}
+          <NavItem className="sidenav-bg">
+            <Button
+              color="link"
+              className="nav-link text-secondary py-3"
+              onClick={() => setShowAdicionarModal(true)}
+            >
+              <i className="bi bi-card-text"></i>
+              <span className="ms-3 d-inline-block">Agendar Consultas</span>
+            </Button>
+          </NavItem>
+          <NavItem className="sidenav-bg">
+            <Button
+              color="link"
+              className="nav-link text-secondary py-3"
+              onClick={() => setShowPacientesModal(true)}
+            >
+              <i className="bi bi-people"></i>
+              <span className="ms-3 d-inline-block">Pacientes</span>
+            </Button>
+          </NavItem>
+          <NavItem className="sidenav-bg">
+            <Button
+              color="link"
+              className="nav-link text-secondary py-3"
+              onClick={() => setShowFuncionariosModal(true)}
+            >
+              <i className="bi bi-person-badge"></i>
+              <span className="ms-3 d-inline-block">Funcionários</span>
+            </Button>
+          </NavItem>
         </Nav>
       </div>
+
+      {/* Modais */}
+      <Adicionar
+        show={showAdicionarModal}
+        onHide={() => setShowAdicionarModal(false)}
+      />
+      <ListaPacientesModal
+        show={showPacientesModal}
+        onHide={() => setShowPacientesModal(false)}
+      />
+      <ListaFuncionariosModal
+        show={showFuncionariosModal}
+        onHide={() => setShowFuncionariosModal(false)}
+      />
     </div>
   );
 };

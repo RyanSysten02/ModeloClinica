@@ -175,9 +175,9 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
                   <Button variant="primary" onClick={() => handleDetalhes(funcionario.id)}>
                     Detalhes
                   </Button>
-                  <Button variant="danger" onClick={() => handleDelete(funcionario.id)} style={{ marginLeft: '10px' }}>
+                  {/*<Button variant="danger" onClick={() => handleDelete(funcionario.id)} style={{ marginLeft: '10px' }}>
                     Apagar
-                  </Button>
+                  </Button>Tiramos o botão de apagar, pois achamos melhor não ter essa opção por enquanto*/}
                   <Button variant="success" onClick={() => onSelectFuncionario(funcionario)} style={{ marginLeft: '10px' }}>
                     Selecionar
                   </Button>

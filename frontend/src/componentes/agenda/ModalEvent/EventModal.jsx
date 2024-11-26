@@ -282,9 +282,9 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
                     <Button variant="secondary" onClick={() => setCollapsed(!collapsed)}>
                         {!collapsed ? 'Ocultar Detalhes' : 'Mostrar Detalhes'}
                     </Button>
-                    <Button variant="danger" onClick={handleDelete}>
+                    {/*<Button variant="danger" onClick={handleDelete}>
                         Apagar
-                    </Button>
+                    </Button> Tiramos o botão de apagar, pois achamos melhor não ter essa opção*/}
                     <Button variant="primary" onClick={handleUpdate}>
                         Salvar Alterações
                     </Button>
