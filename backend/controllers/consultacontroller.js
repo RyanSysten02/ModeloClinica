@@ -11,9 +11,10 @@ const createConsulta = async (req, res) => {
         const tokenLimpo = token.split(' ')[1];
         const decoded = jwt.verify(tokenLimpo, process.env.JWT_SECRET);
         req.user = decoded;
+        const id_usuario_inclusao = req.user.id;
 
         const id = req.user.id;
-        const consultaId = await consultasservices.createConsulta(title, start, end, desc, color, tipo);
+        const consultaId = await consultasservices.createConsulta(title, start, end, desc, color, tipo, id_usuario_inclusao);
         return res.status(201).json({ message: 'Consulta criada com sucesso', consultaId });
     } catch (error) {
         return res.status(400).json({ message: error.message });
@@ -43,7 +44,7 @@ const adiarConsulta = async (req, res) => {
 
         // Criar nova consulta com base na original
         const novaConsulta = await consultasservices.adiarConsulta(
-            id, // Lote original
+            id, // Passar o ID da consulta original
             start,
             end,
             motivo_adiamento,
@@ -58,6 +59,7 @@ const adiarConsulta = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 
 const getConsultasTipo = async (req, res) => {

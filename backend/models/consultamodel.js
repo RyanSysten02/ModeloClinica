@@ -1,10 +1,10 @@
 const pool = require('../db.js');
 
-const createConsulta = async (title, start, end, desc, color, tipo) => {
+const createConsulta = async (title, start, end, desc, color, tipo, id_usuario_inclusao) => {
     // Inserir a nova consulta
     const [result] = await pool.query(
-        'INSERT INTO consultas (title, start, end, `desc`, color, tipo) VALUES (?, ?, ?, ?, ?, ?)',
-        [title, start, end, desc, color, tipo]
+        'INSERT INTO consultas (title, start, end, `desc`, color, tipo, id_usuario_inclusao) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [title, start, end, desc, color, tipo, id_usuario_inclusao]
     );
 
     const insertedId = result.insertId; // Obter o ID da consulta recém-criada
@@ -19,15 +19,17 @@ const createConsulta = async (title, start, end, desc, color, tipo) => {
 };
 
 
-const adiarConsulta = async (lote_agendamento, start, end, motivo_adiamento, id_usuario_inclusao) => {
+const adiarConsulta = async (id_consulta_original, start, end, motivo_adiamento, id_usuario_inclusao) => {
     const result = await pool.query(
         `INSERT INTO consultas (title, start, end, \`desc\`, color, tipo, status, dh_adiamento, motivo_adiamento, lote_agendamento, id_usuario_inclusao)
-         SELECT title, ?, ?, \`desc\`, color, tipo, 'AD', NOW(), ?, ?, ?
-         FROM consultas WHERE id = ?`,
-        [start, end, motivo_adiamento, lote_agendamento, id_usuario_inclusao, lote_agendamento]
+         SELECT title, ?, ?, \`desc\`, color, tipo, 'AD', NOW(), ?, lote_agendamento, ?
+         FROM consultas
+         WHERE id = ?`,
+        [start, end, motivo_adiamento, id_usuario_inclusao, id_consulta_original]
     );
     return result;
 };
+
 
 
 const getConsultas = async () => {
