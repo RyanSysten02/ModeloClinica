@@ -3,12 +3,14 @@ import { Modal, Container, Table, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import FuncionarioDetalhesModal from './FuncionarioDetalhesModal';
 import { format } from 'date-fns';
+import FormularioFuncionario from "./Funcionario";
 
 const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
   const [funcionarios, setFuncionarios] = useState([]);
   const [mensagemErro, setMensagemErro] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [funcionarioSelecionado, setFuncionarioSelecionado] = useState(null);
+  const [showCadastroModal, setShowCadastroModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -192,8 +194,15 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>Fechar</Button>
+        <Button variant="info" onClick={() => setShowCadastroModal(true)}>Cadastrar Funcionário</Button>
       </Modal.Footer>
+      {/* Modal de Cadastro de Pacientes */}
+      <FormularioFuncionario
+        show={showCadastroModal}
+        onHide={() => setShowCadastroModal(false)}
+      />
     </Modal>
+    
   );
 };
 

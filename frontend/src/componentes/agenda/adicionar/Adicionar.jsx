@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button, Form, Alert, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import ListaPacientesModal from '../../paciente/ListaPacientes';
+import ListaFuncionariosModal from '../../funcionario/ListaFuncionarios';
 
 function Adicionar({ show, onHide, onUpdate }) {
     const [novoEvento, setNovoEvento] = useState({
@@ -14,6 +15,7 @@ function Adicionar({ show, onHide, onUpdate }) {
     const [mensagemErro, setMensagemErro] = useState('');
     const [mensagemSucesso, setMensagemSucesso] = useState('');
     const [showListaPacientesModal, setShowListaPacientesModal] = useState(false);
+    const [showListaFuncionariosModal, setShowListaFuncionariosModal] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -39,6 +41,10 @@ function Adicionar({ show, onHide, onUpdate }) {
     const handleSelectPaciente = (paciente) => {
         setNovoEvento({ ...novoEvento, title: paciente.nome });
         setShowListaPacientesModal(false);
+    };
+    const handleSelectFuncionario = (funcionario) => {
+        setNovoEvento({ ...novoEvento, title: funcionario.nome });
+        setShowListaFuncionariosModal(false);
     };
 
     const handleSubmit = async (e) => {
@@ -128,6 +134,26 @@ function Adicionar({ show, onHide, onUpdate }) {
                         </Button>
                         </div>
                     </Form.Group>
+                    <Form.Group controlId="formBasicTitle" className="mb-3">
+                    <Form.Label>Médico Responsável</Form.Label>
+                    <div className="d-flex align-items-center">
+                        <Form.Control
+                            type="text"
+                            placeholder="Selecione o médico responsável"
+                            name="title"
+                            value={novoEvento.title}
+                            onChange={handleChange}
+                            style={{ flex: 1 }}
+                        />
+                        <Button
+                            variant="secondary"
+                            onClick={() => setShowListaFuncionariosModal(true)}
+                            className="ms-2"
+                        >
+                            <i className="bi bi-search"></i>
+                        </Button>
+                        </div>
+                    </Form.Group>
                     <Form.Group controlId="formBasicStart" className="mb-3">
                         <Form.Label>Início</Form.Label>
                         <Form.Control
@@ -168,6 +194,7 @@ function Adicionar({ show, onHide, onUpdate }) {
                     </Button>
                 </Form>
                 <ListaPacientesModal show={showListaPacientesModal} onHide={() => setShowListaPacientesModal(false)} onSelectPaciente={handleSelectPaciente} />
+                <ListaFuncionariosModal show={showListaFuncionariosModal} onHide={() => setShowListaFuncionariosModal(false)} onSelectFuncionario={handleSelectFuncionario} />
             </Modal.Body>
         </Modal>
     );
