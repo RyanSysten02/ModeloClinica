@@ -1,18 +1,19 @@
 const consultamodel = require('../models/consultamodel');
 
-const createConsulta = async (title, start, end, desc, color, tipo) => {
-    const consultaId = await consultamodel.createConsulta(title, start, end, desc, color, tipo);
+const createConsulta = async (title, start, end, desc, color, tipo, id_usuario_inclusao) => {
+    const consultaId = await consultamodel.createConsulta(title, start, end, desc, color, tipo, id_usuario_inclusao);
     return consultaId;
 };
 
 
 
-const adiarConsulta = async (lote_agendamento, start, end, motivo_adiamento, id_usuario_inclusao) => {
+const adiarConsulta = async (id_consulta_original, start, end, motivo_adiamento, id_usuario_inclusao) => {
     const consulta = await consultamodel.adiarConsulta(
-        lote_agendamento, start, end, motivo_adiamento, id_usuario_inclusao
+        id_consulta_original, start, end, motivo_adiamento, id_usuario_inclusao
     );
     return consulta;
 };
+
 
 
 const getConsultas = async (title, start, end, desc, color, tipo) => {
