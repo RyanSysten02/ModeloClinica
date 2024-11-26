@@ -28,7 +28,8 @@ function Calendario() {
 
                 const eventosFormatados = data.map((consultas) => ({
                     id: consultas.id,
-                    title: consultas.title,
+                    id_paciente: consultas.id_paciente,
+                    id_func_responsavel:consultas.id_func_responsavel,
                     start: new Date(consultas.start),
                     end: new Date(consultas.end),
                     desc: consultas.desc,
@@ -80,7 +81,8 @@ function Calendario() {
                         'Authorization': `Bearer ${token}`,
                     },
                     body: JSON.stringify({
-                        title: updatedEvent.title,
+                        id_paciente: updatedEvent.id_paciente,
+                        id_func_responsavel: updatedEvent.id_func_responsavel,
                         start: moment(updatedEvent.start).format("YYYY-MM-DD HH:mm:ss"),
                         end: moment(updatedEvent.end).format("YYYY-MM-DD HH:mm:ss"),
                         desc: updatedEvent.desc,
