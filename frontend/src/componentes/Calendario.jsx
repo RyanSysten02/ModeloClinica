@@ -84,7 +84,8 @@ function Calendario() {
                         'Authorization': `Bearer ${token}`,
                     },
                     body: JSON.stringify({
-                        title: updatedEvent.title,
+                        id_paciente: updatedEvent.id_paciente,
+                        id_func_responsavel: updatedEvent.id_func_responsavel,
                         start: moment(updatedEvent.start).format("YYYY-MM-DD HH:mm:ss"),
                         end: moment(updatedEvent.end).format("YYYY-MM-DD HH:mm:ss"),
                         desc: updatedEvent.desc,

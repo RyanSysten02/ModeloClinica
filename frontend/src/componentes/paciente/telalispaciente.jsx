@@ -84,7 +84,7 @@ const TelaListaPacientes = ({ onSelectPaciente }) => {
       }
 
       const response = await fetch(
-        `http://localhost:5001/api/paciente/${formData.id}`,
+        `http://localhost:5001/api/paciente/paciente/${formData.id}`,
         {
           method: "PUT",
           headers: {
