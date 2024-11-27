@@ -1,188 +1,218 @@
-import React, { useState, useEffect } from "react";
-import { Modal, Table, Button } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import PacienteDetalhesModal from "./PacienteDetalhesModal";
-import FormularioPaciente from "../paciente/Paciente";
+import React, { useState, useEffect } from 'react';
+import { Modal, Button, Form, Container, Row, Col } from 'react-bootstrap';
 
-const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
-  const [pacientes, setPacientes] = useState([]);
-  const [mensagemErro, setMensagemErro] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [pacienteSelecionado, setPacienteSelecionado] = useState(null);
-  const [showCadastroModal, setShowCadastroModal] = useState(false);
-  const navigate = useNavigate();
+const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
+  const [formData, setFormData] = useState(paciente);
 
   useEffect(() => {
-    const fetchPacientes = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setMensagemErro("Token não encontrado. Faça login novamente.");
-          navigate("/login");
-          return;
-        }
+    setFormData(paciente);
+  }, [paciente]);
 
-        const response = await fetch(
-          "http://localhost:5001/api/paciente/allpaciente",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setPacientes(data);
-        } else {
-          setMensagemErro("Erro ao carregar os pacientes.");
-        }
-      } catch (error) {
-        setMensagemErro("Erro ao conectar com o servidor.");
-      }
-    };
-
-    fetchPacientes();
-  }, [navigate]);
-
-  const handleDetalhes = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
-        navigate("/login");
-        return;
-      }
-
-      const response = await fetch(`http://localhost:5001/api/paciente/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const paciente = await response.json();
-        setPacienteSelecionado(paciente);
-        setShowModal(true);
-      } else {
-        setMensagemErro("Erro ao carregar detalhes do paciente.");
-      }
-    } catch (error) {
-      setMensagemErro("Erro ao conectar com o servidor.");
-    }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleSave = async (formData) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
-        navigate("/login");
-        return;
-      }
-
-      const response = await fetch(
-        `http://localhost:5001/api/paciente/${formData.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
-
-      if (response.ok) {
-        const updatedPaciente = await response.json();
-        setPacientes((prev) =>
-          prev.map((p) => (p.id === updatedPaciente.id ? updatedPaciente : p))
-        );
-        setShowModal(false);
-        setPacienteSelecionado(null);
-      } else {
-        setMensagemErro("Erro ao atualizar os dados do paciente.");
-      }
-    } catch (error) {
-      setMensagemErro("Erro ao conectar com o servidor.");
-    }
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setPacienteSelecionado(null);
+  const handleSubmit = () => {
+    onSave(formData);
+    onHide();
   };
 
   return (
-    <>
-      <Modal show={show} onHide={onHide} size="xl">
-        <Modal.Header closeButton>
-          <Modal.Title>Lista de Pacientes</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>CPF</th>
-                <th>Plano de Saúde</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pacientes.map((paciente) => (
-                <tr key={paciente.id}>
-                  <td>{paciente.nome}</td>
-                  <td>{paciente.cpf}</td>
-                  <td>{paciente.planoSaude}</td>
-                  <td>
-                    <Button
-                      variant="primary"
-                      onClick={() => handleDetalhes(paciente.id)}
-                    >
-                      Detalhes
-                    </Button>
-                    <Button
-                      variant="success"
-                      onClick={() => onSelectPaciente(paciente)}
-                      style={{ marginLeft: "10px" }}
-                    >
-                      Selecionar
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={onHide}>
-            Fechar
-          </Button>
-          <Button variant="info" onClick={() => setShowCadastroModal(true)}>
-            Cadastrar Paciente
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Modal de Detalhes do Paciente */}
-      {showModal && (
-        <PacienteDetalhesModal
-          show={showModal}
-          onHide={closeModal}
-          paciente={pacienteSelecionado}
-          onSave={handleSave}
-        />
-      )}
-
-      {/* Modal de Cadastro de Pacientes */}
-      <FormularioPaciente
-        show={showCadastroModal}
-        onHide={() => setShowCadastroModal(false)}
-      />
-    </>
+    <Modal show={show} onHide={onHide} size="xl"> {/* Aumentando a largura do modal */}
+      <Modal.Header closeButton>
+        <Modal.Title>Detalhes do Paciente</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Container className="mt-4">
+          <Form>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Nome</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="nome"
+                    value={formData.nome || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>CPF</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="cpf"
+                    value={formData.cpf || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>RG</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="rg"
+                    value={formData.rg || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={2}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Dt Nascimento</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="dataNascimento"
+                    value={formData.dataNascimento ? formData.dataNascimento.split('T')[0] : ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={2}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Sexo</Form.Label>
+                  <Form.Select
+                    name="sexo"
+                    value={formData.sexo || ''}
+                    onChange={handleChange}
+                  >
+                    <option value="">Selecione</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
+                    <option value="Outros">Outro</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Número do Benefício</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="numeroBeneficio"
+                    value={formData.numeroBeneficio || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Plano de Saúde</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="planoSaude"
+                    value={formData.planoSaude || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Endereço</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="endereco"
+                    value={formData.endereco || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={1}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Número</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="num"
+                    value={formData.num || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={5}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Complemento</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="complemento"
+                    value={formData.complemento || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={3}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Celular</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="celular"
+                    value={formData.celular || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Telefone</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="telefone"
+                    value={formData.telefone || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>E-mail</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={formData.email || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={12}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Contato de Emergência</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="contatoEmergencia"
+                    value={formData.contatoEmergencia || ''}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Form.Group className="mb-3 text-start">
+              <Form.Label>Observações</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                name="observacoes"
+                value={formData.observacoes || ''}
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Form>
+        </Container>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={onHide}>Fechar</Button>
+        <Button variant="primary" onClick={handleSubmit}>Salvar</Button>
+      </Modal.Footer>
+    </Modal>
   );
 };
 
-export default ListaPacientesModal;
+export default PacienteDetalhesModal;

@@ -44,6 +44,32 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
   }, [navigate]);
 
   const handleDetalhes = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMensagemErro("Token não encontrado. Faça login novamente.");
+        navigate("/login");
+        return;
+      }
+      const response = await fetch(`http://localhost:5001/api/paciente/paciente/${id}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setPacienteSelecionado(data[0]);
+          setShowModal(true);
+        } else {
+          setMensagemErro("Dados do paciente não encontrados.");
+        }
+      } else {
+        setMensagemErro("Erro ao carregar detalhes do paciente.");
+      }
+    } catch (error) {
+      setMensagemErro("Erro ao conectar com o servidor.");
+    }
     // Lógica para obter detalhes do paciente...
   };
 
