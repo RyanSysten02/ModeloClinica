@@ -70,7 +70,7 @@ function FormularioFuncionario({show, onHide}){
               dataNascimento: "",
                 
             });
-            navigate('/paginicial');
+            navigate('/pagFuncionario');
         } else {
             setMensagemErro(data.message || 'Falha ao adicionar funcionario');
         }

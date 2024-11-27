@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Modal, Button, Form, Container, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import ListaPaciente from "./ListaPacientes";
 
 function FormularioPaciente({show, onHide}){
   const [paciente, setPaciente] = useState({
@@ -90,7 +89,7 @@ function FormularioPaciente({show, onHide}){
                 observacoes: "",
                 
             });
-            navigate('/paginicial');
+            navigate('/pagPaciente');
         } else {
             setMensagemErro(data.message || 'Falha ao adicionar paciente');
         }
