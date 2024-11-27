@@ -12,6 +12,8 @@ import PagLogin from './pages/login';
 import FullLayout from './pages/paginicial';
 import TelaFuncionario from './pages/telafuncionario';
 import RouteModals from './componentes/RouteModals'; // Importa o componente de modais
+import TelaListaPacientes from './componentes/paciente/telalispaciente';
+import Layoutpaciente from './pages/pagpaciente';
 
 function App() {
   return (
@@ -22,6 +24,7 @@ function App() {
           <Route path="/login" element={<PagLogin />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/paginicial" element={<ProtectedRoute><FullLayout /></ProtectedRoute>} />
+          <Route path="/pagPaciente" element={<ProtectedRoute><Layoutpaciente/></ProtectedRoute>} />
           <Route path="/pagFuncionario" element={<ProtectedRoute><TelaFuncionario /></ProtectedRoute>} />
         </Routes>
         {/* Adiciona os modais controlados por rota */}

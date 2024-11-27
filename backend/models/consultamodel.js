@@ -1,10 +1,10 @@
 const pool = require('../db.js');
 
-const createConsulta = async (id_paciente, id_func_responsavel, start, end, desc, color, tipo, id_usuario_inclusao) => {
+const createConsulta = async (title, start, end, desc, color, tipo, id_usuario_inclusao) => {
     // Inserir a nova consulta
     const [result] = await pool.query(
-        'INSERT INTO consultas (id_paciente,id_func_responsavel, start, end, `desc`, color, tipo, id_usuario_inclusao) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [id_paciente,id_func_responsavel, start, end, desc, color, tipo, id_usuario_inclusao]
+        'INSERT INTO consultas (title, start, end, `desc`, color, tipo, id_usuario_inclusao) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [title, start, end, desc, color, tipo, id_usuario_inclusao]
     );
 
     const insertedId = result.insertId; // Obter o ID da consulta recém-criada
@@ -21,14 +21,15 @@ const createConsulta = async (id_paciente, id_func_responsavel, start, end, desc
 
 const adiarConsulta = async (id_consulta_original, start, end, motivo_adiamento, id_usuario_inclusao) => {
     const result = await pool.query(
-        `INSERT INTO consultas (id_paciente,id_func_responsavel, start, end, \`desc\`, color, tipo, status, dh_adiamento, motivo_adiamento, lote_agendamento, id_usuario_inclusao)
-         SELECT id_paciente,id_func_responsavel, ?, ?, \`desc\`, color, tipo, 'AD', NOW(), ?, lote_agendamento, ?
+        `INSERT INTO consultas (title, start, end, \`desc\`, color, tipo, status, dh_adiamento, motivo_adiamento, lote_agendamento, id_usuario_inclusao)
+         SELECT title, ?, ?, \`desc\`, color, tipo, 'AD', NOW(), ?, lote_agendamento, ?
          FROM consultas
          WHERE id = ?`,
         [start, end, motivo_adiamento, id_usuario_inclusao, id_consulta_original]
     );
     return result;
 };
+
 
 
 const getConsultas = async () => {
@@ -61,24 +62,17 @@ const getConsultasTipo = async () => {
     }
 };
 
+
+
 const getConsultaById = async (id) => {
-    const result = await pool.query(`
-        SELECT c.*, 
-               p.nome AS paciente_nome, 
-               f.nome AS funcionario_nome
-        FROM consultas c
-        LEFT JOIN paciente p ON c.id_paciente = p.id
-        LEFT JOIN funcionario f ON c.id_func_responsavel = f.id
-        WHERE c.id = ?
-    `, [id]);
-    return result[0];
+    const result = await pool.query('SELECT * FROM consultas WHERE id = ?', [id]);
+   return result[0]; 
 };
 
-
-const updateConsulta = async (id, id_paciente,id_func_responsavel, start, end, desc, color, tipo) => {
+const updateConsulta = async (id, title, start, end, desc, color, tipo) => {
     const result = await pool.query(
-        'UPDATE consultas SET id_paciente = ?, id_func_responsavel = ?, start = ?, end = ?, `desc` = ?, color = ?, tipo = ? WHERE id = ?',
-        [id_paciente,id_func_responsavel, start, end, desc, color, tipo, id]
+        'UPDATE consultas SET title = ?, start = ?, end = ?, `desc` = ?, color = ?, tipo = ? WHERE id = ?',
+        [title, start, end, desc, color, tipo, id]
     );
     return result;
 };
