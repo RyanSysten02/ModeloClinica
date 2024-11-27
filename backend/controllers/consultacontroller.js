@@ -2,7 +2,7 @@ const consultasservices = require('../services/consultaservices');
 const jwt = require('jsonwebtoken');
 
 const createConsulta = async (req, res) => {
-    const { title, start, end, desc, color, tipo } = req.body;
+    const { id_paciente,id_func_responsavel, start, end, desc, color, tipo } = req.body;
     const token = req.header('Authorization');
 
     if (!token) return res.status(401).json({ message: 'Token não fornecido' });
@@ -14,7 +14,7 @@ const createConsulta = async (req, res) => {
         const id_usuario_inclusao = req.user.id;
 
         const id = req.user.id;
-        const consultaId = await consultasservices.createConsulta(title, start, end, desc, color, tipo, id_usuario_inclusao);
+        const consultaId = await consultasservices.createConsulta(id_paciente,id_func_responsavel, start, end, desc, color, tipo, id_usuario_inclusao);
         return res.status(201).json({ message: 'Consulta criada com sucesso', consultaId });
     } catch (error) {
         return res.status(400).json({ message: error.message });
@@ -99,7 +99,7 @@ const getConsultaById = async (req, res) => {
 
 const updateConsulta = async (req, res) => {
     const { id } = req.params;
-    const { title, start, end, desc, color, tipo } = req.body;
+    const { id_paciente,id_func_responsavel, start, end, desc, color, tipo } = req.body;
 
     const token = req.header('Authorization');
     if (!token) return res.status(401).json({ message: 'Token não fornecido' });
@@ -114,7 +114,7 @@ const updateConsulta = async (req, res) => {
             return res.status(404).json({ message: 'Consulta não encontrada' });
         }
 
-        await consultasservices.updateConsulta(id, title, start, end, desc, color, tipo);
+        await consultasservices.updateConsulta(id, id_paciente,id_func_responsavel, start, end, desc, color, tipo);
         res.status(200).json({ message: 'Consulta atualizada com sucesso' });
     } catch (error) {
         res.status(400).json({ message: error.message });

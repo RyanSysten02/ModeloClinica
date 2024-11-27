@@ -6,8 +6,11 @@ import ListaFuncionariosModal from '../../funcionario/ListaFuncionarios';
 
 function Adicionar({ show, onHide, onUpdate }) {
     const [novoEvento, setNovoEvento] = useState({
-        title: '',
-        start: '',
+        id_paciente: '',
+        pacienteNome: '', // Nome do paciente para exibição
+        id_func_responsavel: '',
+        funcionarioNome: '',
+        start:'',
         end: '',
         desc: '',
         tipo: '',
@@ -39,11 +42,19 @@ function Adicionar({ show, onHide, onUpdate }) {
     };
 
     const handleSelectPaciente = (paciente) => {
-        setNovoEvento({ ...novoEvento, title: paciente.nome });
+        setNovoEvento({
+            ...novoEvento,
+            id_paciente: paciente.id,
+            pacienteNome: paciente.nome, // Para exibição
+        });
         setShowListaPacientesModal(false);
     };
     const handleSelectFuncionario = (funcionario) => {
-        setNovoEvento({ ...novoEvento, title: funcionario.nome });
+        setNovoEvento({
+            ...novoEvento,
+            id_func_responsavel: funcionario.id,
+            funcionarioNome: funcionario.nome, // Para exibição
+        });
         setShowListaFuncionariosModal(false);
     };
 
@@ -53,7 +64,7 @@ function Adicionar({ show, onHide, onUpdate }) {
         setMensagemSucesso('');
 
         try {
-            if (novoEvento.title && novoEvento.start) {
+            if (novoEvento.id_paciente && novoEvento.start) {
                 const startDate = new Date(novoEvento.start);
                 const endDate = new Date(novoEvento.end);
 
@@ -83,7 +94,8 @@ function Adicionar({ show, onHide, onUpdate }) {
                 if (response.ok) {
                     setMensagemSucesso('Consulta adicionada com sucesso!');
                     setNovoEvento({
-                        title: '',
+                        id_paciente: '',
+                        id_func_responsavel:'',
                         start: '',
                         end: '',
                         desc: '',
@@ -114,17 +126,17 @@ function Adicionar({ show, onHide, onUpdate }) {
                 {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
                 {mensagemSucesso && <Alert variant="success">{mensagemSucesso}</Alert>}
                 <Form onSubmit={handleSubmit}>
-                    <Form.Group controlId="formBasicTitle" className="mb-3">
-                    <Form.Label>Buscar Paciente</Form.Label>
-                    <div className="d-flex align-items-center">
-                        <Form.Control
-                            type="text"
-                            placeholder="Digite o nome do paciente"
-                            name="title"
-                            value={novoEvento.title}
-                            onChange={handleChange}
-                            style={{ flex: 1 }}
-                        />
+                <Form.Group controlId="formBasicPaciente" className="mb-3">
+                <Form.Label>Paciente</Form.Label>
+                <div className="d-flex align-items-center">
+                    <Form.Control
+                        type="text"
+                        placeholder="Selecione um paciente"
+                        name="pacienteNome"
+                        value={novoEvento.pacienteNome} // Exibe o nome do paciente
+                        readOnly // Torna o campo não editável
+                        style={{ flex: 1, backgroundColor: '#e9ecef' }} // Estilo para indicar que está desabilitado
+                    />
                         <Button
                             variant="secondary"
                             onClick={() => setShowListaPacientesModal(true)}
@@ -134,17 +146,17 @@ function Adicionar({ show, onHide, onUpdate }) {
                         </Button>
                         </div>
                     </Form.Group>
-                    <Form.Group controlId="formBasicTitle" className="mb-3">
-                    <Form.Label>Médico Responsável</Form.Label>
-                    <div className="d-flex align-items-center">
-                        <Form.Control
-                            type="text"
-                            placeholder="Selecione o médico responsável"
-                            name="title"
-                            value={novoEvento.title}
-                            onChange={handleChange}
-                            style={{ flex: 1 }}
-                        />
+                    <Form.Group controlId="formBasicFuncionario" className="mb-3">
+                <Form.Label>Funcionário Responsável</Form.Label>
+                <div className="d-flex align-items-center">
+                    <Form.Control
+                        type="text"
+                        placeholder="Selecione o funcionário responsável"
+                        name="funcionarioNome"
+                        value={novoEvento.funcionarioNome} // Exibe o nome do funcionário
+                        readOnly // Torna o campo não editável
+                        style={{ flex: 1, backgroundColor: '#e9ecef' }} // Estilo para indicar que está desabilitado
+                    />
                         <Button
                             variant="secondary"
                             onClick={() => setShowListaFuncionariosModal(true)}
