@@ -74,7 +74,47 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
   };
 
   const handleSave = async (formData) => {
-    // Lógica para salvar as alterações do paciente...
+    console.log('Tentando salvar:', formData);
+
+    if (formData.dataNascimento) {
+      const date = new Date(formData.dataNascimento);
+      date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+      formData.dataNascimento = format(date, 'yyyy-MM-dd');
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMensagemErro("Token não encontrado. Faça login novamente.");
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5001/api/paciente/paciente/${formData.id}`, {
+        method: 'PUT',
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      console.log('Resposta do servidor:', data);
+
+      if (response.ok) {
+        setPacientes(prevState =>
+          prevState.map(p =>
+            p.id === formData.id ? formData : p
+          )
+        );
+      } else {
+        setMensagemErro("Erro ao salvar alterações do funcionario.");
+      }
+    } catch (error) {
+      console.error("Erro na atualização:", error.message);
+      setMensagemErro("Erro ao conectar com o servidor.");
+    }
   };
 
   const handleDelete = async (id) => {

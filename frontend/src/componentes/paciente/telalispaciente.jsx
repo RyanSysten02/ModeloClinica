@@ -3,6 +3,7 @@ import { Container, Table, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import PacienteDetalhesModal from "./PacienteDetalhesModal";
 import FormularioPaciente from "../paciente/Paciente";
+import { format } from 'date-fns';
 
 const TelaListaPacientes = ({ onSelectPaciente }) => {
   const [pacientes, setPacientes] = useState([]);
@@ -75,6 +76,14 @@ const TelaListaPacientes = ({ onSelectPaciente }) => {
 
   // Função para salvar as alterações do paciente
   const handleSave = async (formData) => {
+    console.log('Tentando salvar:', formData);
+
+    if (formData.dataNascimento) {
+      const date = new Date(formData.dataNascimento);
+      date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+      formData.dataNascimento = format(date, 'yyyy-MM-dd');
+    }
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -83,29 +92,29 @@ const TelaListaPacientes = ({ onSelectPaciente }) => {
         return;
       }
 
-      const response = await fetch(
-        `http://localhost:5001/api/paciente/paciente/${formData.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch(`http://localhost:5001/api/paciente/paciente/${formData.id}`, {
+        method: 'PUT',
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      console.log('Resposta do servidor:', data);
 
       if (response.ok) {
-        const updatedPaciente = await response.json();
-        setPacientes((prev) =>
-          prev.map((p) => (p.id === updatedPaciente.id ? updatedPaciente : p))
+        setPacientes(prevState =>
+          prevState.map(p =>
+            p.id === formData.id ? formData : p
+          )
         );
-        setShowModal(false);
-        setPacienteSelecionado(null);
       } else {
-        setMensagemErro("Erro ao atualizar os dados do paciente.");
+        setMensagemErro("Erro ao salvar alterações do funcionario.");
       }
     } catch (error) {
+      console.error("Erro na atualização:", error.message);
       setMensagemErro("Erro ao conectar com o servidor.");
     }
   };
