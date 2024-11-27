@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form, Collapse, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import ListaPacientesModal from '../../paciente/ListaPacientes';
+import ListaFuncionariosModal from '../../funcionario/ListaFuncionarios';
 
 const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
     const [editedEvent, setEditedEvent] = useState({ ...evento });
@@ -14,6 +16,36 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
     const [novaDataFim, setNovaDataFim] = useState('');
     const [motivoAdiamento, setMotivoAdiamento] = useState('');
     const [erroAdiamento, setErroAdiamento] = useState('');
+    const [showListaPacientesModal, setShowListaPacientesModal] = useState(false);
+    const [showListaFuncionariosModal, setShowListaFuncionariosModal] = useState(false);
+    const [listaPacientes, setListaPacientes] = useState([]);
+    const [listaFuncionarios, setListaFuncionarios] = useState([]);
+    
+    const [novoEvento, setNovoEvento] = useState({
+        id_paciente: evento?.id_paciente || '',
+        pacienteNome: evento?.paciente_nome || '',
+        id_func_responsavel: evento?.id_func_responsavel || '',
+        funcionarioNome: evento?.funcionario_nome || '',
+        // outros campos, se necessário
+    });
+    
+
+    const handleSelectPaciente = (paciente) => {
+        setNovoEvento({
+            ...novoEvento,
+            id_paciente: paciente.id,
+            pacienteNome: paciente.nome, // Para exibição
+        });
+        setShowListaPacientesModal(false);
+    };
+    const handleSelectFuncionario = (funcionario) => {
+        setNovoEvento({
+            ...novoEvento,
+            id_func_responsavel: funcionario.id,
+            funcionarioNome: funcionario.nome, // Para exibição
+        });
+        setShowListaFuncionariosModal(false);
+    };
 
     const navigate = useNavigate();
 
@@ -240,14 +272,54 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
         <>
             <Modal show={true} onHide={onClose}>
                 <Modal.Header>
-                    <Modal.Title>{editedEvent.title}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group controlId="formTitle">
-                            <Form.Label>Título</Form.Label>
-                            <Form.Control type="text" name="title" value={editedEvent.title} onChange={handleInputChange} />
-                        </Form.Group>
+                <Modal.Title>
+            {editedEvent.title} - Paciente: {evento.paciente_nome}
+        </Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+        <Form>
+        <Form.Group controlId="formBasicPaciente" className="mb-3">
+    <Form.Label>Paciente</Form.Label>
+    <div className="d-flex align-items-center">
+        <Form.Control
+            type="text"
+            placeholder="Selecione um paciente"
+            name="pacienteNome"
+            value={novoEvento.pacienteNome || ''} // Exibe o nome do paciente
+            readOnly // Campo somente leitura
+            style={{ flex: 1, backgroundColor: '#e9ecef' }} // Indica que está desabilitado
+        />
+        <Button
+            variant="secondary"
+            onClick={() => setShowListaPacientesModal(true)} // Abre o modal de pacientes
+            className="ms-2"
+        >
+            <i className="bi bi-search"></i>
+        </Button>
+    </div>
+</Form.Group>
+
+<Form.Group controlId="formBasicFuncionario" className="mb-3">
+    <Form.Label>Funcionário Responsável</Form.Label>
+    <div className="d-flex align-items-center">
+        <Form.Control
+            type="text"
+            placeholder="Selecione o funcionário responsável"
+            name="funcionarioNome"
+            value={novoEvento.funcionarioNome || ''} // Exibe o nome do funcionário
+            readOnly // Campo somente leitura
+            style={{ flex: 1, backgroundColor: '#e9ecef' }} // Indica que está desabilitado
+        />
+        <Button
+            variant="secondary"
+            onClick={() => setShowListaFuncionariosModal(true)} // Abre o modal de funcionários
+            className="ms-2"
+        >
+            <i className="bi bi-search"></i>
+        </Button>
+    </div>
+</Form.Group>
+
                         <Form.Group controlId="formDesc">
                             <Form.Label>Descrição</Form.Label>
                             <Form.Control as="textarea" rows={3} name="desc" value={editedEvent.desc} onChange={handleInputChange} />
@@ -296,6 +368,8 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
                     </Button>
                 </Modal.Footer>
                 {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
+                <ListaPacientesModal show={showListaPacientesModal} onHide={() => setShowListaPacientesModal(false)} onSelectPaciente={handleSelectPaciente} />
+                <ListaFuncionariosModal show={showListaFuncionariosModal} onHide={() => setShowListaFuncionariosModal(false)} onSelectFuncionario={handleSelectFuncionario} />
             </Modal>
     
             {/* Modal de Cancelamento */}
@@ -373,6 +447,7 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
                         Confirmar Adiamento
                     </Button>
                 </Modal.Footer>
+                
             </Modal>
         </>
     );
