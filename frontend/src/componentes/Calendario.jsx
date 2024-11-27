@@ -29,12 +29,15 @@ function Calendario() {
                 const eventosFormatados = data.map((consultas) => ({
                     id: consultas.id,
                     id_paciente: consultas.id_paciente,
-                    id_func_responsavel:consultas.id_func_responsavel,
+                    paciente_nome: consultas.paciente_nome, // Nome do paciente
+                    id_func_responsavel: consultas.id_func_responsavel,
+                    funcionario_nome: consultas.funcionario_nome, // Nome do funcionário
                     start: new Date(consultas.start),
                     end: new Date(consultas.end),
                     desc: consultas.desc,
                     color: consultas.color,
-                    tipo: consultas.tipo
+                    tipo: consultas.tipo,
+                    title: consultas.paciente_nome || "Consulta",
                 }));
 
                 setEventos(eventosFormatados);

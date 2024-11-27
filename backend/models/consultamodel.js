@@ -33,7 +33,9 @@ const adiarConsulta = async (id_consulta_original, start, end, motivo_adiamento,
 
 const getConsultas = async () => {
     const result = await pool.query(`
-        SELECT c.*
+        SELECT c.*, 
+               p.nome AS paciente_nome, 
+               f.nome AS funcionario_nome
         FROM consultas c
         INNER JOIN (
             SELECT lote_agendamento, MAX(dh_inclusao) AS max_dh_inclusao
@@ -41,6 +43,8 @@ const getConsultas = async () => {
             WHERE status != 'C'
             GROUP BY lote_agendamento
         ) latest ON c.lote_agendamento = latest.lote_agendamento AND c.dh_inclusao = latest.max_dh_inclusao
+        LEFT JOIN paciente p ON c.id_paciente = p.id
+        LEFT JOIN funcionario f ON c.id_func_responsavel = f.id
         WHERE c.status != 'C'
     `);
     return result;
