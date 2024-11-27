@@ -20,6 +20,14 @@ function FormularioFuncionario({show, onHide}){
     const { name, value } = e.target;
     setFuncionario({ ...funcionario, [name]: value });
 
+    // Validação do CPF em tempo real
+    if (name === "matricula") {
+      if (!validarCPF(value)) {
+        setErros({ ...erros, matricula: "CPF inválido." });
+      } else {
+        setErros({ ...erros, matricula: "" });
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -72,6 +80,33 @@ function FormularioFuncionario({show, onHide}){
 };
 
 
+
+
+  const validarCPF = (matricula) => {
+    matricula = matricula.replace(/[^\d]/g, ""); // Remove caracteres não numéricos
+    if (matricula.length !== 11 || /^(\d)\1+$/.test(matricula)) return false;
+
+    let soma, resto;
+    soma = 0;
+    for (let i = 1; i <= 9; i++) {
+      soma += parseInt(matricula.substring(i - 1, i)) * (11 - i);
+    }
+
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(matricula.substring(9, 10))) return false;
+
+    soma = 0;
+    for (let i = 1; i <= 10; i++) {
+      soma += parseInt(matricula.substring(i - 1, i)) * (12 - i);
+    }
+
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(matricula.substring(10, 11))) return false;
+
+    return true;
+  };
 
   return (
     <Modal show={show} onHide={onHide} size="xl"> <Modal.Header closeButton> 

@@ -1,18 +1,18 @@
 import { Button, Nav, NavItem } from "reactstrap";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Importação do hook
 import { jwtDecode } from "jwt-decode";
 import user1 from "../componentes/assets/images/users/user4.jpg";
 import probg from "../componentes/assets/images/bg/download.jpg";
 import "./sibar2.css";
 import Adicionar from "../componentes/agenda/adicionar/Adicionar";
 import ListaFuncionariosModal from "../componentes/funcionario/ListaFuncionarios";
-import ListaPacientesModal from "../componentes/paciente/ListaPacientes";
 
 const Sidebar = () => {
   const [userName, setUserName] = useState("");
   const [showAdicionarModal, setShowAdicionarModal] = useState(false);
   const [showFuncionariosModal, setShowFuncionariosModal] = useState(false);
-  const [showPacientesModal, setShowPacientesModal] = useState(false);
+  const navigate = useNavigate(); // Inicialização do hook
 
   const showMobilemenu = () => {
     document.getElementById("sidebarArea").classList.toggle("showSidebar");
@@ -33,7 +33,7 @@ const Sidebar = () => {
         className="profilebg"
         style={{ background: `url(${probg}) no-repeat` }}
       >
-        <div className="p-3 ">
+        <div className="p-3">
           <img src={user1} alt="user" width="50" className="rounded-circle" />
           <Button
             color="white"
@@ -49,6 +49,16 @@ const Sidebar = () => {
       </div>
       <div className="p-3 mt-2">
         <Nav vertical className="sidebarNav">
+        <NavItem className="sidenav-bg">
+            <Button
+              color="link"
+              className="nav-link text-secondary py-3"
+              onClick={() => navigate("/paginicial")} 
+            >
+              <i className="bi bi-calendar-range"></i>
+              <span className="ms-3 d-inline-block">Agenda</span>
+            </Button>
+          </NavItem>
           <NavItem className="sidenav-bg">
             <Button
               color="link"
@@ -63,7 +73,7 @@ const Sidebar = () => {
             <Button
               color="link"
               className="nav-link text-secondary py-3"
-              onClick={() => setShowPacientesModal(true)}
+              onClick={() => navigate("/pagPaciente")} // Navegação para a página
             >
               <i className="bi bi-people"></i>
               <span className="ms-3 d-inline-block">Pacientes</span>
@@ -86,10 +96,6 @@ const Sidebar = () => {
       <Adicionar
         show={showAdicionarModal}
         onHide={() => setShowAdicionarModal(false)}
-      />
-      <ListaPacientesModal
-        show={showPacientesModal}
-        onHide={() => setShowPacientesModal(false)}
       />
       <ListaFuncionariosModal
         show={showFuncionariosModal}

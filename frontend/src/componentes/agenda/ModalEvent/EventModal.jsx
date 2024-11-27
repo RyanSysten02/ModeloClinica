@@ -14,9 +14,6 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
     const [novaDataFim, setNovaDataFim] = useState('');
     const [motivoAdiamento, setMotivoAdiamento] = useState('');
     const [erroAdiamento, setErroAdiamento] = useState('');
-    const [pacienteNome, setPacienteNome] = useState('');
-    const [funcionarioNome, setFuncionarioNome] = useState('');
-
 
     const navigate = useNavigate();
 
@@ -106,8 +103,7 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
                     'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    id_paciente: editedEvent.id_paciente,
-                    id_func_responsavel: editedEvent.id_func_responsavel,
+                    title: editedEvent.title,
                     start: formatDateForMySQL(editedEvent.start),
                     end: formatDateForMySQL(editedEvent.end),
                     desc: editedEvent.desc,
@@ -244,17 +240,13 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
         <>
             <Modal show={true} onHide={onClose}>
                 <Modal.Header>
-                    <Modal.Title>{editedEvent.id_paciente}</Modal.Title>
+                    <Modal.Title>{editedEvent.title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
                         <Form.Group controlId="formTitle">
                             <Form.Label>Título</Form.Label>
-                            <Form.Control type="text" name="id_paciente" value={editedEvent.id_paciente} onChange={handleInputChange} />
-                        </Form.Group>
-                        <Form.Group controlId="formFuncionario">
-                            <Form.Label>Médico Responsável</Form.Label>
-                            <Form.Control type="text" name="id_func_responsavel" value={editedEvent.id_func_responsavel} onChange={handleInputChange} />
+                            <Form.Control type="text" name="title" value={editedEvent.title} onChange={handleInputChange} />
                         </Form.Group>
                         <Form.Group controlId="formDesc">
                             <Form.Label>Descrição</Form.Label>

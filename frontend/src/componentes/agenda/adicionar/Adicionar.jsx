@@ -6,10 +6,7 @@ import ListaFuncionariosModal from '../../funcionario/ListaFuncionarios';
 
 function Adicionar({ show, onHide, onUpdate }) {
     const [novoEvento, setNovoEvento] = useState({
-        id_paciente: '',
-        pacienteNome: '', // Nome do paciente para exibição
-        id_func_responsavel: '',
-        funcionarioNome: '', // Nome do funcionário para exibição
+        title: '',
         start: '',
         end: '',
         desc: '',
@@ -42,30 +39,21 @@ function Adicionar({ show, onHide, onUpdate }) {
     };
 
     const handleSelectPaciente = (paciente) => {
-        setNovoEvento({
-            ...novoEvento,
-            id_paciente: paciente.id,
-            pacienteNome: paciente.nome, // Para exibição
-        });
+        setNovoEvento({ ...novoEvento, title: paciente.nome });
         setShowListaPacientesModal(false);
     };
-    
     const handleSelectFuncionario = (funcionario) => {
-        setNovoEvento({
-            ...novoEvento,
-            id_func_responsavel: funcionario.id,
-            funcionarioNome: funcionario.nome, // Para exibição
-        });
+        setNovoEvento({ ...novoEvento, title: funcionario.nome });
         setShowListaFuncionariosModal(false);
     };
-    
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMensagemErro('');
         setMensagemSucesso('');
 
         try {
-            if (novoEvento.id_paciente && novoEvento.start) {
+            if (novoEvento.title && novoEvento.start) {
                 const startDate = new Date(novoEvento.start);
                 const endDate = new Date(novoEvento.end);
 
@@ -95,8 +83,7 @@ function Adicionar({ show, onHide, onUpdate }) {
                 if (response.ok) {
                     setMensagemSucesso('Consulta adicionada com sucesso!');
                     setNovoEvento({
-                        id_paciente: '',
-                        id_func_responsavel:'',
+                        title: '',
                         start: '',
                         end: '',
                         desc: '',
@@ -127,48 +114,46 @@ function Adicionar({ show, onHide, onUpdate }) {
                 {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
                 {mensagemSucesso && <Alert variant="success">{mensagemSucesso}</Alert>}
                 <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="formBasicPaciente" className="mb-3">
-                <Form.Label>Paciente</Form.Label>
-                <div className="d-flex align-items-center">
-                    <Form.Control
-                        type="text"
-                        placeholder="Selecione um paciente"
-                        name="pacienteNome"
-                        value={novoEvento.pacienteNome} // Exibe o nome do paciente
-                        readOnly // Torna o campo não editável
-                        style={{ flex: 1, backgroundColor: '#e9ecef' }} // Estilo para indicar que está desabilitado
-                    />
-                    <Button
-                        variant="secondary"
-                        onClick={() => setShowListaPacientesModal(true)}
-                        className="ms-2"
-                    >
-                        <i className="bi bi-search"></i>
-                    </Button>
-                </div>
-            </Form.Group>
-
-            <Form.Group controlId="formBasicFuncionario" className="mb-3">
-                <Form.Label>Funcionário Responsável</Form.Label>
-                <div className="d-flex align-items-center">
-                    <Form.Control
-                        type="text"
-                        placeholder="Selecione o funcionário responsável"
-                        name="funcionarioNome"
-                        value={novoEvento.funcionarioNome} // Exibe o nome do funcionário
-                        readOnly // Torna o campo não editável
-                        style={{ flex: 1, backgroundColor: '#e9ecef' }} // Estilo para indicar que está desabilitado
-                    />
-                    <Button
-                        variant="secondary"
-                        onClick={() => setShowListaFuncionariosModal(true)}
-                        className="ms-2"
-                    >
-                        <i className="bi bi-search"></i>
-                    </Button>
-                </div>
-            </Form.Group>
-
+                    <Form.Group controlId="formBasicTitle" className="mb-3">
+                    <Form.Label>Buscar Paciente</Form.Label>
+                    <div className="d-flex align-items-center">
+                        <Form.Control
+                            type="text"
+                            placeholder="Digite o nome do paciente"
+                            name="title"
+                            value={novoEvento.title}
+                            onChange={handleChange}
+                            style={{ flex: 1 }}
+                        />
+                        <Button
+                            variant="secondary"
+                            onClick={() => setShowListaPacientesModal(true)}
+                            className="ms-2"
+                        >
+                            <i className="bi bi-search"></i>
+                        </Button>
+                        </div>
+                    </Form.Group>
+                    <Form.Group controlId="formBasicTitle" className="mb-3">
+                    <Form.Label>Médico Responsável</Form.Label>
+                    <div className="d-flex align-items-center">
+                        <Form.Control
+                            type="text"
+                            placeholder="Selecione o médico responsável"
+                            name="title"
+                            value={novoEvento.title}
+                            onChange={handleChange}
+                            style={{ flex: 1 }}
+                        />
+                        <Button
+                            variant="secondary"
+                            onClick={() => setShowListaFuncionariosModal(true)}
+                            className="ms-2"
+                        >
+                            <i className="bi bi-search"></i>
+                        </Button>
+                        </div>
+                    </Form.Group>
                     <Form.Group controlId="formBasicStart" className="mb-3">
                         <Form.Label>Início</Form.Label>
                         <Form.Control
