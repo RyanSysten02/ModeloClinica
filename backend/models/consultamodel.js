@@ -86,11 +86,29 @@ const updateConsulta = async (id, id_paciente,id_func_responsavel, start, end, d
 };
 
 const updateConsultaCancelamento = async (id, motivocancelamento) => {
-    const result = await pool.query(
-        'UPDATE consultas SET `status` = ?, `dh_cancelamento` = NOW(), `motivocancelamento`  = ? WHERE id = ?',
-        ['C', motivocancelamento, id] 
-    );
-    return result;
+    if (!id || !motivocancelamento) {
+        throw new Error('Parâmetros inválidos');
+    }
+
+    const query = `
+        UPDATE consultas 
+        SET 
+            status = ?, 
+            dh_cancelamento = NOW(), 
+            motivocancelamento = ? 
+        WHERE lote_agendamento = (
+            SELECT lote_agendamento 
+            FROM (SELECT lote_agendamento FROM consultas WHERE id = ?) AS subquery
+        )
+    `;
+
+    try {
+        const [result] = await pool.query(query, ['C', motivocancelamento, id]);
+        return result.affectedRows; // Retorna o número de linhas atualizadas
+    } catch (error) {
+        console.error('Erro ao cancelar consultas:', error);
+        throw error;
+    }
 };
 
 
