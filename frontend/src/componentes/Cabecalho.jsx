@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Adicione useNavigate
 import {
   Navbar,
   Collapse,
@@ -19,7 +19,6 @@ import user1 from "./assets/images/users/user4.jpg";
 
 const Cabecalho = () => {
   const [isOpen, setIsOpen] = React.useState(false);
-
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
 
   const toggle = () => setDropdownOpen((prevState) => !prevState);
@@ -29,6 +28,14 @@ const Cabecalho = () => {
   const showMobilemenu = () => {
     document.getElementById("sidebarArea").classList.toggle("showSidebar");
   };
+
+  const navigate = useNavigate(); // Instanciar useNavigate
+
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Remova o token do localStorage
+    navigate("/login"); // Redirecione para a página de login
+  };
+
   return (
     <Navbar color="primary" dark expand="md" className="fix-header">
       <div className="d-flex align-items-center">
@@ -64,12 +71,10 @@ const Cabecalho = () => {
       <Collapse navbar isOpen={isOpen}>
         <Nav className="me-auto" navbar>
           <NavItem>
-            <Link to="/starter" className="nav-link">
-            </Link>
+            <Link to="/starter" className="nav-link"></Link>
           </NavItem>
           <NavItem>
-            <Link to="/about" className="nav-link">
-            </Link>
+            <Link to="/about" className="nav-link"></Link>
           </NavItem>
         </Nav>
         <Dropdown isOpen={dropdownOpen} toggle={toggle}>
@@ -85,8 +90,8 @@ const Cabecalho = () => {
             <DropdownItem header>Info</DropdownItem>
             <DropdownItem>Minha conta</DropdownItem>
             <DropdownItem divider />
-            <DropdownItem>configurações</DropdownItem>
-            <DropdownItem>Sair</DropdownItem>
+            <DropdownItem>Configurações</DropdownItem>
+            <DropdownItem onClick={handleLogout}>Sair</DropdownItem>
           </DropdownMenu>
         </Dropdown>
       </Collapse>
