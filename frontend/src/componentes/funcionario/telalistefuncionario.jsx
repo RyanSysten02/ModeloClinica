@@ -13,33 +13,34 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
   const [showCadastroModal, setShowCadastroModal] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchFuncionarios = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setMensagemErro("Token não encontrado. Faça login novamente.");
-          navigate("/login");
-          return;
-        }
-
-        const response = await fetch("http://localhost:5001/api/funcionario/allfuncionario", {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setFuncionarios(data);
-        } else {
-          setMensagemErro("Erro ao carregar os funcionários.");
-        }
-      } catch (error) {
-        setMensagemErro("Erro ao conectar com o servidor.");
+  // Função para buscar os funcionários
+  const fetchFuncionarios = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMensagemErro("Token não encontrado. Faça login novamente.");
+        navigate("/login");
+        return;
       }
-    };
 
+      const response = await fetch("http://localhost:5001/api/funcionario/allfuncionario", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFuncionarios(data);
+      } else {
+        setMensagemErro("Erro ao carregar os funcionários.");
+      }
+    } catch (error) {
+      setMensagemErro("Erro ao conectar com o servidor.");
+    }
+  };
+
+  useEffect(() => {
     fetchFuncionarios();
   }, [navigate]);
 
@@ -104,11 +105,8 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
       console.log('Resposta do servidor:', data);
 
       if (response.ok) {
-        setFuncionarios(prevState =>
-          prevState.map(p =>
-            p.id === formData.id ? formData : p
-          )
-        );
+        // Após salvar, recarrega a lista de funcionários
+        await fetchFuncionarios();
       } else {
         setMensagemErro("Erro ao salvar alterações do funcionário.");
       }
@@ -135,9 +133,8 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
       });
 
       if (response.ok) {
-        setFuncionarios(prevState =>
-          prevState.filter(p => p.id !== id)
-        );
+        // Após deletar, recarrega a lista de funcionários
+        await fetchFuncionarios();
       } else {
         setMensagemErro("Erro ao apagar o funcionário.");
       }
@@ -153,9 +150,9 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
 
   return (
     <Container>
-      <h1 className="mt-4">Lista de Pacientes</h1>
+      <h1 className="mt-4">Lista de Funcionários</h1>
       <div className="m-2 d-flex justify-content-start">
-      <Button variant="info" onClick={() => setShowCadastroModal(true)}>Cadastrar Funcionário</Button> 
+        <Button variant="info" onClick={() => setShowCadastroModal(true)}>Cadastrar Funcionário</Button>
       </div>
       {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
       <Table striped bordered hover>
@@ -177,6 +174,7 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
                 <Button variant="primary" onClick={() => handleDetalhes(funcionario.id)}>
                   Detalhes
                 </Button>
+      
               </td>
             </tr>
           ))}
@@ -185,13 +183,12 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
       {showModal && (
         <FuncionarioDetalhesModal show={showModal} onHide={closeModal} funcionario={funcionarioSelecionado} onSave={handleSave} />
       )}
-    
 
-      {/* Modal de Cadastro de Funcionário */}
       <FormularioFuncionario
-        show={showCadastroModal}
-        onHide={() => setShowCadastroModal(false)}
-      />
+  show={showCadastroModal}
+  onHide={() => setShowCadastroModal(false)}
+  onCadastroSuccess={fetchFuncionarios} 
+/>
     </Container>
   );
 };
