@@ -111,11 +111,32 @@ const updateConsultaCancelamento = async (id, motivocancelamento) => {
     }
 };
 
-
-const deleteConsulta = async (id) => {
-    const result = await pool.query('DELETE FROM consultas WHERE id = ?', [id]);
-    return result;
+const getHistoricoConsultasByPacienteId = async (idPaciente) => {
+    const [rows] = await pool.query(
+      `
+      SELECT c.*, 
+             p.nome AS paciente_nome, 
+             f.nome AS funcionario_nome,
+             tipo
+      FROM consultas c
+      INNER JOIN (
+          SELECT lote_agendamento, MAX(dh_inclusao) AS max_dh_inclusao
+          FROM consultas
+          GROUP BY lote_agendamento
+      ) latest 
+      ON c.lote_agendamento = latest.lote_agendamento AND c.dh_inclusao = latest.max_dh_inclusao
+      LEFT JOIN paciente p ON c.id_paciente = p.id
+      LEFT JOIN funcionario f ON c.id_func_responsavel = f.id
+      WHERE c.id_paciente = ?
+      `,
+      [idPaciente]
+    );
+    return rows;
 };
+
+
+
+
 
 module.exports = {
     createConsulta,
@@ -124,6 +145,6 @@ module.exports = {
     getConsultaById,
     updateConsulta,
     updateConsultaCancelamento,
-    deleteConsulta,
     adiarConsulta,
+    getHistoricoConsultasByPacienteId
 };

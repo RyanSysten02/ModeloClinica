@@ -11,6 +11,9 @@ router.get('/tipo', consultasController.getConsultasTipo);
 
 router.get('/allconsultas', consultasController.getConsultas);
 
+router.get('/historico/:id', consultasController.getHistoricoByPacienteId);
+
+
 
 router.get('/consultas/:id', consultasController.getConsultaById);
 
@@ -19,6 +22,6 @@ router.put('/consultas/:id', consultasController.updateConsulta);
 
 router.put('/consultacancelamento/:id', consultasController.updateConsultaCancelamento);
 
-router.delete('/consultas/:id', consultasController.deleteConsulta);
+
 
 module.exports = router;

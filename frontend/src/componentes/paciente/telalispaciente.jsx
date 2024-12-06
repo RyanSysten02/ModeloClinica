@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Table, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import PacienteDetalhesModal from "./PacienteDetalhesModal";
+import PacienteHistorico from "./historicopaciente";
 import FormularioPaciente from "../paciente/Paciente";
 import { format } from 'date-fns';
 
@@ -11,6 +12,7 @@ const TelaListaPacientes = ({ onSelectPaciente }) => {
   const [showModal, setShowModal] = useState(false);
   const [pacienteSelecionado, setPacienteSelecionado] = useState(null);
   const [showCadastroModal, setShowCadastroModal] = useState(false);
+  const [showHistoricoModal, setShowHistoricoModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,6 +76,38 @@ const TelaListaPacientes = ({ onSelectPaciente }) => {
     // Lógica para obter detalhes do paciente...
   };
 
+  const handleHistorico = async (id) => {
+    console.log("ID do paciente:", id);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMensagemErro("Token não encontrado. Faça login novamente.");
+        navigate("/login");
+        return;
+      }
+      const response = await fetch(`http://localhost:5001/api/consulta/historico/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Data recebida:", data);
+        if (data) {
+          setPacienteSelecionado({ id, ...data });
+          setShowHistoricoModal(true);
+        } else {
+          setMensagemErro("Histórico do paciente não encontrado.");
+        }
+      } else {
+        setMensagemErro("Erro ao carregar histórico do paciente.");
+      }
+    } catch (error) {
+      setMensagemErro("Erro ao conectar com o servidor.");
+    }
+  };
+  
+  
   // Função para salvar as alterações do paciente
   const handleSave = async (formData) => {
     console.log('Tentando salvar:', formData);
@@ -125,6 +159,11 @@ const TelaListaPacientes = ({ onSelectPaciente }) => {
     setPacienteSelecionado(null);
   };
 
+  const closeHistoricoModal = () => {
+    setShowHistoricoModal(false);
+    setPacienteSelecionado(null);
+  };
+
   return (
     <Container>
       <h1 className="mt-4">Lista de Pacientes</h1>
@@ -153,6 +192,10 @@ const TelaListaPacientes = ({ onSelectPaciente }) => {
                 <Button variant="primary" onClick={() => handleDetalhes(paciente.id)}>
                   Detalhes
                 </Button>
+                <Button variant="warning" onClick={() => handleHistorico(paciente.id)}>
+                  Histórico
+                </Button>
+
               </td>
             </tr>
           ))}
@@ -168,6 +211,12 @@ const TelaListaPacientes = ({ onSelectPaciente }) => {
           onSave={handleSave}
         />
       )}
+      <PacienteHistorico
+      show={showHistoricoModal}
+      onHide={() => setShowHistoricoModal(false)}
+      pacienteId={pacienteSelecionado?.id}
+    />
+
 
       {/* Modal de Cadastro de Paciente */}
       <FormularioPaciente

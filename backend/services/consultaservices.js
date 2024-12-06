@@ -24,10 +24,6 @@ const getConsultasTipo = async (tipo) => {
     return consulta;
 };
 
-const deleteConsulta = async (id) => {
-    const consulta = await consultamodel.deleteConsulta(id);
-    return consulta;
-};
 
 const updateConsulta = async (id, id_paciente,id_func_responsavel, start, end, desc, color, tipo) => {
     const consulta = await consultamodel.updateConsulta(id, id_paciente,id_func_responsavel, start, end, desc, color, tipo);
@@ -43,13 +39,19 @@ const getConsultaById = async (id) => {
     return await consultamodel.getConsultaById(id);
 };
 
+const getHistoricoConsultasByPacienteId = async (idPaciente) => {
+    const historico = await consultamodel.getHistoricoConsultasByPacienteId(idPaciente);
+    return historico;
+}
+
+
 module.exports = {
     createConsulta,
     getConsultas,
     getConsultasTipo,
-    deleteConsulta,
     updateConsulta,
     updateConsultaCancelamento,
     getConsultaById,
     adiarConsulta,
+    getHistoricoConsultasByPacienteId
 };

@@ -145,29 +145,21 @@ const updateConsultaCancelamento = async (req, res) => {
     }
 };
 
-
-const deleteConsulta = async (req, res) => {
-    const { id } = req.params;
-
-    const token = req.header('Authorization');
-    if (!token) return res.status(401).json({ message: 'Token não fornecido' });
-
+const getHistoricoByPacienteId = async (req, res) => {
+    const { id } = req.params; // ID do paciente
     try {
-        const tokenLimpo = token.split(' ')[1];
-        const decoded = jwt.verify(tokenLimpo, process.env.JWT_SECRET);
-        req.user = decoded;
-        
-        const consulta = await consultasservices.getConsultaById(id);
-        if (!consulta) {
-            return res.status(404).json({ message: 'Consulta não encontrada' });
-        }
-
-        await consultasservices.deleteConsulta(id);
-        res.status(200).json({ message: 'Consulta deletada com sucesso' });
+      const historico = await consultasservices.getHistoricoConsultasByPacienteId(id);
+      if (!historico || historico.length === 0) {
+        return res.status(404).json({ message: "Histórico de consultas não encontrado para este paciente." });
+      }
+      res.status(200).json(historico);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+      res.status(400).json({ message: error.message });
     }
-};
+  };
+  
+
+
 
 
 
@@ -178,6 +170,6 @@ module.exports = {
     getConsultaById,
     updateConsulta,
     updateConsultaCancelamento,
-    deleteConsulta,
-    adiarConsulta
+    adiarConsulta,
+    getHistoricoByPacienteId
 };
