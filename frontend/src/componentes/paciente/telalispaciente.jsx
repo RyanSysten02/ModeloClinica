@@ -15,34 +15,35 @@ const TelaListaPacientes = ({ onSelectPaciente }) => {
   const [showHistoricoModal, setShowHistoricoModal] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchPacientes = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setMensagemErro("Token não encontrado. Faça login novamente.");
-          navigate("/login");
-          return;
-        }
-
-        const response = await fetch("http://localhost:5001/api/paciente/allpaciente", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setPacientes(data);
-        } else {
-          setMensagemErro("Erro ao carregar os pacientes.");
-        }
-      } catch (error) {
-        setMensagemErro("Erro ao conectar com o servidor.");
+  // Função para buscar todos os pacientes
+  const fetchPacientes = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMensagemErro("Token não encontrado. Faça login novamente.");
+        navigate("/login");
+        return;
       }
-    };
 
-    fetchPacientes();
+      const response = await fetch("http://localhost:5001/api/paciente/allpaciente", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPacientes(data);
+      } else {
+        setMensagemErro("Erro ao carregar os pacientes.");
+      }
+    } catch (error) {
+      setMensagemErro("Erro ao conectar com o servidor.");
+    }
+  };
+
+  useEffect(() => {
+    fetchPacientes(); // Carrega os pacientes ao iniciar a página
   }, [navigate]);
 
   // Função para buscar os detalhes do paciente pelo ID
@@ -73,7 +74,6 @@ const TelaListaPacientes = ({ onSelectPaciente }) => {
     } catch (error) {
       setMensagemErro("Erro ao conectar com o servidor.");
     }
-    // Lógica para obter detalhes do paciente...
   };
 
   const handleHistorico = async (id) => {
@@ -145,7 +145,7 @@ const TelaListaPacientes = ({ onSelectPaciente }) => {
           )
         );
       } else {
-        setMensagemErro("Erro ao salvar alterações do funcionario.");
+        setMensagemErro("Erro ao salvar alterações do paciente.");
       }
     } catch (error) {
       console.error("Erro na atualização:", error.message);
@@ -221,7 +221,11 @@ const TelaListaPacientes = ({ onSelectPaciente }) => {
       {/* Modal de Cadastro de Paciente */}
       <FormularioPaciente
         show={showCadastroModal}
-        onHide={() => setShowCadastroModal(false)}
+        onHide={() => {
+          setShowCadastroModal(false);
+          fetchPacientes(); // Atualiza a lista de pacientes após fechar o modal
+        }}
+        onPacientesAtualizados={fetchPacientes} // Passa a função para atualizar a lista
       />
     </Container>
   );

@@ -13,33 +13,35 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
   const [showCadastroModal, setShowCadastroModal] = useState(false); // Controle do modal de cadastro
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchPacientes = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setMensagemErro("Token não encontrado. Faça login novamente.");
-          navigate("/login");
-          return;
-        }
-
-        const response = await fetch("http://localhost:5001/api/paciente/allpaciente", {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setPacientes(data);
-        } else {
-          setMensagemErro("Erro ao carregar os pacientes.");
-        }
-      } catch (error) {
-        setMensagemErro("Erro ao conectar com o servidor.");
+  // Função para buscar pacientes - agora fora do useEffect
+  const fetchPacientes = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMensagemErro("Token não encontrado. Faça login novamente.");
+        navigate("/login");
+        return;
       }
-    };
 
+      const response = await fetch("http://localhost:5001/api/paciente/allpaciente", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPacientes(data);
+      } else {
+        setMensagemErro("Erro ao carregar os pacientes.");
+      }
+    } catch (error) {
+      setMensagemErro("Erro ao conectar com o servidor.");
+    }
+  };
+
+  // Chama a função fetchPacientes quando o componente é montado
+  useEffect(() => {
     fetchPacientes();
   }, [navigate]);
 
@@ -70,7 +72,6 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
     } catch (error) {
       setMensagemErro("Erro ao conectar com o servidor.");
     }
-    // Lógica para obter detalhes do paciente...
   };
 
   const handleSave = async (formData) => {
@@ -109,7 +110,7 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
           )
         );
       } else {
-        setMensagemErro("Erro ao salvar alterações do funcionario.");
+        setMensagemErro("Erro ao salvar alterações do paciente.");
       }
     } catch (error) {
       console.error("Erro na atualização:", error.message);
@@ -153,9 +154,6 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
                     <Button variant="primary" onClick={() => handleDetalhes(paciente.id)}>
                       Detalhes
                     </Button>
-                    {/*<Button variant="danger" onClick={() => handleDelete(paciente.id)} style={{ marginLeft: '10px' }}>
-                      Apagar
-                    </Button> Tiramos o botão de apagar, pois achamos melhor não ter essa opção por enquanto*/}
                     <Button variant="success" onClick={() => onSelectPaciente(paciente)} style={{ marginLeft: '10px' }}>
                       Selecionar
                     </Button>
@@ -177,7 +175,11 @@ const ListaPacientesModal = ({ show, onHide, onSelectPaciente }) => {
       {/* Modal de Cadastro de Pacientes */}
       <FormularioPaciente
         show={showCadastroModal}
-        onHide={() => setShowCadastroModal(false)}
+        onHide={() => {
+          setShowCadastroModal(false);
+          fetchPacientes(); // Atualiza a lista de pacientes após fechar o modal
+        }}
+        onPacientesAtualizados={fetchPacientes} // Passa a função para atualizar a lista
       />
     </>
   );

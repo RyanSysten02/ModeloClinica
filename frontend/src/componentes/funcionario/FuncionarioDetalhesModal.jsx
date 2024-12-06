@@ -21,7 +21,7 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
   return (
     <Modal show={show} onHide={onHide} size="xl"> {/* Aumentando a largura do modal */}
       <Modal.Header closeButton>
-        <Modal.Title>Detalhes do Funcionario</Modal.Title>
+        <Modal.Title>Detalhes do Funcionário</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container className="mt-4">
@@ -51,7 +51,7 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Funcao</Form.Label>
+                  <Form.Label>Função</Form.Label>
                   <Form.Control
                     type="text"
                     name="funcao"
@@ -84,136 +84,45 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
                   />
                 </Form.Group>
               </Col>
-            </Row>
-            {/* <Row>
-              
+
               <Col md={2}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Sexo</Form.Label>
-                  <Form.Select
+                  <Form.Control
+                    as="select"
                     name="sexo"
                     value={formData.sexo || ''}
                     onChange={handleChange}
                   >
-                    <option value="">Selecione</option>
-                    <option value="Masculino">Masculino</option>
-                    <option value="Feminino">Feminino</option>
-                    <option value="Outros">Outro</option>
-                  </Form.Select>
+                    <option value="masculino">Masculino</option>
+                    <option value="feminino">Feminino</option>
+                    <option value="outro">Outro</option>
+                  </Form.Control>
                 </Form.Group>
               </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Número do Benefício</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="numeroBeneficio"
-                    value={formData.numeroBeneficio || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
-              
-            </Row>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Endereço</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="endereco"
-                    value={formData.endereco || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={1}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Número</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="num"
-                    value={formData.num || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={5}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Complemento</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="complemento"
-                    value={formData.complemento || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={3}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Celular</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    name="celular"
-                    value={formData.celular || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={3}>
+
+              <Col md={2}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Telefone</Form.Label>
                   <Form.Control
-                    type="tel"
+                    type="text"
                     name="telefone"
                     value={formData.telefone || ''}
                     onChange={handleChange}
                   />
                 </Form.Group>
               </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>E-mail</Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="email"
-                    value={formData.email || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
             </Row>
-            <Row>
-              <Col md={12}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Contato de Emergência</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    name="contatoEmergencia"
-                    value={formData.contatoEmergencia || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Form.Group className="mb-3 text-start">
-              <Form.Label>Observações</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                name="observacoes"
-                value={formData.observacoes || ''}
-                onChange={handleChange}
-              />
-            </Form.Group> */}
           </Form>
         </Container>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>Fechar</Button>
-        <Button variant="primary" onClick={handleSubmit}>Salvar</Button>
+        <Button variant="secondary" onClick={onHide}>
+          Fechar
+        </Button>
+        <Button variant="primary" onClick={handleSubmit}>
+          Salvar
+        </Button>
       </Modal.Footer>
     </Modal>
   );
