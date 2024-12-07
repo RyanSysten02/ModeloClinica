@@ -1,10 +1,9 @@
-.status-C {
-    background-color: red;
-    color: white;
-  }
-  
-  .status-AD {
-    background-color: yellow;
-    color: black;
-  }
-  
+table tr.status-C {
+  background-color: red !important;
+  color: white !important;
+}
+
+table tr.status-AD {
+  background-color: yellow !important;
+  color: black !important;
+}

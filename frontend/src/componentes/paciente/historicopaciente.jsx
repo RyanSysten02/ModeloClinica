@@ -63,7 +63,7 @@ const PacienteHistorico = ({ show, onHide, pacienteId }) => {
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="lg" centered>
+    <Modal show={show} onHide={onHide} size="xl" centered>
       <Modal.Header closeButton>
         <Modal.Title>Histórico de Consultas</Modal.Title>
       </Modal.Header>
@@ -83,18 +83,46 @@ const PacienteHistorico = ({ show, onHide, pacienteId }) => {
               </tr>
             </thead>
             <tbody>
-              {historicos.map((consulta) => (
-                <tr key={consulta.id} className={consulta.status === 'C' ? 'status-C' : consulta.status === 'AD' ? 'status-AD' : ''}>
-                  <td>{formatDate(consulta.dh_inclusao)}</td>
-                  <td>{formatDate(consulta.start)}</td>
-                  <td>{formatDate(consulta.end)}</td>  
-                  <td>{calculateDuration(consulta.start, consulta.end)}</td>
-                  <td>{consulta.funcionario_nome}</td>
-                  <td>{consulta.tipo}</td>
-                  <td>{consulta.status}</td>
-                </tr>
-              ))}
-            </tbody>
+            {historicos.map((consulta) => (
+              <tr key={consulta.id}>
+                <td>{formatDate(consulta.dh_inclusao)}</td>
+                <td>{formatDate(consulta.start)}</td>
+                <td>{formatDate(consulta.end)}</td>
+                <td>{calculateDuration(consulta.start, consulta.end)}</td>
+                <td>{consulta.funcionario_nome}</td>
+                <td>{consulta.tipo}</td>
+                <td>
+                  {consulta.status === 'C' ? (
+                    <>
+                      <strong>Cancelada</strong>
+                      <br />
+                      <span>{`Data: ${formatDate(consulta.dh_cancelamento)}`}</span>
+                      <br />
+                      <span>{`Motivo: ${consulta.motivocancelamento}`}</span>
+                    </>
+                  ) : consulta.status === 'AD' ? (
+                    <>
+                      <strong>Adiada</strong>
+                      <br />
+                      <span>{`Data: ${formatDate(consulta.dh_adiamento)}`}</span>
+                      <br />
+                      <span>{`Motivo: ${consulta.motivo_adiamento}`}</span>
+                    </>
+                  ) : consulta.status === 'P' ? (
+                    <>
+                      <strong>Primeira</strong>
+                      <br />
+                      <span>{`Data de Inclusão: ${formatDate(consulta.dh_inclusao)}`}</span>
+                    </>
+                  ) : (
+                    consulta.status
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+
+
           </Table>
         ) : (
           !mensagemErro && <p>Nenhum histórico encontrado para este paciente.</p>
