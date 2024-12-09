@@ -135,7 +135,7 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
                     'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    title: editedEvent.title,
+                    id_paciente: editedEvent.id_paciente,
                     start: formatDateForMySQL(editedEvent.start),
                     end: formatDateForMySQL(editedEvent.end),
                     desc: editedEvent.desc,

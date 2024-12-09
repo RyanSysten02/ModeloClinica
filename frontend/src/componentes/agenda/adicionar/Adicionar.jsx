@@ -104,7 +104,7 @@ function Adicionar({ show, onHide, onUpdate }) {
 
                     // Lógica de atualização do calendário
                     if (onUpdate) {
-                        onUpdate();
+                        onUpdate(novoEvento);
                     }
 
                     onHide(); // Fechar o modal após sucesso
