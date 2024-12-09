@@ -194,6 +194,7 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
             if (response.ok) {
                 const updatedEvent = { ...editedEvent, status: 'C', motivoCancelamento };
                 onUpdate(updatedEvent);
+                onDelete(evento.id);
                 setShowCancelModal(false);
                 onClose();
                 console.log('Consulta cancelada com sucesso!');
