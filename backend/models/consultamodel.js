@@ -15,7 +15,7 @@ const createConsulta = async (id_paciente, id_func_responsavel, start, end, desc
         [insertedId, insertedId]
     );
 
-    return insertedId; // Retornar o ID da consulta criada
+    return insertedId; // Retornar o ID da consulta criada -teste git
 };
 
 
