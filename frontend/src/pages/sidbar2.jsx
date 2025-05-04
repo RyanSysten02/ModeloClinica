@@ -96,7 +96,7 @@ const Sidebar = () => {
             onClick={() => navigate("/pagFuncionario")} // Navegação para a página
           >
               <i className="bi bi-person-badge"></i>
-              <span className="ms-3 d-inline-block">Gerenciar Professores</span>
+              <span className="ms-3 d-inline-block">Professores</span>
             </Button>
           </NavItem>
         </Nav>
