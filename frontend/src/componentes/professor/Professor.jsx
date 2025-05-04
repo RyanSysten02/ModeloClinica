@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Modal, Button, Form, Container, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-function FormularioFuncionario({ show, onHide, onCadastroSuccess }) {
-  const [funcionario, setFuncionario] = useState({
+function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
+  const [professor, setProfessor] = useState({
     nome: "",
     cpf: "",
     rg: "",
@@ -37,7 +37,7 @@ function FormularioFuncionario({ show, onHide, onCadastroSuccess }) {
 
   const validarCampos = () => {
     for (const campo of camposObrigatorios) {
-      const valor = funcionario[campo];
+      const valor = professor[campo];
       if (!valor || typeof valor !== "string" || valor.trim() === "") {
         return `O campo ${campo} é obrigatório.`;
       }
@@ -64,7 +64,7 @@ function FormularioFuncionario({ show, onHide, onCadastroSuccess }) {
       novoValor = aplicarMascara(value, "#####-###");
     }
 
-    setFuncionario({ ...funcionario, [name]: novoValor });
+    setProfessor({ ...professor, [name]: novoValor });
   };
 
   const handleSubmit = async (e) => {
@@ -90,21 +90,21 @@ function FormularioFuncionario({ show, onHide, onCadastroSuccess }) {
       }
 
       const response = await fetch(
-        "http://localhost:5001/api/funcionario/cadastrafuncionario",
+        "http://localhost:5001/api/professor/cadastraprofessor",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(funcionario),
+          body: JSON.stringify(professor),
         }
       );
 
       const data = await response.json();
 
       if (response.ok) {
-        setFuncionario({
+        setProfessor({
           nome: "",
           cpf: "",
           rg: "",
@@ -124,7 +124,7 @@ function FormularioFuncionario({ show, onHide, onCadastroSuccess }) {
           onCadastroSuccess();
         }
 
-        navigate("/pagFuncionario");
+        navigate("/pagProfessor");
       } else {
         setMensagemErro(data.message || "Falha ao adicionar funcionário");
       }
@@ -136,11 +136,11 @@ function FormularioFuncionario({ show, onHide, onCadastroSuccess }) {
   return (
     <Modal show={show} onHide={onHide} size="xl">
       <Modal.Header closeButton>
-        <Modal.Title>Formulário de Funcionário</Modal.Title>
+        <Modal.Title>Formulário de Professor</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container className="mt-4">
-          <h1>Formulário de Funcionário</h1>
+          <h1>Formulário de Professor</h1>
           {mensagemErro && (
             <div className="alert alert-danger">{mensagemErro}</div>
           )}
@@ -173,7 +173,7 @@ function FormularioFuncionario({ show, onHide, onCadastroSuccess }) {
                     <Form.Control
                       type={type}
                       name={name}
-                      value={funcionario[name]}
+                      value={professor[name]}
                       onChange={handleChange}
                     />
                   </Form.Group>
@@ -195,4 +195,4 @@ function FormularioFuncionario({ show, onHide, onCadastroSuccess }) {
   );
 }
 
-export default FormularioFuncionario;
+export default FormularioProfessor;

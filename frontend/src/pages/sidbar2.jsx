@@ -6,12 +6,12 @@ import user1 from "../componentes/assets/images/users/user4.jpg";
 import probg from "../componentes/assets/images/bg/download.jpg";
 import "./sibar2.css";
 import Adicionar from "../componentes/agenda/adicionar/Adicionar";
-import ListaFuncionariosModal from "../componentes/funcionario/ListaFuncionarios";
+import ListaProfessoresModal from "../componentes/professor/ListaProfessores";
 
 const Sidebar = () => {
   const [userName, setUserName] = useState("");
   const [showAdicionarModal, setShowAdicionarModal] = useState(false);
-  const [showFuncionariosModal, setShowFuncionariosModal] = useState(false);
+  const [showProfessoresModal, setShowProfessoresModal] = useState(false);
   const navigate = useNavigate(); // Inicialização do hook
 
   const showMobilemenu = () => {
@@ -49,11 +49,11 @@ const Sidebar = () => {
       </div>
       <div className="p-3 mt-2">
         <Nav vertical className="sidebarNav">
-        <NavItem className="sidenav-bg">
+          <NavItem className="sidenav-bg">
             <Button
               color="link"
               className="nav-link text-secondary py-3"
-              onClick={() => navigate("/paginicial")} 
+              onClick={() => navigate("/paginicial")}
             >
               <i className="bi bi-calendar-range"></i>
               <span className="ms-3 d-inline-block">Minha Agenda</span>
@@ -91,10 +91,10 @@ const Sidebar = () => {
           </NavItem>
           <NavItem className="sidenav-bg">
             <Button
-            color="link"
-            className="nav-link text-secondary py-3"
-            onClick={() => navigate("/pagFuncionario")} // Navegação para a página
-          >
+              color="link"
+              className="nav-link text-secondary py-3"
+              onClick={() => navigate("/pagProfessor")} // Navegação para a página
+            >
               <i className="bi bi-person-badge"></i>
               <span className="ms-3 d-inline-block">Professores</span>
             </Button>
@@ -106,9 +106,9 @@ const Sidebar = () => {
         show={showAdicionarModal}
         onHide={() => setShowAdicionarModal(false)}
       />
-      <ListaFuncionariosModal
-        show={showFuncionariosModal}
-        onHide={() => setShowFuncionariosModal(false)}
+      <ListaProfessoresModal
+        show={showProfessoresModal}
+        onHide={() => setShowProfessoresModal(false)}
       />
     </div>
   );

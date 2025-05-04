@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from "react"; 
+import React, { useState, useEffect } from "react";
 import { Container, Table, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import FuncionarioDetalhesModal from './FuncionarioDetalhesModal';
-import { format } from 'date-fns';
-import FormularioFuncionario from "./Funcionario";
+import ProfessorDetalhesModal from "./ProfessorDetalhesModal";
+import { format } from "date-fns";
+import FormularioProfessor from "./Professor";
 
-const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
-  const [funcionarios, setFuncionarios] = useState([]);
+const TelaListaProfessores = ({ onSelectProfessor }) => {
+  const [professores, setProfessores] = useState([]);
   const [mensagemErro, setMensagemErro] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [funcionarioSelecionado, setFuncionarioSelecionado] = useState(null);
+  const [professorSelecionado, setProfessorSelecionado] = useState(null);
   const [showCadastroModal, setShowCadastroModal] = useState(false);
   const navigate = useNavigate();
 
-  const fetchFuncionarios = async () => {
+  const fetchProfessores = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -22,15 +22,18 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
         return;
       }
 
-      const response = await fetch("http://localhost:5001/api/funcionario/allfuncionario", {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        "http://localhost:5001/api/professor/allprofessor",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
-        setFuncionarios(data);
+        setProfessores(data);
       } else {
         setMensagemErro("Erro ao carregar os funcionários.");
       }
@@ -40,7 +43,7 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
   };
 
   useEffect(() => {
-    fetchFuncionarios();
+    fetchProfessores();
   }, [navigate]);
 
   const handleDetalhes = async (id) => {
@@ -52,16 +55,19 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/funcionario/funcionario/${id}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:5001/api/professor/professor/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
-          setFuncionarioSelecionado(data[0]);
+          setProfessorSelecionado(data[0]);
           setShowModal(true);
         } else {
           setMensagemErro("Dados do funcionário não encontrados.");
@@ -75,12 +81,15 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
   };
 
   const handleSave = async (formData) => {
-    console.log('Tentando salvar:', formData);
+    console.log("Tentando salvar:", formData);
 
     // Corrigir a data no formato aceito pelo MySQL (yyyy-MM-dd)
     if (formData.data_nasc) {
       try {
-        const dataFormatada = format(new Date(formData.data_nasc), 'yyyy-MM-dd');
+        const dataFormatada = format(
+          new Date(formData.data_nasc),
+          "yyyy-MM-dd"
+        );
         formData.data_nasc = dataFormatada;
       } catch (e) {
         console.error("Erro ao formatar data:", e.message);
@@ -95,20 +104,23 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/funcionario/funcionario/${formData.id}`, {
-        method: 'PUT',
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `http://localhost:5001/api/professor/professor/${formData.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
-      console.log('Resposta do servidor:', data);
+      console.log("Resposta do servidor:", data);
 
       if (response.ok) {
-        await fetchFuncionarios();
+        await fetchProfessores();
       } else {
         setMensagemErro("Erro ao salvar alterações do funcionário.");
       }
@@ -127,15 +139,18 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/funcionario/funcionario/${id}`, {
-        method: 'DELETE',
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:5001/api/professor/professor/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.ok) {
-        await fetchFuncionarios();
+        await fetchProfessores();
       } else {
         setMensagemErro("Erro ao apagar o funcionário.");
       }
@@ -146,14 +161,16 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
 
   const closeModal = () => {
     setShowModal(false);
-    setFuncionarioSelecionado(null);
+    setProfessorSelecionado(null);
   };
 
   return (
     <Container>
       <h1 className="mt-4">Lista de Professores</h1>
       <div className="m-2 d-flex justify-content-start">
-        <Button variant="info" onClick={() => setShowCadastroModal(true)}>Cadastrar Professores</Button>
+        <Button variant="info" onClick={() => setShowCadastroModal(true)}>
+          Cadastrar Professores
+        </Button>
       </div>
       {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
       <Table striped bordered hover>
@@ -166,13 +183,16 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
           </tr>
         </thead>
         <tbody>
-          {funcionarios.map((funcionario) => (
-            <tr key={funcionario.id}>
-              <td>{funcionario.nome}</td>
-              <td>{funcionario.num_regis}</td>
-              <td>{funcionario.habilitacao}</td>
+          {professores.map((professor) => (
+            <tr key={professor.id}>
+              <td>{professor.nome}</td>
+              <td>{professor.num_regis}</td>
+              <td>{professor.habilitacao}</td>
               <td>
-                <Button variant="primary" onClick={() => handleDetalhes(funcionario.id)}>
+                <Button
+                  variant="primary"
+                  onClick={() => handleDetalhes(professor.id)}
+                >
                   Detalhes
                 </Button>
               </td>
@@ -182,21 +202,21 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
       </Table>
 
       {showModal && (
-        <FuncionarioDetalhesModal
+        <ProfessorDetalhesModal
           show={showModal}
           onHide={closeModal}
-          funcionario={funcionarioSelecionado}
+          professor={professorSelecionado}
           onSave={handleSave}
         />
       )}
 
-      <FormularioFuncionario
+      <FormularioProfessor
         show={showCadastroModal}
         onHide={() => setShowCadastroModal(false)}
-        onCadastroSuccess={fetchFuncionarios}
+        onCadastroSuccess={fetchProfessores}
       />
     </Container>
   );
 };
 
-export default TelaListaFuncionarios;
+export default TelaListaProfessores;

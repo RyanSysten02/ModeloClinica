@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Container, Table, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import FuncionarioDetalhesModal from './FuncionarioDetalhesModal';
-import { format } from 'date-fns';
-import FormularioFuncionario from "./Funcionario";
+import ProfessorDetalhesModal from "./ProfessorDetalhesModal";
+import { format } from "date-fns";
+import FormularioProfessor from "./Professor";
 
-const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
-  const [funcionarios, setFuncionarios] = useState([]);
+const ListaProfessoresModal = ({ show, onHide, onSelectProfessor }) => {
+  const [professores, setProfessores] = useState([]);
   const [mensagemErro, setMensagemErro] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [funcionarioSelecionado, setFuncionarioSelecionado] = useState(null);
+  const [professorSelecionado, setProfessorSelecionado] = useState(null);
   const [showCadastroModal, setShowCadastroModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchFuncionarios = async () => {
+    const fetchProfessores = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -23,24 +23,27 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
           return;
         }
 
-        const response = await fetch("http://localhost:5001/api/funcionario/allfuncionario", {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          "http://localhost:5001/api/professor/allprofessor",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();
-          setFuncionarios(data);
+          setProfessores(data);
         } else {
-          setMensagemErro("Erro ao carregar os funcionarios.");
+          setMensagemErro("Erro ao carregar os professores.");
         }
       } catch (error) {
         setMensagemErro("Erro ao conectar com o servidor.");
       }
     };
 
-    fetchFuncionarios();
+    fetchProfessores();
   }, [navigate]);
 
   const handleDetalhes = async (id) => {
@@ -52,22 +55,25 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/funcionario/funcionario/${id}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:5001/api/professor/professor/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
-          setFuncionarioSelecionado(data[0]);
+          setProfessorSelecionado(data[0]);
           setShowModal(true);
         } else {
-          setMensagemErro("Dados do funcionario não encontrados.");
+          setMensagemErro("Dados do professor não encontrados.");
         }
       } else {
-        setMensagemErro("Erro ao carregar detalhes do funcionario.");
+        setMensagemErro("Erro ao carregar detalhes do professor.");
       }
     } catch (error) {
       setMensagemErro("Erro ao conectar com o servidor.");
@@ -75,10 +81,10 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
   };
 
   const handleSave = async (formData) => {
-    console.log('Tentando salvar:', formData);
+    console.log("Tentando salvar:", formData);
 
     if (formData.data_nasc) {
-      formData.data_nasc = format(new Date(formData.data_nasc), 'yyyy-MM-dd');
+      formData.data_nasc = format(new Date(formData.data_nasc), "yyyy-MM-dd");
     }
 
     try {
@@ -89,26 +95,27 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/funcionario/funcionario/${formData.id}`, {
-        method: 'PUT',
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `http://localhost:5001/api/professor/professor/${formData.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
-      console.log('Resposta do servidor:', data);
+      console.log("Resposta do servidor:", data);
 
       if (response.ok) {
-        setFuncionarios(prevState =>
-          prevState.map(p =>
-            p.id === formData.id ? formData : p
-          )
+        setProfessores((prevState) =>
+          prevState.map((p) => (p.id === formData.id ? formData : p))
         );
       } else {
-        setMensagemErro("Erro ao salvar alterações do funcionario.");
+        setMensagemErro("Erro ao salvar alterações do professor.");
       }
     } catch (error) {
       console.error("Erro na atualização:", error.message);
@@ -125,19 +132,20 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/funcionario/funcionario/${id}`, {
-        method: 'DELETE',
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:5001/api/professor/professor/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.ok) {
-        setFuncionarios(prevState =>
-          prevState.filter(p => p.id !== id)
-        );
+        setProfessores((prevState) => prevState.filter((p) => p.id !== id));
       } else {
-        setMensagemErro("Erro ao apagar o funcionario.");
+        setMensagemErro("Erro ao apagar o professor.");
       }
     } catch (error) {
       setMensagemErro("Erro ao conectar com o servidor.");
@@ -146,13 +154,13 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
 
   const closeModal = () => {
     setShowModal(false);
-    setFuncionarioSelecionado(null);
+    setProfessorSelecionado(null);
   };
 
   return (
     <Modal show={show} onHide={onHide} size="xl">
       <Modal.Header closeButton>
-        <Modal.Title>Lista de Funcionarios</Modal.Title>
+        <Modal.Title>Lista de Professores</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
@@ -166,16 +174,23 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
             </tr>
           </thead>
           <tbody>
-            {funcionarios.map((funcionario) => (
-              <tr key={funcionario.id}>
-                <td>{funcionario.nome}</td>
-                <td>{funcionario.Registro}</td>
-                <td>{funcionario.Habilitacao}</td>
+            {professores.map((professor) => (
+              <tr key={professor.id}>
+                <td>{professor.nome}</td>
+                <td>{professor.Registro}</td>
+                <td>{professor.Habilitacao}</td>
                 <td>
-                  <Button variant="primary" onClick={() => handleDetalhes(funcionario.id)}>
+                  <Button
+                    variant="primary"
+                    onClick={() => handleDetalhes(professor.id)}
+                  >
                     Detalhes
                   </Button>
-                  <Button variant="success" onClick={() => onSelectFuncionario(funcionario)} style={{ marginLeft: '10px' }}>
+                  <Button
+                    variant="success"
+                    onClick={() => onSelectProfessor(professor)}
+                    style={{ marginLeft: "10px" }}
+                  >
                     Selecionar
                   </Button>
                 </td>
@@ -184,21 +199,29 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
           </tbody>
         </Table>
         {showModal && (
-          <FuncionarioDetalhesModal show={showModal} onHide={closeModal} funcionario={funcionarioSelecionado} onSave={handleSave} />
+          <ProfessorDetalhesModal
+            show={showModal}
+            onHide={closeModal}
+            professor={professorSelecionado}
+            onSave={handleSave}
+          />
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>Fechar</Button>
-        <Button variant="info" onClick={() => setShowCadastroModal(true)}>Cadastrar Professor</Button>
+        <Button variant="secondary" onClick={onHide}>
+          Fechar
+        </Button>
+        <Button variant="info" onClick={() => setShowCadastroModal(true)}>
+          Cadastrar Professor
+        </Button>
       </Modal.Footer>
       {/* Modal de Cadastro de Alunos */}
-      <FormularioFuncionario
+      <FormularioProfessor
         show={showCadastroModal}
         onHide={() => setShowCadastroModal(false)}
       />
     </Modal>
-    
   );
 };
 
-export default ListaFuncionariosModal;
+export default ListaProfessoresModal;

@@ -1,24 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Table, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import ptBR from 'date-fns/locale/pt-BR';
-import { differenceInMinutes, format } from 'date-fns';
-import './csshistorico.css';
+import ptBR from "date-fns/locale/pt-BR";
+import { differenceInMinutes, format } from "date-fns";
+import "./csshistorico.css";
 
 const AlunoHistorico = ({ show, onHide, alunoId, mensagemErroControle }) => {
   const [historicos, setHistoricos] = useState([]);
   const [mensagemErro, setMensagemErro] = useState("");
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     const fetchHistorico = async () => {
       if (!alunoId) {
         setMensagemErro("ID do aluno não foi fornecido.");
         return;
       }
-  
+
       setMensagemErro(""); // Limpa mensagem de erro ao iniciar a busca
-  
+
       try {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -26,13 +26,16 @@ const AlunoHistorico = ({ show, onHide, alunoId, mensagemErroControle }) => {
           navigate("/login");
           return;
         }
-  
-        const response = await fetch(`http://localhost:5001/api/consulta/historico/${alunoId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
+
+        const response = await fetch(
+          `http://localhost:5001/api/consulta/historico/${alunoId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
         if (response.ok) {
           const data = await response.json();
           setHistoricos(data);
@@ -43,15 +46,15 @@ const AlunoHistorico = ({ show, onHide, alunoId, mensagemErroControle }) => {
         setMensagemErro("Erro ao conectar com o servidor.");
       }
     };
-  
+
     if (alunoId) {
       fetchHistorico();
     }
   }, [alunoId, navigate]);
-  
+
   const formatDate = (dateString) => {
-    return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: ptBR });
-  }
+    return format(new Date(dateString), "dd/MM/yyyy HH:mm", { locale: ptBR });
+  };
 
   const calculateDuration = (start, end) => {
     const startDate = new Date(start);
@@ -68,9 +71,11 @@ const AlunoHistorico = ({ show, onHide, alunoId, mensagemErroControle }) => {
         <Modal.Title>Histórico do Aluno</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-      {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
+        {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
         {mensagemErroControle && (
-          <p style={{ color: "orange" }}>Erro do Backend: {mensagemErroControle}</p>
+          <p style={{ color: "orange" }}>
+            Erro do Backend: {mensagemErroControle}
+          </p>
         )}
         {historicos.length > 0 ? (
           <Table striped bordered hover>
@@ -86,15 +91,15 @@ const AlunoHistorico = ({ show, onHide, alunoId, mensagemErroControle }) => {
               </tr>
             </thead>
             <tbody>
-            {historicos.map((consulta) => (
-              <tr key={consulta.id}>
-                <td>{formatDate(consulta.dh_inclusao)}</td>
-                <td>{formatDate(consulta.start)}</td>
-                <td>{formatDate(consulta.end)}</td>
-                <td>{calculateDuration(consulta.start, consulta.end)}</td>
-                <td>{consulta.funcionario_nome}</td>
-                <td>{consulta.tipo}</td>
-                 {/*<td>
+              {historicos.map((consulta) => (
+                <tr key={consulta.id}>
+                  <td>{formatDate(consulta.dh_inclusao)}</td>
+                  <td>{formatDate(consulta.start)}</td>
+                  <td>{formatDate(consulta.end)}</td>
+                  <td>{calculateDuration(consulta.start, consulta.end)}</td>
+                  <td>{consulta.professor_nome}</td>
+                  <td>{consulta.tipo}</td>
+                  {/*<td>
                   {consulta.status === 'C' ? (
                     <>
                       <strong>Cancelada</strong>
@@ -121,11 +126,9 @@ const AlunoHistorico = ({ show, onHide, alunoId, mensagemErroControle }) => {
                     consulta.status
                   )}
                 </td>*/}
-              </tr>
-            ))}
-          </tbody>
-
-
+                </tr>
+              ))}
+            </tbody>
           </Table>
         ) : (
           !mensagemErro && <p>Nenhum histórico encontrado para este aluno.</p>

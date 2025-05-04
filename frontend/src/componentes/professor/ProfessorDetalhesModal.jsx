@@ -1,20 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, Container, Row, Col, Alert } from 'react-bootstrap';
-import InputMask from 'react-input-mask';
+import React, { useState, useEffect } from "react";
+import {
+  Modal,
+  Button,
+  Form,
+  Container,
+  Row,
+  Col,
+  Alert,
+} from "react-bootstrap";
+import InputMask from "react-input-mask";
 
 const camposObrigatorios = [
-  "nome", "cpf", "rg", "data_nasc", "end_rua", "end_numero",
-  "bairro", "cidade", "num_regis", "habilitacao"
+  "nome",
+  "cpf",
+  "rg",
+  "data_nasc",
+  "end_rua",
+  "end_numero",
+  "bairro",
+  "cidade",
+  "num_regis",
+  "habilitacao",
 ];
 
-const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
-  const [formData, setFormData] = useState(funcionario);
+const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
+  const [formData, setFormData] = useState(professor);
   const [erros, setErros] = useState({});
 
   useEffect(() => {
-    setFormData(funcionario);
+    setFormData(professor);
     setErros({});
-  }, [funcionario]);
+  }, [professor]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,9 +39,13 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
 
   const validarCampos = () => {
     const novosErros = {};
-    camposObrigatorios.forEach(campo => {
+    camposObrigatorios.forEach((campo) => {
       const valor = formData[campo];
-      if (valor === undefined || valor === null || String(valor).trim() === "") {
+      if (
+        valor === undefined ||
+        valor === null ||
+        String(valor).trim() === ""
+      ) {
         novosErros[campo] = "Campo obrigatório";
       }
     });
@@ -48,7 +68,9 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
       <Modal.Body>
         <Container className="mt-4">
           {Object.keys(erros).length > 0 && (
-            <Alert variant="danger">Preencha todos os campos obrigatórios.</Alert>
+            <Alert variant="danger">
+              Preencha todos os campos obrigatórios.
+            </Alert>
           )}
           <Form>
             <Row>
@@ -62,7 +84,9 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
                     onChange={handleChange}
                     isInvalid={!!erros.nome}
                   />
-                  <Form.Control.Feedback type="invalid">{erros.nome}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {erros.nome}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={3}>
@@ -82,7 +106,9 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
                       />
                     )}
                   </InputMask>
-                  <Form.Control.Feedback type="invalid">{erros.cpf}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {erros.cpf}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={3}>
@@ -102,7 +128,9 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
                       />
                     )}
                   </InputMask>
-                  <Form.Control.Feedback type="invalid">{erros.rg}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {erros.rg}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={6}>
@@ -115,7 +143,9 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
                     onChange={handleChange}
                     isInvalid={!!erros.end_rua}
                   />
-                  <Form.Control.Feedback type="invalid">{erros.end_rua}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {erros.end_rua}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={1}>
@@ -128,7 +158,9 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
                     onChange={handleChange}
                     isInvalid={!!erros.end_numero}
                   />
-                  <Form.Control.Feedback type="invalid">{erros.end_numero}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {erros.end_numero}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={2}>
@@ -141,7 +173,9 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
                     onChange={handleChange}
                     isInvalid={!!erros.bairro}
                   />
-                  <Form.Control.Feedback type="invalid">{erros.bairro}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {erros.bairro}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={3}>
@@ -154,7 +188,9 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
                     onChange={handleChange}
                     isInvalid={!!erros.cidade}
                   />
-                  <Form.Control.Feedback type="invalid">{erros.cidade}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {erros.cidade}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={2}>
@@ -166,11 +202,7 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
                     onChange={handleChange}
                   >
                     {(inputProps) => (
-                      <Form.Control
-                        {...inputProps}
-                        type="text"
-                        name="cep"
-                      />
+                      <Form.Control {...inputProps} type="text" name="cep" />
                     )}
                   </InputMask>
                 </Form.Group>
@@ -181,11 +213,15 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
                   <Form.Control
                     type="date"
                     name="data_nasc"
-                    value={formData.data_nasc || ""}
+                    value={
+                      formData.data_nasc ? formData.data_nasc.split("T")[0] : ""
+                    }
                     onChange={handleChange}
                     isInvalid={!!erros.data_nasc}
                   />
-                  <Form.Control.Feedback type="invalid">{erros.data_nasc}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {erros.data_nasc}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={3}>
@@ -198,7 +234,9 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
                     onChange={handleChange}
                     isInvalid={!!erros.num_regis}
                   />
-                  <Form.Control.Feedback type="invalid">{erros.num_regis}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {erros.num_regis}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={5}>
@@ -211,7 +249,9 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
                     onChange={handleChange}
                     isInvalid={!!erros.habilitacao}
                   />
-                  <Form.Control.Feedback type="invalid">{erros.habilitacao}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {erros.habilitacao}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={12}>
@@ -241,11 +281,15 @@ const FuncionarioDetalhesModal = ({ show, onHide, funcionario, onSave }) => {
         </Container>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>Fechar</Button>
-        <Button variant="primary" onClick={handleSubmit}>Salvar</Button>
+        <Button variant="secondary" onClick={onHide}>
+          Fechar
+        </Button>
+        <Button variant="primary" onClick={handleSubmit}>
+          Salvar
+        </Button>
       </Modal.Footer>
     </Modal>
   );
 };
 
-export default FuncionarioDetalhesModal;
+export default ProfessorDetalhesModal;
