@@ -11,7 +11,7 @@ router.get('/tipo', consultasController.getConsultasTipo);
 
 router.get('/allconsultas', consultasController.getConsultas);
 
-router.get('/historico/:id', consultasController.getHistoricoByPacienteId);
+router.get('/historico/:id', consultasController.getHistoricoByAlunoId);
 
 
 

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Container, Row, Col } from 'react-bootstrap';
 
-const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
-  const [formData, setFormData] = useState(paciente);
+const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
+  const [formData, setFormData] = useState(aluno);
 
   useEffect(() => {
-    setFormData(paciente);
-  }, [paciente]);
+    setFormData(aluno);
+  }, [aluno]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,7 +21,7 @@ const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
   return (
     <Modal show={show} onHide={onHide} size="xl"> {/* Aumentando a largura do modal */}
       <Modal.Header closeButton>
-        <Modal.Title>Detalhes do Paciente</Modal.Title>
+        <Modal.Title>Detalhes do Aluno</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container className="mt-4">
@@ -101,11 +101,11 @@ const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Plano de Saúde</Form.Label>
+                  <Form.Label>Turma</Form.Label>
                   <Form.Control
                     type="text"
-                    name="planoSaude"
-                    value={formData.planoSaude || ''}
+                    name="alunoTurma"
+                    value={formData.alunoTurma || ''}
                     onChange={handleChange}
                   />
                 </Form.Group>
@@ -215,4 +215,4 @@ const PacienteDetalhesModal = ({ show, onHide, paciente, onSave }) => {
   );
 };
 
-export default PacienteDetalhesModal;
+export default AlunoDetalhesModal;

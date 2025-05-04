@@ -9,15 +9,15 @@ import {
     validarEmail,
 } from "./validacoes"; 
 
-function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
-    const [paciente, setPaciente] = useState({
+function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
+    const [aluno, setAluno] = useState({
         nome: "",
         cpf: "",
         rg: "",
         dataNascimento: "",
         sexo: "",
         numeroBeneficio: "",
-        planoSaude: "",
+        alunoTurma: "",
         endereco: "",
         num: "",
         complemento: "",
@@ -42,7 +42,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
             novoValor = aplicarMascaraTelefone(value);
         }
 
-        setPaciente({ ...paciente, [name]: novoValor });
+        setAluno({ ...aluno, [name]: novoValor });
 
         if (name === "cpf" && !validarCPF(novoValor)) {
             setErros({ ...erros, cpf: "CPF inválido." });
@@ -67,11 +67,11 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
         }
 
         // Prepara os dados antes de enviar (remove máscaras de CPF e telefone)
-        const dadosPaciente = {
-            ...paciente,
-            cpf: removerMascara(paciente.cpf),
-            celular: removerMascara(paciente.celular),
-            telefone: removerMascara(paciente.telefone),
+        const dadosAluno = {
+            ...aluno,
+            cpf: removerMascara(aluno.cpf),
+            celular: removerMascara(aluno.celular),
+            telefone: removerMascara(aluno.telefone),
         };
 
         try {
@@ -82,26 +82,26 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                 return;
             }
 
-            const response = await fetch("http://localhost:5001/api/paciente/cadastrapaciente", {
+            const response = await fetch("http://localhost:5001/api/aluno/cadastraaluno", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(dadosPaciente),
+                body: JSON.stringify(dadosAluno),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                setPaciente({
+                setAluno({
                     nome: "",
                     cpf: "",
                     rg: "",
                     dataNascimento: "",
                     sexo: "",
                     numeroBeneficio: "",
-                    planoSaude: "",
+                    alunoTurma: "",
                     endereco: "",
                     num: "",
                     complemento: "",
@@ -113,11 +113,11 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                 });
 
                 onHide();
-                onPacientesAtualizados();
+                onAlunosAtualizados();
 
                 
             } else {
-                setMensagemErro(data.message || "Falha ao adicionar paciente.");
+                setMensagemErro(data.message || "Falha ao adicionar aluno.");
             }
         } catch (error) {
             setMensagemErro("Ocorreu um erro. Tente novamente.");
@@ -127,7 +127,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
     return (
         <Modal show={show} onHide={onHide} size="xl">
             <Modal.Header closeButton>
-                <Modal.Title>Formulário de Paciente</Modal.Title>
+                <Modal.Title>Formulário de Aluno</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Container className="mt-4">
@@ -139,7 +139,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                                     <Form.Control
                                         type="text"
                                         name="nome"
-                                        value={paciente.nome}
+                                        value={aluno.nome}
                                         onChange={handleChange}
                                     />
                                 </Form.Group>
@@ -150,7 +150,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                                     <Form.Control
                                         type="text"
                                         name="cpf"
-                                        value={paciente.cpf}
+                                        value={aluno.cpf}
                                         onChange={handleChange}
                                         isInvalid={!!erros.cpf}
                                     />
@@ -165,7 +165,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                                     <Form.Control
                                         type="text"
                                         name="rg"
-                                        value={paciente.rg}
+                                        value={aluno.rg}
                                         onChange={handleChange}
                                     />
                                 </Form.Group>
@@ -178,7 +178,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                                     <Form.Control
                                         type="date"
                                         name="dataNascimento"
-                                        value={paciente.dataNascimento}
+                                        value={aluno.dataNascimento}
                                         onChange={handleChange}
                                     />
                                 </Form.Group>
@@ -188,7 +188,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                                     <Form.Label>Sexo</Form.Label>
                                     <Form.Select
                                         name="sexo"
-                                        value={paciente.sexo}
+                                        value={aluno.sexo}
                                         onChange={handleChange}
                                     >
                                         <option value="">Selecione</option>
@@ -204,18 +204,18 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                                     <Form.Control
                                         type="text"
                                         name="numeroBeneficio"
-                                        value={paciente.numeroBeneficio}
+                                        value={aluno.numeroBeneficio}
                                         onChange={handleChange}
                                     />
                                 </Form.Group>
                             </Col>
                             <Col md={4}>
                                 <Form.Group className="mb-3 text-start">
-                                    <Form.Label>Plano de Saúde</Form.Label>
+                                    <Form.Label>Turma</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        name="planoSaude"
-                                        value={paciente.planoSaude}
+                                        name="alunoTurma"
+                                        value={aluno.alunoTurma}
                                         onChange={handleChange}
                                     />
                                 </Form.Group>
@@ -228,7 +228,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                                     <Form.Control
                                         type="text"
                                         name="endereco"
-                                        value={paciente.endereco}
+                                        value={aluno.endereco}
                                         onChange={handleChange}
                                     />
                                 </Form.Group>
@@ -239,7 +239,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                                     <Form.Control
                                         type="text"
                                         name="num"
-                                        value={paciente.num}
+                                        value={aluno.num}
                                         onChange={handleChange}
                                     />
                                 </Form.Group>
@@ -250,7 +250,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                                     <Form.Control
                                         type="text"
                                         name="complemento"
-                                        value={paciente.complemento}
+                                        value={aluno.complemento}
                                         onChange={handleChange}
                                     />
                                 </Form.Group>
@@ -263,7 +263,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                                     <Form.Control
                                         type="tel"
                                         name="celular"
-                                        value={paciente.celular}
+                                        value={aluno.celular}
                                         onChange={handleChange}
                                         isInvalid={!!erros.celular}
                                     />
@@ -278,7 +278,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                                     <Form.Control
                                         type="tel"
                                         name="telefone"
-                                        value={paciente.telefone}
+                                        value={aluno.telefone}
                                         onChange={handleChange}
                                         isInvalid={!!erros.telefone}
                                     />
@@ -293,7 +293,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                                     <Form.Control
                                         type="text"
                                         name="contatoEmergencia"
-                                        value={paciente.contatoEmergencia}
+                                        value={aluno.contatoEmergencia}
                                         onChange={handleChange}
                                     />
                                 </Form.Group>
@@ -306,7 +306,7 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
                                     <Form.Control
                                         as="textarea"
                                         name="observacoes"
-                                        value={paciente.observacoes}
+                                        value={aluno.observacoes}
                                         onChange={handleChange}
                                     />
                                 </Form.Group>
@@ -327,4 +327,4 @@ function FormularioPaciente({ show, onHide, onPacientesAtualizados }) {
     );
 }
 
-export default FormularioPaciente;
+export default FormularioAluno;

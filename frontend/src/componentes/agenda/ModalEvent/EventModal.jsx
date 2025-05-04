@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form, Collapse, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import ListaPacientesModal from '../../paciente/ListaPacientes';
+import ListaAlunosModal from '../../aluno/ListaAlunos';
 import ListaFuncionariosModal from '../../funcionario/ListaFuncionarios';
 
 const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
@@ -16,27 +16,27 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
     const [novaDataFim, setNovaDataFim] = useState('');
     const [motivoAdiamento, setMotivoAdiamento] = useState('');
     const [erroAdiamento, setErroAdiamento] = useState('');
-    const [showListaPacientesModal, setShowListaPacientesModal] = useState(false);
+    const [showListaAlunosModal, setShowListaAlunosModal] = useState(false);
     const [showListaFuncionariosModal, setShowListaFuncionariosModal] = useState(false);
-    const [listaPacientes, setListaPacientes] = useState([]);
+    const [listaAlunos, setListaAlunos] = useState([]);
     const [listaFuncionarios, setListaFuncionarios] = useState([]);
     
     const [novoEvento, setNovoEvento] = useState({
-        id_paciente: evento?.id_paciente || '',
-        pacienteNome: evento?.paciente_nome || '',
+        id_aluno: evento?.id_aluno || '',
+        alunoNome: evento?.aluno_nome || '',
         id_func_responsavel: evento?.id_func_responsavel || '',
         funcionarioNome: evento?.funcionario_nome || '',
         // outros campos, se necessário
     });
     
 
-    const handleSelectPaciente = (paciente) => {
+    const handleSelectAluno = (aluno) => {
         setNovoEvento({
             ...novoEvento,
-            id_paciente: paciente.id,
-            pacienteNome: paciente.nome, // Para exibição
+            id_aluno: aluno.id,
+            alunoNome: aluno.nome, // Para exibição
         });
-        setShowListaPacientesModal(false);
+        setShowListaAlunosModal(false);
     };
     const handleSelectFuncionario = (funcionario) => {
         setNovoEvento({
@@ -135,7 +135,7 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
                     'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    id_paciente: editedEvent.id_paciente,
+                    id_aluno: editedEvent.id_aluno,
                     start: formatDateForMySQL(editedEvent.start),
                     end: formatDateForMySQL(editedEvent.end),
                     desc: editedEvent.desc,
@@ -274,25 +274,25 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
             <Modal show={true} onHide={onClose}>
                 <Modal.Header>
                 <Modal.Title>
-            {editedEvent.title} - Paciente: {evento.paciente_nome}
+            {editedEvent.title} - Aluno: {evento.aluno_nome}
         </Modal.Title>
     </Modal.Header>
     <Modal.Body>
         <Form>
-        <Form.Group controlId="formBasicPaciente" className="mb-3">
-    <Form.Label>Paciente</Form.Label>
+        <Form.Group controlId="formBasicAluno" className="mb-3">
+    <Form.Label>Aluno</Form.Label>
     <div className="d-flex align-items-center">
         <Form.Control
             type="text"
-            placeholder="Selecione um paciente"
-            name="pacienteNome"
-            value={novoEvento.pacienteNome || ''} // Exibe o nome do paciente
+            placeholder="Selecione um aluno"
+            name="alunoNome"
+            value={novoEvento.alunoNome || ''} // Exibe o nome do aluno
             readOnly // Campo somente leitura
             style={{ flex: 1, backgroundColor: '#e9ecef' }} // Indica que está desabilitado
         />
         <Button
             variant="secondary"
-            onClick={() => setShowListaPacientesModal(true)} // Abre o modal de pacientes
+            onClick={() => setShowListaAlunosModal(true)} // Abre o modal de alunos
             className="ms-2"
         >
             <i className="bi bi-search"></i>
@@ -369,7 +369,7 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
                     </Button>
                 </Modal.Footer>
                 {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
-                <ListaPacientesModal show={showListaPacientesModal} onHide={() => setShowListaPacientesModal(false)} onSelectPaciente={handleSelectPaciente} />
+                <ListaAlunosModal show={showListaAlunosModal} onHide={() => setShowListaAlunosModal(false)} onSelectAluno={handleSelectAluno} />
                 <ListaFuncionariosModal show={showListaFuncionariosModal} onHide={() => setShowListaFuncionariosModal(false)} onSelectFuncionario={handleSelectFuncionario} />
             </Modal>
     

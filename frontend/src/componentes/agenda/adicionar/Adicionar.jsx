@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Button, Form, Alert, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import ListaPacientesModal from '../../paciente/ListaPacientes';
+import ListaAlunosModal from '../../aluno/ListaAlunos';
 import ListaFuncionariosModal from '../../funcionario/ListaFuncionarios';
 
 function Adicionar({ show, onHide, onUpdate }) {
     const [novoEvento, setNovoEvento] = useState({
-        id_paciente: '',
-        pacienteNome: '', // Nome do paciente para exibição
+        id_aluno: '',
+        alunoNome: '', // Nome do aluno para exibição
         id_func_responsavel: '',
         funcionarioNome: '',
         start:'',
@@ -17,7 +17,7 @@ function Adicionar({ show, onHide, onUpdate }) {
     });
     const [mensagemErro, setMensagemErro] = useState('');
     const [mensagemSucesso, setMensagemSucesso] = useState('');
-    const [showListaPacientesModal, setShowListaPacientesModal] = useState(false);
+    const [showListaAlunosModal, setShowListaAlunosModal] = useState(false);
     const [showListaFuncionariosModal, setShowListaFuncionariosModal] = useState(false);
     const navigate = useNavigate();
 
@@ -41,13 +41,13 @@ function Adicionar({ show, onHide, onUpdate }) {
         }
     };
 
-    const handleSelectPaciente = (paciente) => {
+    const handleSelectAluno = (aluno) => {
         setNovoEvento({
             ...novoEvento,
-            id_paciente: paciente.id,
-            pacienteNome: paciente.nome, // Para exibição
+            id_aluno: aluno.id,
+            alunoNome: aluno.nome, // Para exibição
         });
-        setShowListaPacientesModal(false);
+        setShowListaAlunosModal(false);
     };
     const handleSelectFuncionario = (funcionario) => {
         setNovoEvento({
@@ -64,7 +64,7 @@ function Adicionar({ show, onHide, onUpdate }) {
         setMensagemSucesso('');
 
         try {
-            if (novoEvento.id_paciente && novoEvento.start) {
+            if (novoEvento.id_aluno && novoEvento.start) {
                 const startDate = new Date(novoEvento.start);
                 const endDate = new Date(novoEvento.end);
 
@@ -94,7 +94,7 @@ function Adicionar({ show, onHide, onUpdate }) {
                 if (response.ok) {
                     setMensagemSucesso('Consulta adicionada com sucesso!');
                     setNovoEvento({
-                        id_paciente: '',
+                        id_aluno: '',
                         id_func_responsavel:'',
                         start: '',
                         end: '',
@@ -126,20 +126,20 @@ function Adicionar({ show, onHide, onUpdate }) {
                 {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
                 {mensagemSucesso && <Alert variant="success">{mensagemSucesso}</Alert>}
                 <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="formBasicPaciente" className="mb-3">
-                <Form.Label>Paciente</Form.Label>
+                <Form.Group controlId="formBasicAluno" className="mb-3">
+                <Form.Label>Aluno</Form.Label>
                 <div className="d-flex align-items-center">
                     <Form.Control
                         type="text"
-                        placeholder="Selecione um paciente"
-                        name="pacienteNome"
-                        value={novoEvento.pacienteNome} // Exibe o nome do paciente
+                        placeholder="Selecione um aluno"
+                        name="alunoNome"
+                        value={novoEvento.alunoNome} // Exibe o nome do aluno
                         readOnly // Torna o campo não editável
                         style={{ flex: 1, backgroundColor: '#e9ecef' }} // Estilo para indicar que está desabilitado
                     />
                         <Button
                             variant="secondary"
-                            onClick={() => setShowListaPacientesModal(true)}
+                            onClick={() => setShowListaAlunosModal(true)}
                             className="ms-2"
                         >
                             <i className="bi bi-search"></i>
@@ -205,7 +205,7 @@ function Adicionar({ show, onHide, onUpdate }) {
                         Salvar
                     </Button>
                 </Form>
-                <ListaPacientesModal show={showListaPacientesModal} onHide={() => setShowListaPacientesModal(false)} onSelectPaciente={handleSelectPaciente} />
+                <ListaAlunosModal show={showListaAlunosModal} onHide={() => setShowListaAlunosModal(false)} onSelectAluno={handleSelectAluno} />
                 <ListaFuncionariosModal show={showListaFuncionariosModal} onHide={() => setShowListaFuncionariosModal(false)} onSelectFuncionario={handleSelectFuncionario} />
             </Modal.Body>
         </Modal>

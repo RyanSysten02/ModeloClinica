@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Adicionar from "../componentes/agenda/adicionar/Adicionar";
 import ListaFuncionariosModal from "../componentes/funcionario/ListaFuncionarios";
-import ListaPacientesModal from "../componentes/paciente/ListaPacientes";
+import ListaAlunosModal from "../componentes/aluno/ListaAlunos";
 
 const RouteModals = () => {
   const location = useLocation();
@@ -10,7 +10,7 @@ const RouteModals = () => {
 
   const [showAdicionarModal, setShowAdicionarModal] = useState(false);
   const [showFuncionariosModal, setShowFuncionariosModal] = useState(false);
-  const [showPacientesModal, setShowPacientesModal] = useState(false);
+  const [showAlunosModal, setShowAlunosModal] = useState(false);
 
   React.useEffect(() => {
     switch (location.pathname) {
@@ -20,13 +20,13 @@ const RouteModals = () => {
       case "/funcionariosmodal":
         setShowFuncionariosModal(true);
         break;
-      case "/pacientemodal":
-        setShowPacientesModal(true);
+      case "/alunomodal":
+        setShowAlunosModal(true);
         break;
       default:
         setShowAdicionarModal(false);
         setShowFuncionariosModal(false);
-        setShowPacientesModal(false);
+        setShowAlunosModal(false);
         break;
     }
   }, [location.pathname]);
@@ -39,7 +39,7 @@ const RouteModals = () => {
     <>
       <Adicionar show={showAdicionarModal} onHide={handleClose} />
       <ListaFuncionariosModal show={showFuncionariosModal} onHide={handleClose} />
-      <ListaPacientesModal show={showPacientesModal} onHide={handleClose} />
+      <ListaAlunosModal show={showAlunosModal} onHide={handleClose} />
     </>
   );
 };
