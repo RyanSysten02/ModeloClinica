@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; 
 import { Container, Table, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import FuncionarioDetalhesModal from './FuncionarioDetalhesModal';
@@ -13,7 +13,6 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
   const [showCadastroModal, setShowCadastroModal] = useState(false);
   const navigate = useNavigate();
 
-  // Função para buscar os funcionários
   const fetchFuncionarios = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -78,10 +77,14 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
   const handleSave = async (formData) => {
     console.log('Tentando salvar:', formData);
 
-    if (formData.dataNascimento) {
-      const date = new Date(formData.dataNascimento);
-      date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-      formData.dataNascimento = format(date, 'yyyy-MM-dd');
+    // Corrigir a data no formato aceito pelo MySQL (yyyy-MM-dd)
+    if (formData.data_nasc) {
+      try {
+        const dataFormatada = format(new Date(formData.data_nasc), 'yyyy-MM-dd');
+        formData.data_nasc = dataFormatada;
+      } catch (e) {
+        console.error("Erro ao formatar data:", e.message);
+      }
     }
 
     try {
@@ -105,7 +108,6 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
       console.log('Resposta do servidor:', data);
 
       if (response.ok) {
-        // Após salvar, recarrega a lista de funcionários
         await fetchFuncionarios();
       } else {
         setMensagemErro("Erro ao salvar alterações do funcionário.");
@@ -133,7 +135,6 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
       });
 
       if (response.ok) {
-        // Após deletar, recarrega a lista de funcionários
         await fetchFuncionarios();
       } else {
         setMensagemErro("Erro ao apagar o funcionário.");
@@ -150,17 +151,17 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
 
   return (
     <Container>
-      <h1 className="mt-4">Lista de Funcionários</h1>
+      <h1 className="mt-4">Lista de Professores</h1>
       <div className="m-2 d-flex justify-content-start">
-        <Button variant="info" onClick={() => setShowCadastroModal(true)}>Cadastrar Funcionário</Button>
+        <Button variant="info" onClick={() => setShowCadastroModal(true)}>Cadastrar Professores</Button>
       </div>
       {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
       <Table striped bordered hover>
         <thead>
           <tr>
             <th>Nome</th>
-            <th>Matricula</th>
-            <th>Função</th>
+            <th>Registro</th>
+            <th>Habilitação</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -168,27 +169,32 @@ const TelaListaFuncionarios = ({ onSelectFuncionario }) => {
           {funcionarios.map((funcionario) => (
             <tr key={funcionario.id}>
               <td>{funcionario.nome}</td>
-              <td>{funcionario.matricula}</td>
-              <td>{funcionario.funcao}</td>
+              <td>{funcionario.num_regis}</td>
+              <td>{funcionario.habilitacao}</td>
               <td>
                 <Button variant="primary" onClick={() => handleDetalhes(funcionario.id)}>
                   Detalhes
                 </Button>
-      
               </td>
             </tr>
           ))}
         </tbody>
       </Table>
+
       {showModal && (
-        <FuncionarioDetalhesModal show={showModal} onHide={closeModal} funcionario={funcionarioSelecionado} onSave={handleSave} />
+        <FuncionarioDetalhesModal
+          show={showModal}
+          onHide={closeModal}
+          funcionario={funcionarioSelecionado}
+          onSave={handleSave}
+        />
       )}
 
       <FormularioFuncionario
-  show={showCadastroModal}
-  onHide={() => setShowCadastroModal(false)}
-  onCadastroSuccess={fetchFuncionarios} 
-/>
+        show={showCadastroModal}
+        onHide={() => setShowCadastroModal(false)}
+        onCadastroSuccess={fetchFuncionarios}
+      />
     </Container>
   );
 };

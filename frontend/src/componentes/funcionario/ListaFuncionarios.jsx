@@ -77,10 +77,8 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
   const handleSave = async (formData) => {
     console.log('Tentando salvar:', formData);
 
-    if (formData.dataNascimento) {
-      const date = new Date(formData.dataNascimento);
-      date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-      formData.dataNascimento = format(date, 'yyyy-MM-dd');
+    if (formData.data_nasc) {
+      formData.data_nasc = format(new Date(formData.data_nasc), 'yyyy-MM-dd');
     }
 
     try {
@@ -162,17 +160,17 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
           <thead>
             <tr>
               <th>Nome</th>
-              <th>Matricula</th>
+              <th>Registro</th>
               <th>Função</th>
-              <th>Ações</th>
+              <th>Habilitacao</th>
             </tr>
           </thead>
           <tbody>
             {funcionarios.map((funcionario) => (
               <tr key={funcionario.id}>
                 <td>{funcionario.nome}</td>
-                <td>{funcionario.matricula}</td>
-                <td>{funcionario.funcao}</td>
+                <td>{funcionario.Registro}</td>
+                <td>{funcionario.Habilitacao}</td>
                 <td>
                   <Button variant="primary" onClick={() => handleDetalhes(funcionario.id)}>
                     Detalhes
@@ -191,7 +189,7 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>Fechar</Button>
-        <Button variant="info" onClick={() => setShowCadastroModal(true)}>Cadastrar Funcionário</Button>
+        <Button variant="info" onClick={() => setShowCadastroModal(true)}>Cadastrar Professor</Button>
       </Modal.Footer>
       {/* Modal de Cadastro de Pacientes */}
       <FormularioFuncionario
