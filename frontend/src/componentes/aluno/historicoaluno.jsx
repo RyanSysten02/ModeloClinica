@@ -5,15 +5,15 @@ import ptBR from 'date-fns/locale/pt-BR';
 import { differenceInMinutes, format } from 'date-fns';
 import './csshistorico.css';
 
-const PacienteHistorico = ({ show, onHide, pacienteId }) => {
+const AlunoHistorico = ({ show, onHide, alunoId, mensagemErroControle }) => {
   const [historicos, setHistoricos] = useState([]);
   const [mensagemErro, setMensagemErro] = useState("");
   const navigate = useNavigate();
-
+  
   useEffect(() => {
     const fetchHistorico = async () => {
-      if (!pacienteId) {
-        setMensagemErro("ID do paciente não foi fornecido.");
+      if (!alunoId) {
+        setMensagemErro("ID do aluno não foi fornecido.");
         return;
       }
   
@@ -27,7 +27,7 @@ const PacienteHistorico = ({ show, onHide, pacienteId }) => {
           return;
         }
   
-        const response = await fetch(`http://localhost:5001/api/consulta/historico/${pacienteId}`, {
+        const response = await fetch(`http://localhost:5001/api/consulta/historico/${alunoId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -44,10 +44,10 @@ const PacienteHistorico = ({ show, onHide, pacienteId }) => {
       }
     };
   
-    if (pacienteId) {
+    if (alunoId) {
       fetchHistorico();
     }
-  }, [pacienteId, navigate]);
+  }, [alunoId, navigate]);
   
   const formatDate = (dateString) => {
     return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: ptBR });
@@ -65,21 +65,24 @@ const PacienteHistorico = ({ show, onHide, pacienteId }) => {
   return (
     <Modal show={show} onHide={onHide} size="xl" centered>
       <Modal.Header closeButton>
-        <Modal.Title>Histórico de Consultas</Modal.Title>
+        <Modal.Title>Histórico do Aluno</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
+      {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
+        {mensagemErroControle && (
+          <p style={{ color: "orange" }}>Erro do Backend: {mensagemErroControle}</p>
+        )}
         {historicos.length > 0 ? (
           <Table striped bordered hover>
             <thead>
               <tr>
-                <th>Criada em:</th>
-                <th>Inicio</th>
-                <th>Fim</th>
-                <th>Duração</th>
-                <th>Médico</th>
-                <th>Especialidade</th>
-                <th>Status</th>
+                <th>Data:</th>
+                <th>Inicio da Aula</th>
+                <th>Fim da Aula</th>
+                <th>Tempo Ausente</th>
+                <th>Professor</th>
+                <th>Matéria</th>
+                {/*<th>Status</th> verificar se é possivel reutilizar essa funcionalidade depois*/}
               </tr>
             </thead>
             <tbody>
@@ -91,7 +94,7 @@ const PacienteHistorico = ({ show, onHide, pacienteId }) => {
                 <td>{calculateDuration(consulta.start, consulta.end)}</td>
                 <td>{consulta.funcionario_nome}</td>
                 <td>{consulta.tipo}</td>
-                <td>
+                 {/*<td>
                   {consulta.status === 'C' ? (
                     <>
                       <strong>Cancelada</strong>
@@ -117,7 +120,7 @@ const PacienteHistorico = ({ show, onHide, pacienteId }) => {
                   ) : (
                     consulta.status
                   )}
-                </td>
+                </td>*/}
               </tr>
             ))}
           </tbody>
@@ -125,7 +128,7 @@ const PacienteHistorico = ({ show, onHide, pacienteId }) => {
 
           </Table>
         ) : (
-          !mensagemErro && <p>Nenhum histórico encontrado para este paciente.</p>
+          !mensagemErro && <p>Nenhum histórico encontrado para este aluno.</p>
         )}
       </Modal.Body>
 
@@ -138,4 +141,4 @@ const PacienteHistorico = ({ show, onHide, pacienteId }) => {
   );
 };
 
-export default PacienteHistorico;
+export default AlunoHistorico;

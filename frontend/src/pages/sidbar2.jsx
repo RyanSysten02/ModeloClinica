@@ -56,7 +56,7 @@ const Sidebar = () => {
               onClick={() => navigate("/paginicial")} 
             >
               <i className="bi bi-calendar-range"></i>
-              <span className="ms-3 d-inline-block">Agenda</span>
+              <span className="ms-3 d-inline-block">Minha Agenda</span>
             </Button>
           </NavItem>
           <NavItem className="sidenav-bg">
@@ -66,17 +66,27 @@ const Sidebar = () => {
               onClick={() => setShowAdicionarModal(true)}
             >
               <i className="bi bi-card-text"></i>
-              <span className="ms-3 d-inline-block">Agendar Consultas</span>
+              <span className="ms-3 d-inline-block">Atribuir Aulas</span>
             </Button>
           </NavItem>
           <NavItem className="sidenav-bg">
             <Button
               color="link"
               className="nav-link text-secondary py-3"
-              onClick={() => navigate("/pagPaciente")} // Navegação para a página
+              onClick={() => navigate("/pagAluno")} // Navegação para a página
+            >
+              <i className="bi bi-person"></i>
+              <span className="ms-3 d-inline-block">Alunos</span>
+            </Button>
+          </NavItem>
+          <NavItem className="sidenav-bg">
+            <Button
+              color="link"
+              className="nav-link text-secondary py-3"
+              onClick={() => navigate("/pagAluno")} // Navegação para a página
             >
               <i className="bi bi-people"></i>
-              <span className="ms-3 d-inline-block">Pacientes</span>
+              <span className="ms-3 d-inline-block">Responsaveis</span>
             </Button>
           </NavItem>
           <NavItem className="sidenav-bg">

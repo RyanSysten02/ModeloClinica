@@ -191,7 +191,7 @@ const ListaFuncionariosModal = ({ show, onHide, onSelectFuncionario }) => {
         <Button variant="secondary" onClick={onHide}>Fechar</Button>
         <Button variant="info" onClick={() => setShowCadastroModal(true)}>Cadastrar Professor</Button>
       </Modal.Footer>
-      {/* Modal de Cadastro de Pacientes */}
+      {/* Modal de Cadastro de Alunos */}
       <FormularioFuncionario
         show={showCadastroModal}
         onHide={() => setShowCadastroModal(false)}
