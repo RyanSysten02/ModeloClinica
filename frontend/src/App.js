@@ -14,6 +14,8 @@ import TelaProfessor from "./pages/telaprofessor";
 import RouteModals from "./componentes/RouteModals"; // Importa o componente de modais
 import TelaListaAlunos from "./componentes/aluno/telalisaluno";
 import Layoutaluno from "./pages/pagaluno";
+import TelaListaResponsavels from "./componentes/responsavel/telalisresponsavel";
+import Layoutresponsavel from "./pages/pagResponsavel";
 import Layoutprofessor from "./pages/pagprofessor";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -38,6 +40,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Layoutaluno />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pagResponsavel"
+            element={
+              <ProtectedRoute>
+                <Layoutresponsavel/>
               </ProtectedRoute>
             }
           />
