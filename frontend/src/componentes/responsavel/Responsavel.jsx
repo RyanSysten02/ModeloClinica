@@ -295,11 +295,13 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                                         name="contatoEmergencia"
                                         value={responsavel.contatoEmergencia}
                                         onChange={handleChange}
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
+                                        isInvalid={!!erros.contatoEmergencia}
+                                        />
+                                        <Form.Control.Feedback type="invalid">
+                                            {erros.contatoEmergencia}
+                                        </Form.Control.Feedback>
+                                    </Form.Group>
+                                </Col>
                             <Col md={12}>
                                 <Form.Group className="mb-3 text-start">
                                     <Form.Label>Observações</Form.Label>

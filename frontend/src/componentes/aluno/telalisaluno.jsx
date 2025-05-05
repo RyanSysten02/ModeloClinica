@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Table, Button } from "react-bootstrap";
+import { Container, Table, Button, InputGroup, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import AlunoDetalhesModal from "./AlunoDetalhesModal";
 import AlunoHistorico from "./historicoaluno";
@@ -79,41 +79,41 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
     }
   };
 
-const handleHistorico = async (id) => {
-  console.log("ID do aluno:", id);
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setMensagemErro("Token não encontrado. Faça login novamente.");
-      navigate("/login");
-      return;
+  const handleHistorico = async (id) => {
+    console.log("ID do aluno:", id);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMensagemErro("Token não encontrado. Faça login novamente.");
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5001/api/consulta/historico/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await response.json(); // Pegando a resposta do backend
+
+      if (!response.ok) {
+        toast.warning(data.message || "Erro ao carregar histórico do aluno.");
+        return;
+      }
+
+      if (data) {
+        setAlunoSelecionado({ id, ...data });
+        setShowHistoricoModal(true);
+        setMensagemErro(""); // Limpa erro se carregar com sucesso
+        setMensagemErroControle("");  // Limpa erro da API
+      } else {
+        setMensagemErro("Histórico do aluno não encontrado.");
+      }
+    } catch (error) {
+      setMensagemErro("Erro ao conectar com o servidor.");
     }
+  };
 
-    const response = await fetch(`http://localhost:5001/api/consulta/historico/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
 
-    const data = await response.json(); // Pegando a resposta do backend
-
-    if (!response.ok) {
-      toast.warning(data.message || "Erro ao carregar histórico do aluno.");
-      return;
-    }
-
-    if (data) {
-      setAlunoSelecionado({ id, ...data });
-      setShowHistoricoModal(true);
-      setMensagemErro(""); // Limpa erro se carregar com sucesso
-      setMensagemErroControle("");  // Limpa erro da API
-    } else {
-      setMensagemErro("Histórico do aluno não encontrado.");
-    }
-  } catch (error) {
-    setMensagemErro("Erro ao conectar com o servidor.");
-  }
-};
-  
-  
   // Função para salvar as alterações do aluno
   const handleSave = async (formData) => {
     console.log('Tentando salvar:', formData);
@@ -178,6 +178,15 @@ const handleHistorico = async (id) => {
           Cadastrar Aluno
         </Button>
       </div>
+      <InputGroup className="mb-3">
+        <Form.Control
+          aria-label="Example text with button addon"
+          aria-describedby="basic-addon1"
+        />
+        <Button variant="outline-secondary" id="button-addon1">
+          <i class="bi bi-search"></i>
+        </Button>
+      </InputGroup>
       {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
       <Table striped bordered hover>
         <thead>
@@ -218,11 +227,11 @@ const handleHistorico = async (id) => {
         />
       )}
       <AlunoHistorico
-      show={showHistoricoModal}
-      onHide={() => setShowHistoricoModal(false)}
-      alunoId={alunoSelecionado?.id}
-      mensagemErroControle={mensagemErroControle}
-    />
+        show={showHistoricoModal}
+        onHide={() => setShowHistoricoModal(false)}
+        alunoId={alunoSelecionado?.id}
+        mensagemErroControle={mensagemErroControle}
+      />
 
 
       {/* Modal de Cadastro de Aluno */}
