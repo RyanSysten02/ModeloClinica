@@ -232,7 +232,7 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
         <Form.Control
           aria-label="Example text with button addon"
           aria-describedby="basic-addon1"
-          placeholder="Busque o aluno"
+          placeholder="Busque o responsavel"
           onChange={(e) => setSearchText(e.target.value)}
         />
         <Button variant="outline-secondary" id="button-addon1">
