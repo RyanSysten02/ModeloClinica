@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Container, Table, Button, InputGroup, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import AlunoDetalhesModal from "./AlunoDetalhesModal";
 import AlunoHistorico from "./historicoaluno";
 import FormularioAluno from "./Aluno";
-import { format } from 'date-fns';
-import { toast } from 'react-toastify';
-
+import { format } from "date-fns";
+import { toast } from "react-toastify";
 
 const TelaListaAlunos = ({ onSelectAluno }) => {
   const [alunos, setAlunos] = useState([]);
@@ -17,6 +16,21 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
   const [showHistoricoModal, setShowHistoricoModal] = useState(false);
   const [mensagemErroControle, setMensagemErroControle] = useState("");
   const navigate = useNavigate();
+  const [searchText, setSearchText] = useState();
+
+  const alunosFiltrados = useMemo(() => {
+    const list = alunos?.filter((aluno) => {
+      const currentSearch = searchText?.toLowerCase();
+
+      return (
+        aluno?.nome?.toLowerCase()?.includes(currentSearch) ||
+        aluno?.cpf?.toLowerCase()?.includes(currentSearch) ||
+        aluno?.alunoTurma?.toLowerCase()?.includes(currentSearch)
+      );
+    });
+
+    return list?.length > 0 ? list : alunos;
+  }, [searchText, alunos]);
 
   // Função para buscar todos os alunos
   const fetchAlunos = async () => {
@@ -58,11 +72,14 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         navigate("/login");
         return;
       }
-      const response = await fetch(`http://localhost:5001/api/aluno/aluno/${id}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:5001/api/aluno/aluno/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -89,9 +106,12 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/consulta/historico/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `http://localhost:5001/api/consulta/historico/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       const data = await response.json(); // Pegando a resposta do backend
 
@@ -104,7 +124,7 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         setAlunoSelecionado({ id, ...data });
         setShowHistoricoModal(true);
         setMensagemErro(""); // Limpa erro se carregar com sucesso
-        setMensagemErroControle("");  // Limpa erro da API
+        setMensagemErroControle(""); // Limpa erro da API
       } else {
         setMensagemErro("Histórico do aluno não encontrado.");
       }
@@ -113,15 +133,14 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
     }
   };
 
-
   // Função para salvar as alterações do aluno
   const handleSave = async (formData) => {
-    console.log('Tentando salvar:', formData);
+    console.log("Tentando salvar:", formData);
 
     if (formData.dataNascimento) {
       const date = new Date(formData.dataNascimento);
       date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-      formData.dataNascimento = format(date, 'yyyy-MM-dd');
+      formData.dataNascimento = format(date, "yyyy-MM-dd");
     }
 
     try {
@@ -132,23 +151,24 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/aluno/aluno/${formData.id}`, {
-        method: 'PUT',
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `http://localhost:5001/api/aluno/aluno/${formData.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
-      console.log('Resposta do servidor:', data);
+      console.log("Resposta do servidor:", data);
 
       if (response.ok) {
-        setAlunos(prevState =>
-          prevState.map(p =>
-            p.id === formData.id ? formData : p
-          )
+        setAlunos((prevState) =>
+          prevState.map((p) => (p.id === formData.id ? formData : p))
         );
       } else {
         setMensagemErro("Erro ao salvar alterações do aluno.");
@@ -170,6 +190,30 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
     setAlunoSelecionado(null);
   };
 
+  const handleExcluirAluno = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMensagemErro("Token não encontrado. Faça login novamente.");
+        navigate("/login");
+        return;
+      }
+
+      await fetch(`http://localhost:5001/api/aluno/aluno/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      fetchAlunos();
+    } catch (error) {
+      console.error("Erro na exclusão:", error.message);
+      setMensagemErro("Erro ao conectar com o servidor.");
+    }
+  };
+
   return (
     <Container>
       <h1 className="mt-4">Lista de Alunos</h1>
@@ -182,9 +226,11 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         <Form.Control
           aria-label="Example text with button addon"
           aria-describedby="basic-addon1"
+          placeholder="Busque o aluno"
+          onChange={(e) => setSearchText(e.target.value)}
         />
         <Button variant="outline-secondary" id="button-addon1">
-          <i class="bi bi-search"></i>
+          <i className="bi bi-search"></i>
         </Button>
       </InputGroup>
       {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
@@ -198,19 +244,37 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
           </tr>
         </thead>
         <tbody>
-          {alunos.map((aluno) => (
+          {alunosFiltrados?.map((aluno) => (
             <tr key={aluno.id}>
               <td>{aluno.nome}</td>
               <td>{aluno.cpf}</td>
               <td>{aluno.alunoTurma}</td>
-              <td>
-                <Button variant="primary" onClick={() => handleDetalhes(aluno.id)}>
+              <td
+                style={{
+                  display: "inline-flex",
+                  gap: 10,
+                  width: "100%",
+                  justifyContent: "center",
+                }}
+              >
+                <Button
+                  variant="primary"
+                  onClick={() => handleDetalhes(aluno.id)}
+                >
                   Detalhes
                 </Button>
-                <Button variant="warning" onClick={() => handleHistorico(aluno.id)}>
+                <Button
+                  variant="warning"
+                  onClick={() => handleHistorico(aluno.id)}
+                >
                   Histórico
                 </Button>
-
+                <Button
+                  variant="danger"
+                  onClick={() => handleExcluirAluno(aluno?.id)}
+                >
+                  Excluir
+                </Button>
               </td>
             </tr>
           ))}
@@ -232,7 +296,6 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         alunoId={alunoSelecionado?.id}
         mensagemErroControle={mensagemErroControle}
       />
-
 
       {/* Modal de Cadastro de Aluno */}
       <FormularioAluno
