@@ -18,6 +18,9 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
     habilitacao: "",
     especializacao: "",
     cursos: "",
+    telefone: "",
+    email: "",
+    sexo: "",
   });
 
   const [mensagemErro, setMensagemErro] = useState("");
@@ -34,6 +37,9 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
     "cidade",
     "num_regis",
     "habilitacao",
+    "telefone",
+    "email",
+    "sexo",
   ];
 
   const validarCampos = () => {
@@ -63,6 +69,8 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
       novoValor = aplicarMascara(value, "##.###.###-#");
     } else if (name === "cep") {
       novoValor = aplicarMascara(value, "#####-###");
+    } else if (name === "telefone") {
+      novoValor = aplicarMascara(value, "(##) #####-####");
     }
 
     setProfessor({ ...professor, [name]: novoValor });
@@ -78,29 +86,24 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
       return;
     }
 
-    onHide(); // Fechar o modal
+    onHide();
 
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro(
-          "Token de autenticação não encontrado. Faça login novamente."
-        );
+        setMensagemErro("Token de autenticação não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
 
-      const response = await fetch(
-        "http://localhost:5001/api/professor/cadastraprofessor",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(professor),
-        }
-      );
+      const response = await fetch("http://localhost:5001/api/professor/cadastraprofessor", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(professor),
+      });
 
       const data = await response.json();
 
@@ -119,11 +122,12 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
           habilitacao: "",
           especializacao: "",
           cursos: "",
+          telefone: "",
+          email: "",
+          sexo: "",
         });
 
-        if (onCadastroSuccess) {
-          onCadastroSuccess();
-        }
+        if (onCadastroSuccess) onCadastroSuccess();
 
         navigate("/pagProfessor");
       } else {
@@ -147,24 +151,20 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
           )}
           <Form onSubmit={handleSubmit}>
             <Row>
-              {/* Campos - mesmo layout original, com value e onChange atualizados */}
               {[
                 { label: "Nome*", name: "nome", md: 6 },
                 { label: "CPF*", name: "cpf", md: 3 },
                 { label: "RG*", name: "rg", md: 3 },
-                { label: "Endereço", name: "end_rua", md: 6 },
-                { label: "Número", name: "end_numero", md: 1 },
-                { label: "Bairro", name: "bairro", md: 2 },
-                { label: "Cidade", name: "cidade", md: 3 },
-                { label: "CEP", name: "cep", md: 2 },
-                {
-                  label: "Data de Nascimento",
-                  name: "data_nasc",
-                  md: 2,
-                  type: "date",
-                },
-                { label: "Número de Registro(CRE)", name: "num_regis", md: 3 },
-                { label: "Habilitação", name: "habilitacao", md: 5 },
+                { label: "Endereço*", name: "end_rua", md: 6 },
+                { label: "Número*", name: "end_numero", md: 1 },
+                { label: "Bairro*", name: "bairro", md: 2 },
+                { label: "Cidade*", name: "cidade", md: 3 },
+                { label: "CEP*", name: "cep", md: 2 },
+                { label: "Data de Nascimento*", name: "data_nasc", md: 2, type: "date" },
+                { label: "Número de Registro (CRE)*", name: "num_regis", md: 3 },
+                { label: "Habilitação*", name: "habilitacao", md: 5 },
+                { label: "Telefone*", name: "telefone", md: 4 },
+                { label: "Email*", name: "email", md: 4 },
                 { label: "Especializações", name: "especializacao", md: 12 },
                 { label: "Cursos e Experiências", name: "cursos", md: 12 },
               ].map(({ label, name, md, type = "text" }) => (
@@ -180,6 +180,21 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
                   </Form.Group>
                 </Col>
               ))}
+
+              <Col md={4}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Sexo*</Form.Label>
+                  <Form.Select
+                    name="sexo"
+                    value={professor.sexo}
+                    onChange={handleChange}
+                  >
+                    <option value="">Selecione</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
             </Row>
           </Form>
         </Container>
