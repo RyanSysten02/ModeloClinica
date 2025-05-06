@@ -13,7 +13,10 @@ const createProfessor = async (
   num_regis,
   habilitacao,
   especializacao,
-  cursos
+  cursos,
+  telefone,
+  sexo,
+  email
 ) => {
   const professor = await professormodel.createProfessor(
     nome,
@@ -28,7 +31,10 @@ const createProfessor = async (
     num_regis,
     habilitacao,
     especializacao,
-    cursos
+    cursos,
+    telefone,
+    sexo,
+    email
   );
   return professor;
 };
@@ -46,7 +52,10 @@ const getProfessor = async (
   num_regis,
   habilitacao,
   especializacao,
-  cursos
+  cursos,
+  telefone,
+  sexo,
+  email
 ) => {
   const professor = await professormodel.getProfessor(
     nome,
@@ -61,7 +70,10 @@ const getProfessor = async (
     num_regis,
     habilitacao,
     especializacao,
-    cursos
+    cursos,
+    telefone,
+    sexo,
+    email
   );
   return professor;
 };
@@ -80,7 +92,10 @@ const updateProfessor = async (
   num_regis,
   habilitacao,
   especializacao,
-  cursos
+  cursos,
+  telefone,
+  sexo,
+  email
 ) => {
   const professor = await professormodel.updateProfessor(
     id,
@@ -96,7 +111,10 @@ const updateProfessor = async (
     num_regis,
     habilitacao,
     especializacao,
-    cursos
+    cursos,
+    telefone,
+    sexo,
+    email
   );
   return professor;
 };

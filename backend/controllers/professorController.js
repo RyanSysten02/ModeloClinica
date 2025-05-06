@@ -16,6 +16,9 @@ const createProfessor = async (req, res) => {
     habilitacao,
     especializacao,
     cursos,
+    telefone,
+    sexo,
+    email
   } = req.body;
 
   const token = req.header("Authorization");
@@ -40,7 +43,10 @@ const createProfessor = async (req, res) => {
       num_regis,
       habilitacao,
       especializacao,
-      cursos
+      cursos,
+      telefone,
+      sexo,
+      email,
     );
     res.status(201).json({ message: "Professor cadastrado com sucesso" });
   } catch (error) {
@@ -90,6 +96,9 @@ const updateProfessor = async (req, res) => {
     habilitacao,
     especializacao,
     cursos,
+    telefone,
+    sexo,
+    email
   } = req.body;
 
   const token = req.header("Authorization");
@@ -121,7 +130,10 @@ const updateProfessor = async (req, res) => {
       num_regis,
       habilitacao,
       especializacao,
-      cursos
+      cursos,
+      telefone,
+      sexo,
+      email
     );
     res
       .status(200)

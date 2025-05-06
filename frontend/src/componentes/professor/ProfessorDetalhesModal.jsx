@@ -21,6 +21,9 @@ const camposObrigatorios = [
   "cidade",
   "num_regis",
   "habilitacao",
+  "telefone",
+  "sexo",
+  "email",
 ];
 
 const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
@@ -41,11 +44,7 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
     const novosErros = {};
     camposObrigatorios.forEach((campo) => {
       const valor = formData[campo];
-      if (
-        valor === undefined ||
-        valor === null ||
-        String(valor).trim() === ""
-      ) {
+      if (!valor || String(valor).trim() === "") {
         novosErros[campo] = "Campo obrigatório";
       }
     });
@@ -133,6 +132,7 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={6}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Endereço*</Form.Label>
@@ -150,7 +150,7 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
               </Col>
               <Col md={1}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Numero*</Form.Label>
+                  <Form.Label>Número*</Form.Label>
                   <Form.Control
                     type="text"
                     name="end_numero"
@@ -214,7 +214,9 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
                     type="date"
                     name="data_nasc"
                     value={
-                      formData.data_nasc ? formData.data_nasc.split("T")[0] : ""
+                      formData.data_nasc
+                        ? formData.data_nasc.split("T")[0]
+                        : ""
                     }
                     onChange={handleChange}
                     isInvalid={!!erros.data_nasc}
@@ -224,9 +226,69 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Número de Registro(CRE)*</Form.Label>
+                  <Form.Label>Telefone*</Form.Label>
+                  <InputMask
+                    mask="(99) 99999-9999"
+                    value={formData.telefone || ""}
+                    onChange={handleChange}
+                  >
+                    {(inputProps) => (
+                      <Form.Control
+                        {...inputProps}
+                        type="text"
+                        name="telefone"
+                        isInvalid={!!erros.telefone}
+                      />
+                    )}
+                  </InputMask>
+                  <Form.Control.Feedback type="invalid">
+                    {erros.telefone}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+
+              <Col md={3}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Email*</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={formData.email || ""}
+                    onChange={handleChange}
+                    isInvalid={!!erros.email}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {erros.email}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+
+              <Col md={3}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Sexo*</Form.Label>
+                  <Form.Select
+                    name="sexo"
+                    value={formData.sexo || ""}
+                    onChange={handleChange}
+                    isInvalid={!!erros.sexo}
+                  >
+                    <option value="">Selecione</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
+                    <option value="Outro">Outro</option>
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    {erros.sexo}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+
+              <Col md={3}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Número de Registro (CRE)*</Form.Label>
                   <Form.Control
                     type="text"
                     name="num_regis"
@@ -239,6 +301,7 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={5}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Habilitação*</Form.Label>
@@ -254,6 +317,7 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={12}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Especializações</Form.Label>
@@ -267,7 +331,7 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
               </Col>
               <Col md={12}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Cursos e Experiencias</Form.Label>
+                  <Form.Label>Cursos e Experiências</Form.Label>
                   <Form.Control
                     type="text"
                     name="cursos"

@@ -13,13 +13,16 @@ const createProfessor = async (
   num_regis,
   habilitacao,
   especializacao,
-  cursos
+  cursos,
+  telefone,
+  sexo,
+  email
 ) => {
   const result = await pool.query(
     `INSERT INTO professor (
             nome, cpf, rg, cep, end_rua, end_numero, bairro, cidade,
-             data_nasc, num_regis, habilitacao, especializacao,cursos
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             data_nasc, num_regis, habilitacao, especializacao,cursos, telefone, sexo, email
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       nome,
       cpf,
@@ -34,6 +37,9 @@ const createProfessor = async (
       habilitacao,
       especializacao,
       cursos,
+      telefone,
+      sexo,
+      email,
     ]
   );
   return result;
@@ -63,13 +69,16 @@ const updateProfessor = async (
   num_regis,
   habilitacao,
   especializacao,
-  cursos
+  cursos,
+  telefone,
+  sexo,
+  email
 ) => {
   const result = await pool.query(
     `UPDATE professor SET 
             nome = ?, cpf = ?, rg = ?, cep = ?, end_rua = ?,
             end_numero = ?, bairro = ?, cidade = ?, data_nasc = ?, num_regis = ?,
-            habilitacao = ?, especializacao = ?, cursos = ?
+            habilitacao = ?, especializacao = ?, cursos = ?, telefone = ? , sexo = ?, email = ?,
         WHERE id = ?`,
     [
       nome,
@@ -85,6 +94,9 @@ const updateProfessor = async (
       habilitacao,
       especializacao,
       cursos,
+      telefone,
+      sexo,
+      email,
       id,
     ]
   );
