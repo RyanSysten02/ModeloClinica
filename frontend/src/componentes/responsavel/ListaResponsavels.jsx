@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Container, Table, Button, Input, InputGroup, Form } from "react-bootstrap";
+import { Modal, Container, Table, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import AlunoDetalhesModal from './AlunoDetalhesModal';
-import FormularioAluno from '../aluno/Aluno';
+import AlunoDetalhesModal from './ResponsavelDetalhesModal';
+import FormularioAluno from '../aluno/Aluno'; 
 import { format } from 'date-fns';
 
 const ListaAlunosModal = ({ show, onHide, onSelectAluno }) => {

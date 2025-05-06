@@ -83,7 +83,7 @@ const Sidebar = () => {
             <Button
               color="link"
               className="nav-link text-secondary py-3"
-              onClick={() => navigate("/pagAluno")} // Navegação para a página
+              onClick={() => navigate("/pagResponsavel")} // Navegação para a página
             >
               <i className="bi bi-people"></i>
               <span className="ms-3 d-inline-block">Responsaveis</span>
