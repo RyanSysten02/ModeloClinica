@@ -187,13 +187,16 @@ function Adicionar({ show, onHide, onUpdate }) {
               value={novoEvento.tipo}
               onChange={handleChange}
             >
-              <option value="">Selecione uma especialidade</option>
-              <option value="Cardiologia">Cardiologia</option>
-              <option value="Dermatologia">Dermatologia</option>
-              <option value="Ginecologia">Ginecologia</option>
-              <option value="Neurologia">Neurologia</option>
-              <option value="Ortopedia">Ortopedia</option>
-              <option value="Pediatria">Pediatria</option>
+              <option value="">Selecione uma matéria</option>
+                <option value="Matemática">Matemática</option>
+                <option value="Português">Português</option>
+                <option value="História">História</option>
+                <option value="Geografia">Geografia</option>
+                <option value="Ciências">Ciências</option>
+                <option value="Inglês">Inglês</option>
+                <option value="Educação Física">Educação Física</option>
+                <option value="Artes">Artes</option>
+
             </Form.Select>
           </Form.Group>
           <Form.Group controlId="formBasicDesc" className="mb-3">
