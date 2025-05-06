@@ -211,6 +211,12 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
                 >
                   Detalhes
                 </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => handleDelete(professor.id)}
+                >
+                  Excluir
+                </Button>
               </td>
             </tr>
           ))}
