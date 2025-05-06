@@ -1,25 +1,26 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Table, Button, InputGroup, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import AlunoDetalhesModal from "./AlunoDetalhesModal";
-import AlunoHistorico from "./historicoaluno";
-import FormularioAluno from "./Aluno";
+import ResponsavelDetalhesModal from "./ResponsavelDetalhesModal";
+import ResponsavelHistorico from "./historicoresponsavel";
+import FormularioResponsavel from "./Responsavel";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
+import { useMemo } from "react";
 
-const TelaListaAlunos = ({ onSelectAluno }) => {
-  const [alunos, setAlunos] = useState([]);
+const TelaListaResponsavels = ({ onSelectResponsavel }) => {
+  const [responsavels, setResponsavels] = useState([]);
   const [mensagemErro, setMensagemErro] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [alunoSelecionado, setAlunoSelecionado] = useState(null);
+  const [responsavelSelecionado, setResponsavelSelecionado] = useState(null);
   const [showCadastroModal, setShowCadastroModal] = useState(false);
   const [showHistoricoModal, setShowHistoricoModal] = useState(false);
   const [mensagemErroControle, setMensagemErroControle] = useState("");
-  const navigate = useNavigate();
   const [searchText, setSearchText] = useState();
+  const navigate = useNavigate();
 
-  const alunosFiltrados = useMemo(() => {
-    const list = alunos?.filter((aluno) => {
+  const responsavelFiltrados = useMemo(() => {
+    const list = responsavels?.filter((aluno) => {
       const currentSearch = searchText?.toLowerCase();
 
       return (
@@ -29,11 +30,11 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
       );
     });
 
-    return list?.length > 0 ? list : alunos;
-  }, [searchText, alunos]);
+    return list?.length > 0 ? list : responsavels;
+  }, [searchText, responsavels]);
 
-  // Função para buscar todos os alunos
-  const fetchAlunos = async () => {
+  // Função para buscar todos os responsavels
+  const fetchResponsavels = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -42,17 +43,20 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         return;
       }
 
-      const response = await fetch("http://localhost:5001/api/aluno/allaluno", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        "http://localhost:5001/api/responsavel/allresponsavel",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
-        setAlunos(data);
+        setResponsavels(data);
       } else {
-        setMensagemErro("Erro ao carregar os alunos.");
+        setMensagemErro("Erro ao carregar os responsavels.");
       }
     } catch (error) {
       setMensagemErro("Erro ao conectar com o servidor.");
@@ -60,10 +64,10 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
   };
 
   useEffect(() => {
-    fetchAlunos(); // Carrega os alunos ao iniciar a página
+    fetchResponsavels(); // Carrega os responsavels ao iniciar a página
   }, [navigate]);
 
-  // Função para buscar os detalhes do aluno pelo ID
+  // Função para buscar os detalhes do responsavel pelo ID
   const handleDetalhes = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -73,7 +77,7 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         return;
       }
       const response = await fetch(
-        `http://localhost:5001/api/aluno/aluno/${id}`,
+        `http://localhost:5001/api/responsavel/responsavel/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -83,13 +87,13 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
-          setAlunoSelecionado(data[0]);
+          setResponsavelSelecionado(data[0]);
           setShowModal(true);
         } else {
-          setMensagemErro("Dados do aluno não encontrados.");
+          setMensagemErro("Dados do responsavel não encontrados.");
         }
       } else {
-        setMensagemErro("Erro ao carregar detalhes do aluno.");
+        setMensagemErro("Erro ao carregar detalhes do responsavel.");
       }
     } catch (error) {
       setMensagemErro("Erro ao conectar com o servidor.");
@@ -97,7 +101,7 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
   };
 
   const handleHistorico = async (id) => {
-    console.log("ID do aluno:", id);
+    console.log("ID do responsavel:", id);
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -116,24 +120,26 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
       const data = await response.json(); // Pegando a resposta do backend
 
       if (!response.ok) {
-        toast.warning(data.message || "Erro ao carregar histórico do aluno.");
+        toast.warning(
+          data.message || "Erro ao carregar histórico do responsavel."
+        );
         return;
       }
 
       if (data) {
-        setAlunoSelecionado({ id, ...data });
+        setResponsavelSelecionado({ id, ...data });
         setShowHistoricoModal(true);
         setMensagemErro(""); // Limpa erro se carregar com sucesso
         setMensagemErroControle(""); // Limpa erro da API
       } else {
-        setMensagemErro("Histórico do aluno não encontrado.");
+        setMensagemErro("Histórico do responsavel não encontrado.");
       }
     } catch (error) {
       setMensagemErro("Erro ao conectar com o servidor.");
     }
   };
 
-  // Função para salvar as alterações do aluno
+  // Função para salvar as alterações do responsavel
   const handleSave = async (formData) => {
     console.log("Tentando salvar:", formData);
 
@@ -152,7 +158,7 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
       }
 
       const response = await fetch(
-        `http://localhost:5001/api/aluno/aluno/${formData.id}`,
+        `http://localhost:5001/api/responsavel/responsavel/${formData.id}`,
         {
           method: "PUT",
           headers: {
@@ -167,11 +173,11 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
       console.log("Resposta do servidor:", data);
 
       if (response.ok) {
-        setAlunos((prevState) =>
+        setResponsavels((prevState) =>
           prevState.map((p) => (p.id === formData.id ? formData : p))
         );
       } else {
-        setMensagemErro("Erro ao salvar alterações do aluno.");
+        setMensagemErro("Erro ao salvar alterações do responsavel.");
       }
     } catch (error) {
       console.error("Erro na atualização:", error.message);
@@ -182,12 +188,12 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
   // Função para fechar o modal de detalhes
   const closeModal = () => {
     setShowModal(false);
-    setAlunoSelecionado(null);
+    setResponsavelSelecionado(null);
   };
 
   const closeHistoricoModal = () => {
     setShowHistoricoModal(false);
-    setAlunoSelecionado(null);
+    setResponsavelSelecionado(null);
   };
 
   const handleExcluirAluno = async (id) => {
@@ -199,7 +205,7 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         return;
       }
 
-      await fetch(`http://localhost:5001/api/aluno/aluno/${id}`, {
+      await fetch(`http://localhost:5001/api/responsavel/responsavel/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -207,7 +213,7 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         },
       });
 
-      fetchAlunos();
+      fetchResponsavels();
     } catch (error) {
       console.error("Erro na exclusão:", error.message);
       setMensagemErro("Erro ao conectar com o servidor.");
@@ -216,17 +222,17 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
 
   return (
     <Container>
-      <h1 className="mt-4">Lista de Alunos</h1>
+      <h1 className="mt-4">Lista de Responsavels</h1>
       <div className="m-2 d-flex justify-content-start">
         <Button variant="info" onClick={() => setShowCadastroModal(true)}>
-          Cadastrar Aluno
+          Cadastrar Responsavel
         </Button>
       </div>
       <InputGroup className="mb-3">
         <Form.Control
           aria-label="Example text with button addon"
           aria-describedby="basic-addon1"
-          placeholder="Busque o aluno"
+          placeholder="Busque o responsavel"
           onChange={(e) => setSearchText(e.target.value)}
         />
         <Button variant="outline-secondary" id="button-addon1">
@@ -244,11 +250,11 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
           </tr>
         </thead>
         <tbody>
-          {alunosFiltrados?.map((aluno) => (
-            <tr key={aluno.id}>
-              <td>{aluno.nome}</td>
-              <td>{aluno.cpf}</td>
-              <td>{aluno.alunoTurma}</td>
+          {responsavelFiltrados?.map((responsavel) => (
+            <tr key={responsavel.id}>
+              <td>{responsavel.nome}</td>
+              <td>{responsavel.cpf}</td>
+              <td>{responsavel.responsavelTurma}</td>
               <td
                 style={{
                   display: "inline-flex",
@@ -259,19 +265,19 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
               >
                 <Button
                   variant="primary"
-                  onClick={() => handleDetalhes(aluno.id)}
+                  onClick={() => handleDetalhes(responsavel.id)}
                 >
                   Detalhes
                 </Button>
                 <Button
                   variant="warning"
-                  onClick={() => handleHistorico(aluno.id)}
+                  onClick={() => handleHistorico(responsavel.id)}
                 >
                   Histórico
                 </Button>
                 <Button
                   variant="danger"
-                  onClick={() => handleExcluirAluno(aluno?.id)}
+                  onClick={() => handleExcluirAluno(responsavel?.id)}
                 >
                   Excluir
                 </Button>
@@ -281,33 +287,33 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         </tbody>
       </Table>
 
-      {/* Modal de Detalhes do Aluno */}
+      {/* Modal de Detalhes do Responsavel */}
       {showModal && (
-        <AlunoDetalhesModal
+        <ResponsavelDetalhesModal
           show={showModal}
           onHide={closeModal}
-          aluno={alunoSelecionado}
+          responsavel={responsavelSelecionado}
           onSave={handleSave}
         />
       )}
-      <AlunoHistorico
+      <ResponsavelHistorico
         show={showHistoricoModal}
         onHide={() => setShowHistoricoModal(false)}
-        alunoId={alunoSelecionado?.id}
+        responsavelId={responsavelSelecionado?.id}
         mensagemErroControle={mensagemErroControle}
       />
 
-      {/* Modal de Cadastro de Aluno */}
-      <FormularioAluno
+      {/* Modal de Cadastro de Responsavel */}
+      <FormularioResponsavel
         show={showCadastroModal}
         onHide={() => {
           setShowCadastroModal(false);
-          fetchAlunos(); // Atualiza a lista de alunos após fechar o modal
+          fetchResponsavels(); // Atualiza a lista de responsavels após fechar o modal
         }}
-        onAlunosAtualizados={fetchAlunos} // Passa a função para atualizar a lista
+        onResponsavelsAtualizados={fetchResponsavels} // Passa a função para atualizar a lista
       />
     </Container>
   );
 };
 
-export default TelaListaAlunos;
+export default TelaListaResponsavels;
