@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Button, Form, Container, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { toast } from 'react-toastify';
 
 function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
   const [professor, setProfessor] = useState({
@@ -126,7 +127,7 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
 
         navigate("/pagProfessor");
       } else {
-        setMensagemErro(data.message || "Falha ao adicionar funcionário");
+        toast.warning(data.message || "Falha ao adicionar funcionário");
       }
     } catch (error) {
       setMensagemErro("Ocorreu um erro. Tente novamente.");

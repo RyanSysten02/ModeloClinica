@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Table, Button } from "react-bootstrap";
+import { Container, Table, Button, Form, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import ProfessorDetalhesModal from "./ProfessorDetalhesModal";
 import { format } from "date-fns";
@@ -11,6 +11,7 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
   const [showModal, setShowModal] = useState(false);
   const [professorSelecionado, setProfessorSelecionado] = useState(null);
   const [showCadastroModal, setShowCadastroModal] = useState(false);
+  const [filtroNome, setFiltroNome] = useState("");
   const navigate = useNavigate();
 
   const fetchProfessores = async () => {
@@ -83,7 +84,6 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
   const handleSave = async (formData) => {
     console.log("Tentando salvar:", formData);
 
-    // Corrigir a data no formato aceito pelo MySQL (yyyy-MM-dd)
     if (formData.data_nasc) {
       try {
         const dataFormatada = format(
@@ -164,15 +164,31 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
     setProfessorSelecionado(null);
   };
 
+  const professoresFiltrados = professores.filter((professor) =>
+    professor.nome.toLowerCase().includes(filtroNome.toLowerCase())
+  );
+
   return (
     <Container>
       <h1 className="mt-4">Lista de Professores</h1>
-      <div className="m-2 d-flex justify-content-start">
-        <Button variant="info" onClick={() => setShowCadastroModal(true)}>
-          Cadastrar Professores
-        </Button>
-      </div>
+      <Row className="m-2">
+        <Col md="auto">
+          <Button variant="info" onClick={() => setShowCadastroModal(true)}>
+            Cadastrar Professores
+          </Button>
+        </Col>
+        <Col md={4}>
+          <Form.Control
+            type="text"
+            placeholder="Pesquisar por nome"
+            value={filtroNome}
+            onChange={(e) => setFiltroNome(e.target.value)}
+          />
+        </Col>
+      </Row>
+
       {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
+
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -183,7 +199,7 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
           </tr>
         </thead>
         <tbody>
-          {professores.map((professor) => (
+          {professoresFiltrados.map((professor) => (
             <tr key={professor.id}>
               <td>{professor.nome}</td>
               <td>{professor.num_regis}</td>
