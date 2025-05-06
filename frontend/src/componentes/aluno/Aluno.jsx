@@ -200,7 +200,7 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
                             </Col>
                             <Col md={4}>
                                 <Form.Group className="mb-3 text-start">
-                                    <Form.Label>Número do Benefício</Form.Label>
+                                    <Form.Label>RA</Form.Label>
                                     <Form.Control
                                         type="text"
                                         name="numeroBeneficio"
