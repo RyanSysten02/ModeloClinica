@@ -222,7 +222,7 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
 
   return (
     <Container>
-      <h1 className="mt-4">Lista de Responsavels</h1>
+      <h1 className="mt-4">Lista de Responsáveis</h1>
       <div className="m-2 d-flex justify-content-start">
         <Button variant="info" onClick={() => setShowCadastroModal(true)}>
           Cadastrar Responsavel
