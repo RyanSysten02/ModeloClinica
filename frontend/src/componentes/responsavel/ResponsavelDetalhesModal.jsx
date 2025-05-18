@@ -1,76 +1,128 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, Container, Row, Col } from 'react-bootstrap';
+import { Modal, Button, Form, Container, Row, Col, Alert } from 'react-bootstrap';
+import InputMask from 'react-input-mask';
+
+const camposObrigatorios = [
+  'nome', 'cpf', 'rg', 'dataNascimento',
+  'endereco', 'num', 'responsavelTurma'
+];
 
 const ResponsavelDetalhesModal = ({ show, onHide, responsavel, onSave }) => {
   const [formData, setFormData] = useState(responsavel);
+  const [errors, setErrors] = useState({});
+  const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
     setFormData(responsavel);
+    setErrors({});
   }, [responsavel]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  const validarCampos = () => {
+    const novosErros = {};
+    camposObrigatorios.forEach((campo) => {
+      if (!formData[campo] || formData[campo].toString().trim() === '') {
+        novosErros[campo] = 'Campo obrigatório';
+      }
+    });
+    setErrors(novosErros);
+    setShowAlert(Object.keys(novosErros).length > 0);
+    return Object.keys(novosErros).length === 0;
   };
 
   const handleSubmit = () => {
-    onSave(formData);
-    onHide();
+    if (validarCampos()) {
+      onSave(formData);
+      onHide();
+    }
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="xl"> {/* Aumentando a largura do modal */}
+    <Modal show={show} onHide={onHide} size="xl">
       <Modal.Header closeButton>
-        <Modal.Title>Detalhes do Responsavel</Modal.Title>
+        <Modal.Title>Detalhes do Responsável</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container className="mt-4">
+          {showAlert && (
+  <Alert variant="danger">
+    Preencha todos os campos obrigatórios.
+  </Alert>
+)}
           <Form>
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Nome</Form.Label>
+                  <Form.Label>Nome*</Form.Label>
                   <Form.Control
                     type="text"
                     name="nome"
                     value={formData.nome || ''}
                     onChange={handleChange}
+                    isInvalid={!!errors.nome}
                   />
+                  <Form.Control.Feedback type="invalid">{errors.nome}</Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>CPF</Form.Label>
-                  <Form.Control
-                    type="text"
+                  <Form.Label>CPF*</Form.Label>
+                  <InputMask
+                    mask="999.999.999-99"
+                    className="form-control"
                     name="cpf"
                     value={formData.cpf || ''}
                     onChange={handleChange}
-                  />
+                  >
+                    {(inputProps) => (
+                      <Form.Control
+                        {...inputProps}
+                        isInvalid={!!errors.cpf}
+                      />
+                    )}
+                  </InputMask>
+                  <Form.Control.Feedback type="invalid">{errors.cpf}</Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>RG</Form.Label>
-                  <Form.Control
-                    type="text"
+                  <Form.Label>RG*</Form.Label>
+                  <InputMask
+                    mask="99.999.999-9"
+                    className="form-control"
                     name="rg"
                     value={formData.rg || ''}
                     onChange={handleChange}
-                  />
+                  >
+                    {(inputProps) => (
+                      <Form.Control
+                        {...inputProps}
+                        isInvalid={!!errors.rg}
+                      />
+                    )}
+                  </InputMask>
+                  <Form.Control.Feedback type="invalid">{errors.rg}</Form.Control.Feedback>
                 </Form.Group>
               </Col>
             </Row>
+
             <Row>
               <Col md={2}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Dt Nascimento</Form.Label>
+                  <Form.Label>Dt Nascimento*</Form.Label>
                   <Form.Control
                     type="date"
                     name="dataNascimento"
                     value={formData.dataNascimento ? formData.dataNascimento.split('T')[0] : ''}
                     onChange={handleChange}
+                    isInvalid={!!errors.dataNascimento}
                   />
+                  <Form.Control.Feedback type="invalid">{errors.dataNascimento}</Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={2}>
@@ -101,37 +153,44 @@ const ResponsavelDetalhesModal = ({ show, onHide, responsavel, onSave }) => {
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Turma</Form.Label>
+                  <Form.Label>Turma*</Form.Label>
                   <Form.Control
                     type="text"
                     name="responsavelTurma"
                     value={formData.responsavelTurma || ''}
                     onChange={handleChange}
+                    isInvalid={!!errors.responsavelTurma}
                   />
+                  <Form.Control.Feedback type="invalid">{errors.responsavelTurma}</Form.Control.Feedback>
                 </Form.Group>
               </Col>
             </Row>
+
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Endereço</Form.Label>
+                  <Form.Label>Endereço*</Form.Label>
                   <Form.Control
                     type="text"
                     name="endereco"
                     value={formData.endereco || ''}
                     onChange={handleChange}
+                    isInvalid={!!errors.endereco}
                   />
+                  <Form.Control.Feedback type="invalid">{errors.endereco}</Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={1}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Número</Form.Label>
+                  <Form.Label>Número*</Form.Label>
                   <Form.Control
                     type="text"
                     name="num"
                     value={formData.num || ''}
                     onChange={handleChange}
+                    isInvalid={!!errors.num}
                   />
+                  <Form.Control.Feedback type="invalid">{errors.num}</Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={5}>
@@ -146,27 +205,34 @@ const ResponsavelDetalhesModal = ({ show, onHide, responsavel, onSave }) => {
                 </Form.Group>
               </Col>
             </Row>
+
             <Row>
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Celular</Form.Label>
-                  <Form.Control
-                    type="tel"
+                  <InputMask
+                    mask="(99) 99999-9999"
+                    className="form-control"
                     name="celular"
                     value={formData.celular || ''}
                     onChange={handleChange}
-                  />
+                  >
+                    {(inputProps) => <Form.Control {...inputProps} />}
+                  </InputMask>
                 </Form.Group>
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Telefone</Form.Label>
-                  <Form.Control
-                    type="tel"
+                  <InputMask
+                    mask="(99) 9999-9999"
+                    className="form-control"
                     name="telefone"
                     value={formData.telefone || ''}
                     onChange={handleChange}
-                  />
+                  >
+                    {(inputProps) => <Form.Control {...inputProps} />}
+                  </InputMask>
                 </Form.Group>
               </Col>
               <Col md={6}>
@@ -181,19 +247,24 @@ const ResponsavelDetalhesModal = ({ show, onHide, responsavel, onSave }) => {
                 </Form.Group>
               </Col>
             </Row>
+
             <Row>
               <Col md={12}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Contato de Emergência</Form.Label>
-                  <Form.Control
-                    type="tel"
+                  <InputMask
+                    mask="(99) 99999-9999"
+                    className="form-control"
                     name="contatoEmergencia"
                     value={formData.contatoEmergencia || ''}
                     onChange={handleChange}
-                  />
+                  >
+                    {(inputProps) => <Form.Control {...inputProps} />}
+                  </InputMask>
                 </Form.Group>
               </Col>
             </Row>
+
             <Form.Group className="mb-3 text-start">
               <Form.Label>Observações</Form.Label>
               <Form.Control

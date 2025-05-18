@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Button, Form, Container, Row, Col } from "react-bootstrap";
+import { Modal, Button, Form, Container, Row, Col, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import {
   validarCPF,
@@ -30,7 +30,48 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
 
   const [mensagemErro, setMensagemErro] = useState("");
   const [erros, setErros] = useState({});
+  const [submitAttempted, setSubmitAttempted] = useState(false); 
+
   const navigate = useNavigate();
+
+
+  const camposObrigatorios = [
+    "nome",
+    "cpf",
+    "rg",
+    "dataNascimento",
+    "sexo",
+    "responsavelTurma",
+    "endereco",
+  ];
+
+  const validarCampos = () => {
+    const novosErros = {};
+
+    camposObrigatorios.forEach((campo) => {
+      const valor = responsavel[campo];
+      if (!valor || String(valor).trim() === "") {
+        novosErros[campo] = "Campo obrigatório";
+      }
+    });
+
+    if (responsavel.cpf && !validarCPF(responsavel.cpf)) {
+      novosErros.cpf = "CPF inválido";
+    }
+    if (responsavel.email && !validarEmail(responsavel.email)) {
+      novosErros.email = "E-mail inválido";
+    }
+    if (responsavel.telefone && !validarTelefone(responsavel.telefone)) {
+      novosErros.telefone = "Número de telefone inválido";
+    }
+    if (responsavel.celular && !validarTelefone(responsavel.celular)) {
+      novosErros.celular = "Número de celular inválido";
+    }
+
+    setErros(novosErros);
+
+    return Object.keys(novosErros).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,51 +83,30 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
       novoValor = aplicarMascaraTelefone(value);
     }
 
-    console.log({ name, novoValor });
+    setResponsavel((prev) => ({
+      ...prev,
+      [name]: novoValor,
+    }));
 
-    if (name === "nome" && !novoValor) {
-      setErros({ ...erros, [name]: "Nome obrigatório" });
-    } else if (name === "rg" && !novoValor) {
-      setErros({ ...erros, [name]: "RG obrigatório." });
-    } else if (name === "dataNascimento" && !novoValor) {
-      setErros({ ...erros, [name]: "Data de nascimento obrigatório." });
-    } else if (name === "sexo" && !novoValor) {
-      setErros({ ...erros, [name]: "Sexo obrigatório." });
-    } else if (name === "responsavelTurma" && !novoValor) {
-      setErros({ ...erros, [name]: "Turma obrigatório." });
-    } else if (name === "rg" && !novoValor) {
-    } else if (name === "endereco" && !novoValor) {
-      setErros({ ...erros, [name]: "Endereço obrigatório." });
-    } else if (name === "rg" && !novoValor) {
-      setErros({ ...erros, [name]: "RG obrigatório." });
-    } else if (name === "cpf" && !validarCPF(novoValor)) {
-      setErros({ ...erros, [name]: "CPF inválido." });
-    } else if (name === "email" && !validarEmail(value)) {
-      setErros({ ...erros, [name]: "E-mail inválido." });
-    } else if (
-      (name === "telefone" || name === "celular") &&
-      !validarTelefone(novoValor)
-    ) {
-      setErros({ ...erros, [name]: "Número de telefone inválido." });
-    } else {
-      setErros({ ...erros, [name]: "" });
+    if (submitAttempted) {
+      setErros((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
     }
-
-    setResponsavel({ ...responsavel, [name]: novoValor });
   };
 
-  const removerMascara = (valor) => valor.replace(/\D/g, ""); // Remove tudo que não for número
+  const removerMascara = (valor) => valor.replace(/\D/g, "");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensagemErro("");
+    setSubmitAttempted(true); 
 
-    if (Object.values(erros).some((erro) => erro)) {
-      alert("Corrija os erros antes de salvar.");
-      return;
+    if (!validarCampos()) {
+      return; 
     }
 
-    // Prepara os dados antes de enviar (remove máscaras de CPF e telefone)
     const dadosResponsavel = {
       ...responsavel,
       cpf: removerMascara(responsavel.cpf),
@@ -137,10 +157,12 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
           observacoes: "",
         });
 
+        setErros({});
+        setSubmitAttempted(false); 
         onHide();
         onResponsavelsAtualizados();
       } else {
-        setMensagemErro(data.message || "Falha ao adicionar responsavel.");
+        setMensagemErro(data.message || "Falha ao adicionar responsável.");
       }
     } catch (error) {
       setMensagemErro("Ocorreu um erro. Tente novamente.");
@@ -150,21 +172,26 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
   return (
     <Modal show={show} onHide={onHide} size="xl">
       <Modal.Header closeButton>
-        <Modal.Title>Formulário de Responsavel</Modal.Title>
+        <Modal.Title>Formulário de Responsável</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container className="mt-4">
-          <Form>
+          {submitAttempted && Object.keys(erros).length > 0 && (
+            <Alert variant="danger">
+              Preencha todos os campos obrigatórios.
+            </Alert>
+          )}
+          <Form onSubmit={handleSubmit}>
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Nome</Form.Label>
+                  <Form.Label>Nome*</Form.Label>
                   <Form.Control
                     type="text"
                     name="nome"
                     value={responsavel.nome}
                     onChange={handleChange}
-                    isInvalid={!!erros.nome}
+                    isInvalid={submitAttempted && !!erros.nome}
                   />
                   <Form.Control.Feedback type="invalid">
                     {erros.nome}
@@ -173,13 +200,13 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>CPF</Form.Label>
+                  <Form.Label>CPF*</Form.Label>
                   <Form.Control
                     type="text"
                     name="cpf"
                     value={responsavel.cpf}
                     onChange={handleChange}
-                    isInvalid={!!erros.cpf}
+                    isInvalid={submitAttempted && !!erros.cpf}
                   />
                   <Form.Control.Feedback type="invalid">
                     {erros.cpf}
@@ -188,13 +215,13 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>RG</Form.Label>
+                  <Form.Label>RG*</Form.Label>
                   <Form.Control
                     type="text"
                     name="rg"
                     value={responsavel.rg}
                     onChange={handleChange}
-                    isInvalid={!!erros.rg}
+                    isInvalid={submitAttempted && !!erros.rg}
                   />
                   <Form.Control.Feedback type="invalid">
                     {erros.rg}
@@ -202,30 +229,32 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                 </Form.Group>
               </Col>
             </Row>
+
             <Row>
               <Col md={2}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Dt Nascimento</Form.Label>
+                  <Form.Label>Data Nascimento*</Form.Label>
                   <Form.Control
                     type="date"
                     name="dataNascimento"
                     value={responsavel.dataNascimento}
                     onChange={handleChange}
-                    isInvalid={!!erros.dataNascimento}
+                    isInvalid={submitAttempted && !!erros.dataNascimento}
                   />
                   <Form.Control.Feedback type="invalid">
                     {erros.dataNascimento}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={2}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Sexo</Form.Label>
+                  <Form.Label>Sexo*</Form.Label>
                   <Form.Select
                     name="sexo"
                     value={responsavel.sexo}
                     onChange={handleChange}
-                    isInvalid={!!erros.sexo}
+                    isInvalid={submitAttempted && !!erros.sexo}
                   >
                     <option value="">Selecione</option>
                     <option value="Masculino">Masculino</option>
@@ -237,6 +266,7 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={4}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Número do Benefício</Form.Label>
@@ -248,15 +278,16 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                   />
                 </Form.Group>
               </Col>
+
               <Col md={4}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Turma</Form.Label>
+                  <Form.Label>Turma*</Form.Label>
                   <Form.Control
                     type="text"
                     name="responsavelTurma"
                     value={responsavel.responsavelTurma}
                     onChange={handleChange}
-                    isInvalid={!!erros.responsavelTurma}
+                    isInvalid={submitAttempted && !!erros.responsavelTurma}
                   />
                   <Form.Control.Feedback type="invalid">
                     {erros.responsavelTurma}
@@ -264,25 +295,27 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                 </Form.Group>
               </Col>
             </Row>
+
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Endereço</Form.Label>
+                  <Form.Label>Endereço*</Form.Label>
                   <Form.Control
                     type="text"
                     name="endereco"
                     value={responsavel.endereco}
                     onChange={handleChange}
-                    isInvalid={!!erros.endereco}
+                    isInvalid={submitAttempted && !!erros.endereco}
                   />
                   <Form.Control.Feedback type="invalid">
                     {erros.endereco}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-              <Col md={1}>
+
+              <Col md={2}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Número</Form.Label>
+                  <Form.Label>Número*</Form.Label>
                   <Form.Control
                     type="text"
                     name="num"
@@ -291,7 +324,8 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                   />
                 </Form.Group>
               </Col>
-              <Col md={5}>
+
+              <Col md={4}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Complemento</Form.Label>
                   <Form.Control
@@ -303,6 +337,7 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                 </Form.Group>
               </Col>
             </Row>
+
             <Row>
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
@@ -312,13 +347,14 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                     name="celular"
                     value={responsavel.celular}
                     onChange={handleChange}
-                    isInvalid={!!erros.celular}
+                    isInvalid={submitAttempted && !!erros.celular}
                   />
                   <Form.Control.Feedback type="invalid">
                     {erros.celular}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Telefone</Form.Label>
@@ -327,14 +363,33 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                     name="telefone"
                     value={responsavel.telefone}
                     onChange={handleChange}
-                    isInvalid={!!erros.telefone}
+                    isInvalid={submitAttempted && !!erros.telefone}
                   />
                   <Form.Control.Feedback type="invalid">
                     {erros.telefone}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={6}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Email*</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={responsavel.email}
+                    onChange={handleChange}
+                    isInvalid={submitAttempted && !!erros.email}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {erros.email}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={12}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Contato Emergência</Form.Label>
                   <Form.Control
@@ -342,11 +397,7 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                     name="contatoEmergencia"
                     value={responsavel.contatoEmergencia}
                     onChange={handleChange}
-                    isInvalid={!!erros.contatoEmergencia}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {erros.contatoEmergencia}
-                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={12}>
@@ -354,6 +405,7 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                   <Form.Label>Observações</Form.Label>
                   <Form.Control
                     as="textarea"
+                    rows={3}
                     name="observacoes"
                     value={responsavel.observacoes}
                     onChange={handleChange}
@@ -361,16 +413,19 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                 </Form.Group>
               </Col>
             </Row>
-            <Button
-              variant="primary"
-              onClick={handleSubmit}
-              disabled={Object.values(erros).some((erro) => erro)}
-            >
-              Salvar
-            </Button>
+
+            {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
+
+            <div className="d-flex justify-content-end">
+              <Button variant="secondary" onClick={onHide} className="me-2">
+                Cancelar
+              </Button>
+              <Button type="submit" variant="primary">
+                Salvar
+              </Button>
+            </div>
           </Form>
         </Container>
-        {mensagemErro && <div className="text-danger mt-3">{mensagemErro}</div>}
       </Modal.Body>
     </Modal>
   );

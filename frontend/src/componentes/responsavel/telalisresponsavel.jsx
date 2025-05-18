@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Container, Table, Button, InputGroup, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import ResponsavelDetalhesModal from "./ResponsavelDetalhesModal";
@@ -6,7 +6,6 @@ import ResponsavelHistorico from "./historicoresponsavel";
 import FormularioResponsavel from "./Responsavel";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
-import { useMemo } from "react";
 
 const TelaListaResponsavels = ({ onSelectResponsavel }) => {
   const [responsavels, setResponsavels] = useState([]);
@@ -16,29 +15,31 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
   const [showCadastroModal, setShowCadastroModal] = useState(false);
   const [showHistoricoModal, setShowHistoricoModal] = useState(false);
   const [mensagemErroControle, setMensagemErroControle] = useState("");
-  const [searchText, setSearchText] = useState();
+  const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
 
+  // Lista filtrada e ordenada pelo nome
   const responsavelFiltrados = useMemo(() => {
-    const list = responsavels?.filter((aluno) => {
-      const currentSearch = searchText?.toLowerCase();
+    const currentSearch = searchText?.toLowerCase() || "";
 
+    const filtered = responsavels.filter((resp) => {
       return (
-        aluno?.nome?.toLowerCase()?.includes(currentSearch) ||
-        aluno?.cpf?.toLowerCase()?.includes(currentSearch) ||
-        aluno?.alunoTurma?.toLowerCase()?.includes(currentSearch)
+        resp?.nome?.toLowerCase().includes(currentSearch) ||
+        resp?.cpf?.toLowerCase().includes(currentSearch) ||
+        resp?.responsavelTurma?.toLowerCase().includes(currentSearch)
       );
     });
 
-    return list?.length > 0 ? list : responsavels;
+    // Ordena por nome
+    filtered.sort((a, b) => a.nome.localeCompare(b.nome));
+    return filtered;
   }, [searchText, responsavels]);
 
-  // Função para buscar todos os responsavels
   const fetchResponsavels = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
@@ -55,27 +56,28 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
       if (response.ok) {
         const data = await response.json();
         setResponsavels(data);
+        setMensagemErro("");
       } else {
-        setMensagemErro("Erro ao carregar os responsavels.");
+        toast.warning("Erro ao carregar os responsáveis.");
       }
     } catch (error) {
-      setMensagemErro("Erro ao conectar com o servidor.");
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
   useEffect(() => {
-    fetchResponsavels(); // Carrega os responsavels ao iniciar a página
+    fetchResponsavels();
   }, [navigate]);
 
-  // Função para buscar os detalhes do responsavel pelo ID
   const handleDetalhes = async (id) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
+
       const response = await fetch(
         `http://localhost:5001/api/responsavel/responsavel/${id}`,
         {
@@ -84,28 +86,29 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
           },
         }
       );
+
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
           setResponsavelSelecionado(data[0]);
           setShowModal(true);
+          setMensagemErro("");
         } else {
-          setMensagemErro("Dados do responsavel não encontrados.");
+          toast.warning("Dados do responsável não encontrados.");
         }
       } else {
-        setMensagemErro("Erro ao carregar detalhes do responsavel.");
+        toast.warning("Erro ao carregar detalhes do responsável.");
       }
-    } catch (error) {
-      setMensagemErro("Erro ao conectar com o servidor.");
+    } catch {
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
   const handleHistorico = async (id) => {
-    console.log("ID do responsavel:", id);
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
@@ -117,32 +120,27 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
         }
       );
 
-      const data = await response.json(); // Pegando a resposta do backend
+      const data = await response.json();
 
       if (!response.ok) {
-        toast.warning(
-          data.message || "Erro ao carregar histórico do responsavel."
-        );
+        toast.warning(data.message || "Erro ao carregar histórico do responsável.");
         return;
       }
 
       if (data) {
         setResponsavelSelecionado({ id, ...data });
         setShowHistoricoModal(true);
-        setMensagemErro(""); // Limpa erro se carregar com sucesso
-        setMensagemErroControle(""); // Limpa erro da API
+        setMensagemErro("");
+        setMensagemErroControle("");
       } else {
-        setMensagemErro("Histórico do responsavel não encontrado.");
+        toast.warning("Histórico do responsável não encontrado.");
       }
-    } catch (error) {
-      setMensagemErro("Erro ao conectar com o servidor.");
+    } catch {
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
-  // Função para salvar as alterações do responsavel
   const handleSave = async (formData) => {
-    console.log("Tentando salvar:", formData);
-
     if (formData.dataNascimento) {
       const date = new Date(formData.dataNascimento);
       date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
@@ -152,7 +150,7 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
@@ -170,22 +168,20 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
       );
 
       const data = await response.json();
-      console.log("Resposta do servidor:", data);
 
       if (response.ok) {
-        setResponsavels((prevState) =>
-          prevState.map((p) => (p.id === formData.id ? formData : p))
+        setResponsavels((prev) =>
+          prev.map((p) => (p.id === formData.id ? formData : p))
         );
+        toast.success("Responsável atualizado com sucesso.");
       } else {
-        setMensagemErro("Erro ao salvar alterações do responsavel.");
+        toast.warning(data.message || "Erro ao salvar alterações do responsável.");
       }
-    } catch (error) {
-      console.error("Erro na atualização:", error.message);
-      setMensagemErro("Erro ao conectar com o servidor.");
+    } catch {
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
-  // Função para fechar o modal de detalhes
   const closeModal = () => {
     setShowModal(false);
     setResponsavelSelecionado(null);
@@ -196,27 +192,38 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
     setResponsavelSelecionado(null);
   };
 
-  const handleExcluirAluno = async (id) => {
+  const handleExcluirResponsavel = async (id) => {
+    const confirmado = window.confirm("Deseja realmente excluir este responsável?");
+    if (!confirmado) return;
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
 
-      await fetch(`http://localhost:5001/api/responsavel/responsavel/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:5001/api/responsavel/responsavel/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      fetchResponsavels();
-    } catch (error) {
-      console.error("Erro na exclusão:", error.message);
-      setMensagemErro("Erro ao conectar com o servidor.");
+      if (response.ok) {
+        toast.success("Responsável excluído com sucesso.");
+        fetchResponsavels();
+      } else {
+        const data = await response.json();
+        toast.warning(data.message || "Erro ao excluir responsável.");
+      }
+    } catch {
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
@@ -225,15 +232,15 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
       <h1 className="mt-4">Lista de Responsáveis</h1>
       <div className="m-2 d-flex justify-content-start">
         <Button variant="info" onClick={() => setShowCadastroModal(true)}>
-          Cadastrar Responsavel
+          Cadastrar Responsável
         </Button>
       </div>
       <InputGroup className="mb-3">
         <Form.Control
-          aria-label="Example text with button addon"
-          aria-describedby="basic-addon1"
-          placeholder="Busque o responsavel"
+          placeholder="Busque o responsável"
           onChange={(e) => setSearchText(e.target.value)}
+          value={searchText}
+          aria-label="Buscar responsável"
         />
         <Button variant="outline-secondary" id="button-addon1">
           <i className="bi bi-search"></i>
@@ -250,7 +257,7 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
           </tr>
         </thead>
         <tbody>
-          {responsavelFiltrados?.map((responsavel) => (
+          {responsavelFiltrados.map((responsavel) => (
             <tr key={responsavel.id}>
               <td>{responsavel.nome}</td>
               <td>{responsavel.cpf}</td>
@@ -269,15 +276,10 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
                 >
                   Detalhes
                 </Button>
-                <Button
-                  variant="warning"
-                  onClick={() => handleHistorico(responsavel.id)}
-                >
-                  Histórico
-                </Button>
+            
                 <Button
                   variant="danger"
-                  onClick={() => handleExcluirAluno(responsavel?.id)}
+                  onClick={() => handleExcluirResponsavel(responsavel.id)}
                 >
                   Excluir
                 </Button>
@@ -287,7 +289,6 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
         </tbody>
       </Table>
 
-      {/* Modal de Detalhes do Responsavel */}
       {showModal && (
         <ResponsavelDetalhesModal
           show={showModal}
@@ -296,21 +297,21 @@ const TelaListaResponsavels = ({ onSelectResponsavel }) => {
           onSave={handleSave}
         />
       )}
+
       <ResponsavelHistorico
         show={showHistoricoModal}
-        onHide={() => setShowHistoricoModal(false)}
+        onHide={closeHistoricoModal}
         responsavelId={responsavelSelecionado?.id}
         mensagemErroControle={mensagemErroControle}
       />
 
-      {/* Modal de Cadastro de Responsavel */}
       <FormularioResponsavel
         show={showCadastroModal}
         onHide={() => {
           setShowCadastroModal(false);
-          fetchResponsavels(); // Atualiza a lista de responsavels após fechar o modal
+          fetchResponsavels();
         }}
-        onResponsavelsAtualizados={fetchResponsavels} // Passa a função para atualizar a lista
+        onResponsavelsAtualizados={fetchResponsavels}
       />
     </Container>
   );

@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 import ProfessorDetalhesModal from "./ProfessorDetalhesModal";
 import { format } from "date-fns";
 import FormularioProfessor from "./Professor";
+import { toast } from "react-toastify";
 
 const TelaListaProfessores = ({ onSelectProfessor }) => {
   const [professores, setProfessores] = useState([]);
-  const [mensagemErro, setMensagemErro] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [professorSelecionado, setProfessorSelecionado] = useState(null);
   const [showCadastroModal, setShowCadastroModal] = useState(false);
@@ -18,7 +18,7 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
@@ -34,12 +34,14 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
 
       if (response.ok) {
         const data = await response.json();
+        // Ordenar alfabeticamente pelo nome
+        data.sort((a, b) => a.nome.localeCompare(b.nome));
         setProfessores(data);
       } else {
-        setMensagemErro("Erro ao carregar os funcionários.");
+        toast.warning("Erro ao carregar os funcionários.");
       }
     } catch (error) {
-      setMensagemErro("Erro ao conectar com o servidor.");
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
@@ -51,7 +53,7 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
@@ -71,19 +73,17 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
           setProfessorSelecionado(data[0]);
           setShowModal(true);
         } else {
-          setMensagemErro("Dados do funcionário não encontrados.");
+          toast.warning("Dados do funcionário não encontrados.");
         }
       } else {
-        setMensagemErro("Erro ao carregar detalhes do funcionário.");
+        toast.warning("Erro ao carregar detalhes do funcionário.");
       }
     } catch (error) {
-      setMensagemErro("Erro ao conectar com o servidor.");
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
   const handleSave = async (formData) => {
-    console.log("Tentando salvar:", formData);
-
     if (formData.data_nasc) {
       try {
         const dataFormatada = format(
@@ -99,7 +99,7 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
@@ -117,24 +117,26 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
       );
 
       const data = await response.json();
-      console.log("Resposta do servidor:", data);
-
       if (response.ok) {
         await fetchProfessores();
       } else {
-        setMensagemErro("Erro ao salvar alterações do funcionário.");
+        toast.warning("Erro ao salvar alterações do funcionário.");
       }
     } catch (error) {
-      console.error("Erro na atualização:", error.message);
-      setMensagemErro("Erro ao conectar com o servidor.");
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
   const handleDelete = async (id) => {
+    const confirmacao = window.confirm(
+      "Tem certeza que deseja excluir este professor? Esta ação não pode ser desfeita."
+    );
+    if (!confirmacao) return;
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
@@ -150,12 +152,13 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
       );
 
       if (response.ok) {
+        toast.success("Professor excluído com sucesso.");
         await fetchProfessores();
       } else {
-        setMensagemErro("Erro ao apagar o funcionário.");
+        toast.warning("Erro ao apagar o funcionário.");
       }
     } catch (error) {
-      setMensagemErro("Erro ao conectar com o servidor.");
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
@@ -187,8 +190,6 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
         </Col>
       </Row>
 
-      {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
-
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -207,6 +208,7 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
               <td>
                 <Button
                   variant="primary"
+                  className="me-2"
                   onClick={() => handleDetalhes(professor.id)}
                 >
                   Detalhes

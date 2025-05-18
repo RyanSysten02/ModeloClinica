@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Button, Form, Container, Row, Col } from "react-bootstrap";
+import { Modal, Button, Form, Container, Row, Col, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import {
     validarCPF,
@@ -7,7 +7,7 @@ import {
     validarTelefone,
     aplicarMascaraTelefone,
     validarEmail,
-} from "./validacoes"; 
+} from "./validacoes";
 
 function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
     const [aluno, setAluno] = useState({
@@ -28,9 +28,24 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
         observacoes: "",
     });
 
-    const [mensagemErro, setMensagemErro] = useState("");
     const [erros, setErros] = useState({});
+    const [mensagemErro, setMensagemErro] = useState("");
+    const [mostrarAlertaObrigatorios, setMostrarAlertaObrigatorios] = useState(false);
     const navigate = useNavigate();
+
+    const camposObrigatorios = [
+        "nome",
+        "cpf",
+        "rg",
+        "dataNascimento",
+        "sexo",
+        "numeroBeneficio",
+        "alunoTurma",
+        "endereco",
+        "num",
+        "celular",
+        "email"
+    ];
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -42,31 +57,74 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
             novoValor = aplicarMascaraTelefone(value);
         }
 
-        setAluno({ ...aluno, [name]: novoValor });
+        setAluno((prev) => ({ ...prev, [name]: novoValor }));
 
-        if (name === "cpf" && !validarCPF(novoValor)) {
-            setErros({ ...erros, cpf: "CPF inválido." });
-        } else if (name === "email" && !validarEmail(value)) {
-            setErros({ ...erros, email: "E-mail inválido." });
-        } else if ((name === "telefone" || name === "celular") && !validarTelefone(novoValor)) {
-            setErros({ ...erros, [name]: "Número de telefone inválido." });
-        } else {
-            setErros({ ...erros, [name]: "" });
-        }
+        validarCampo(name, novoValor);
     };
 
-    const removerMascara = (valor) => valor.replace(/\D/g, ""); // Remove tudo que não for número
+    const validarCampo = (campo, valor) => {
+        let mensagem = "";
+
+        if (camposObrigatorios.includes(campo) && !valor.trim()) {
+            mensagem = "Campo obrigatório.";
+        } else if (campo === "cpf" && !validarCPF(valor)) {
+            mensagem = "CPF inválido.";
+        } else if ((campo === "telefone" || campo === "celular") && !validarTelefone(valor)) {
+            mensagem = "Telefone inválido.";
+        } else if (campo === "email" && !validarEmail(valor)) {
+            mensagem = "E-mail inválido.";
+        }
+
+        setErros((prevErros) => ({
+            ...prevErros,
+            [campo]: mensagem,
+        }));
+    };
+
+    const removerMascara = (valor) => valor.replace(/\D/g, "");
+
+    const validarTodosCampos = () => {
+        const novosErros = {};
+
+        for (const campo of camposObrigatorios) {
+            if (!aluno[campo].trim()) {
+                novosErros[campo] = "Campo obrigatório.";
+            }
+        }
+
+        if (aluno.cpf && !validarCPF(aluno.cpf)) {
+            novosErros.cpf = "CPF inválido.";
+        }
+        if (aluno.celular && !validarTelefone(aluno.celular)) {
+            novosErros.celular = "Telefone inválido.";
+        }
+        if (aluno.telefone && aluno.telefone.trim() && !validarTelefone(aluno.telefone)) {
+            novosErros.telefone = "Telefone inválido.";
+        }
+        if (aluno.email && !validarEmail(aluno.email)) {
+            novosErros.email = "E-mail inválido.";
+        }
+
+        setErros(novosErros);
+
+        // Mostrar alerta se houver algum campo obrigatório não preenchido
+        const temCampoObrigatorioVazio = camposObrigatorios.some(
+            (campo) => !aluno[campo].trim()
+        );
+        setMostrarAlertaObrigatorios(temCampoObrigatorioVazio);
+
+        return Object.keys(novosErros).length === 0;
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMensagemErro("");
+        setMostrarAlertaObrigatorios(false);
 
-        if (Object.values(erros).some((erro) => erro)) {
-            alert("Corrija os erros antes de salvar.");
+        if (!validarTodosCampos()) {
             return;
         }
 
-        // Prepara os dados antes de enviar (remove máscaras de CPF e telefone)
         const dadosAluno = {
             ...aluno,
             cpf: removerMascara(aluno.cpf),
@@ -114,8 +172,6 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
 
                 onHide();
                 onAlunosAtualizados();
-
-                
             } else {
                 setMensagemErro(data.message || "Falha ao adicionar aluno.");
             }
@@ -131,22 +187,31 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
             </Modal.Header>
             <Modal.Body>
                 <Container className="mt-4">
+                    {mostrarAlertaObrigatorios && (
+                        <Alert variant="danger" className="mb-3">
+                            Preencha todos os campos obrigatórios.
+                        </Alert>
+                    )}
                     <Form>
                         <Row>
                             <Col md={6}>
                                 <Form.Group className="mb-3 text-start">
-                                    <Form.Label>Nome</Form.Label>
+                                    <Form.Label>Nome *</Form.Label>
                                     <Form.Control
                                         type="text"
                                         name="nome"
                                         value={aluno.nome}
                                         onChange={handleChange}
+                                        isInvalid={!!erros.nome}
                                     />
+                                    <Form.Control.Feedback type="invalid">
+                                        {erros.nome}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col md={3}>
                                 <Form.Group className="mb-3 text-start">
-                                    <Form.Label>CPF</Form.Label>
+                                    <Form.Label>CPF *</Form.Label>
                                     <Form.Control
                                         type="text"
                                         name="cpf"
@@ -161,87 +226,115 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
                             </Col>
                             <Col md={3}>
                                 <Form.Group className="mb-3 text-start">
-                                    <Form.Label>RG</Form.Label>
+                                    <Form.Label>RG *</Form.Label>
                                     <Form.Control
                                         type="text"
                                         name="rg"
                                         value={aluno.rg}
                                         onChange={handleChange}
+                                        isInvalid={!!erros.rg}
                                     />
+                                    <Form.Control.Feedback type="invalid">
+                                        {erros.rg}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                         </Row>
                         <Row>
                             <Col md={2}>
                                 <Form.Group className="mb-3 text-start">
-                                    <Form.Label>Dt Nascimento</Form.Label>
+                                    <Form.Label>Dt Nascimento *</Form.Label>
                                     <Form.Control
                                         type="date"
                                         name="dataNascimento"
                                         value={aluno.dataNascimento}
                                         onChange={handleChange}
+                                        isInvalid={!!erros.dataNascimento}
                                     />
+                                    <Form.Control.Feedback type="invalid">
+                                        {erros.dataNascimento}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col md={2}>
                                 <Form.Group className="mb-3 text-start">
-                                    <Form.Label>Sexo</Form.Label>
+                                    <Form.Label>Sexo *</Form.Label>
                                     <Form.Select
                                         name="sexo"
                                         value={aluno.sexo}
                                         onChange={handleChange}
+                                        isInvalid={!!erros.sexo}
                                     >
                                         <option value="">Selecione</option>
                                         <option value="Masculino">Masculino</option>
                                         <option value="Feminino">Feminino</option>
                                         <option value="Outros">Outro</option>
                                     </Form.Select>
+                                    <Form.Control.Feedback type="invalid">
+                                        {erros.sexo}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col md={4}>
                                 <Form.Group className="mb-3 text-start">
-                                    <Form.Label>RA</Form.Label>
+                                    <Form.Label>RA *</Form.Label>
                                     <Form.Control
                                         type="text"
                                         name="numeroBeneficio"
                                         value={aluno.numeroBeneficio}
                                         onChange={handleChange}
+                                        isInvalid={!!erros.numeroBeneficio}
                                     />
+                                    <Form.Control.Feedback type="invalid">
+                                        {erros.numeroBeneficio}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col md={4}>
                                 <Form.Group className="mb-3 text-start">
-                                    <Form.Label>Turma</Form.Label>
+                                    <Form.Label>Turma *</Form.Label>
                                     <Form.Control
                                         type="text"
                                         name="alunoTurma"
                                         value={aluno.alunoTurma}
                                         onChange={handleChange}
+                                        isInvalid={!!erros.alunoTurma}
                                     />
+                                    <Form.Control.Feedback type="invalid">
+                                        {erros.alunoTurma}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                         </Row>
                         <Row>
                             <Col md={6}>
                                 <Form.Group className="mb-3 text-start">
-                                    <Form.Label>Endereço</Form.Label>
+                                    <Form.Label>Endereço *</Form.Label>
                                     <Form.Control
                                         type="text"
                                         name="endereco"
                                         value={aluno.endereco}
                                         onChange={handleChange}
+                                        isInvalid={!!erros.endereco}
                                     />
+                                    <Form.Control.Feedback type="invalid">
+                                        {erros.endereco}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col md={1}>
                                 <Form.Group className="mb-3 text-start">
-                                    <Form.Label>Número</Form.Label>
+                                    <Form.Label>Número *</Form.Label>
                                     <Form.Control
                                         type="text"
                                         name="num"
                                         value={aluno.num}
                                         onChange={handleChange}
+                                        isInvalid={!!erros.num}
                                     />
+                                    <Form.Control.Feedback type="invalid">
+                                        {erros.num}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col md={5}>
@@ -259,7 +352,7 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
                         <Row>
                             <Col md={3}>
                                 <Form.Group className="mb-3 text-start">
-                                    <Form.Label>Celular</Form.Label>
+                                    <Form.Label>Celular *</Form.Label>
                                     <Form.Control
                                         type="tel"
                                         name="celular"
@@ -312,16 +405,17 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
                                 </Form.Group>
                             </Col>
                         </Row>
-                        <Button
-                            variant="primary"
-                            onClick={handleSubmit}
-                            disabled={Object.values(erros).some((erro) => erro)}
-                        >
+                        <Button variant="primary" onClick={handleSubmit}>
                             Salvar
                         </Button>
                     </Form>
+
+                    {mensagemErro && (
+                        <Alert variant="danger" className="mt-3">
+                            {mensagemErro}
+                        </Alert>
+                    )}
                 </Container>
-                {mensagemErro && <div className="text-danger mt-3">{mensagemErro}</div>}
             </Modal.Body>
         </Modal>
     );
