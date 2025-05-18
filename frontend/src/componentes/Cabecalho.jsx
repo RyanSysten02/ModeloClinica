@@ -90,7 +90,32 @@ const Cabecalho = () => {
             <DropdownItem header>Info</DropdownItem>
             <DropdownItem>Minha conta</DropdownItem>
             <DropdownItem divider />
-            <DropdownItem>Configurações</DropdownItem>
+            <DropdownItem onClick={async () => {
+              const token = localStorage.getItem("token");
+              if (!token) return alert("Usuário não autenticado.");
+
+              const payload = JSON.parse(atob(token.split('.')[1]));
+              const role = payload.role; // deve ser 'ADM'
+
+              try {
+                const response = await fetch("http://localhost:5001/api/permissoes"); // Essa rota deve retornar permissões por role
+                const permissoes = await response.json();
+
+                // Verifica se ADM pode acessar 'configuracoes'
+                if (permissoes[role] && permissoes[role]["configuracoes"]) {
+                  navigate("/configuracoes-de-seguranca");
+                } else {
+                  alert("Acesso negado: você não tem permissão para acessar as configurações.");
+                }
+              } catch (error) {
+                console.error("Erro ao verificar permissões", error);
+                alert("Erro ao verificar permissões");
+              }
+            }}>
+              Configurações
+            </DropdownItem>
+
+
             <DropdownItem onClick={handleLogout}>Sair</DropdownItem>
           </DropdownMenu>
         </Dropdown>

@@ -11,14 +11,17 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import PagLogin from "./pages/login";
 import FullLayout from "./pages/paginicial";
 import TelaProfessor from "./pages/telaprofessor";
-import RouteModals from "./componentes/RouteModals"; // Importa o componente de modais
+import RouteModals from "./componentes/RouteModals";
 import TelaListaAlunos from "./componentes/aluno/telalisaluno";
 import Layoutaluno from "./pages/pagaluno";
 import TelaListaResponsavels from "./componentes/responsavel/telalisresponsavel";
 import Layoutresponsavel from "./pages/pagResponsavel";
 import Layoutprofessor from "./pages/pagprofessor";
+import ConfiguracoesDeSeguranca from "./pages/ConfiguracoesDeSeguranca";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AcessoNegado from "./pages/acessoNegado";
+
 function App() {
   return (
     <Router>
@@ -27,6 +30,7 @@ function App() {
           <Route path="/" element={<PagLogin />} />
           <Route path="/login" element={<PagLogin />} />
           <Route path="/registro" element={<Registro />} />
+
           <Route
             path="/paginicial"
             element={
@@ -35,40 +39,48 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/pagAluno"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedPermissions={['aluno']}>
                 <Layoutaluno />
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/pagResponsavel"
             element={
-              <ProtectedRoute>
-                <Layoutresponsavel/>
+              <ProtectedRoute allowedPermissions={['responsavel']}>
+                <Layoutresponsavel />
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/pagProfessor"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedPermissions={['professor']}>
                 <Layoutprofessor />
               </ProtectedRoute>
             }
           />
+
           <Route
-            path="/pagProfessor"
+            path="/configuracoes-de-seguranca"
             element={
-              <ProtectedRoute>
-                <TelaProfessor />
+              <ProtectedRoute allowedPermissions={['configuracoes']}>
+                <ConfiguracoesDeSeguranca />
               </ProtectedRoute>
             }
           />
+          <Route path="/acesso-negado" element={<AcessoNegado />} />
+
         </Routes>
-        {/* Adiciona os modais controlados por rota */}
+
+        
+
         <RouteModals />
         <ToastContainer position="bottom-right" autoClose={5000} />
       </div>

@@ -11,6 +11,8 @@ export default function Registro() {
     const [confirmarSenha, setConfirmarSenha] = useState('');
     const [mensagemErro, setMensagemErro] = useState('');
     const navigate = useNavigate();
+    const [role_id, setRole] = useState(2);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,7 +31,8 @@ export default function Registro() {
                 body: JSON.stringify({ 
                     nome, 
                     email, 
-                    password: senha 
+                    password: senha,
+                    role_id
                 })
             });
 
@@ -77,6 +80,16 @@ export default function Registro() {
                                 required
                             />
                         </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formBasicRole">
+                        <Form.Label>Função</Form.Label>
+                        <Form.Select value={role_id} onChange={(e) => setRole(parseInt(e.target.value))}>
+                            <option value="2">Professor</option>
+                            <option value="3">Secretaria</option>
+                            <option value="1">Administrador</option>
+                        </Form.Select>
+                        </Form.Group>
+
 
                         <Form.Group className="mb-3" controlId="formBasicSenha">
                             <Form.Label>Senha</Form.Label>
