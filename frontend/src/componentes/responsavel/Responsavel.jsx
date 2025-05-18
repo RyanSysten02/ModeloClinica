@@ -233,7 +233,7 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
             <Row>
               <Col md={2}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Dt Nascimento*</Form.Label>
+                  <Form.Label>Data Nascimento*</Form.Label>
                   <Form.Control
                     type="date"
                     name="dataNascimento"
@@ -313,9 +313,9 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                 </Form.Group>
               </Col>
 
-              <Col md={1}>
+              <Col md={2}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Número</Form.Label>
+                  <Form.Label>Número*</Form.Label>
                   <Form.Control
                     type="text"
                     name="num"
@@ -325,7 +325,7 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                 </Form.Group>
               </Col>
 
-              <Col md={5}>
+              <Col md={4}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Complemento</Form.Label>
                   <Form.Control
@@ -373,7 +373,7 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
 
               <Col md={6}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Email</Form.Label>
+                  <Form.Label>Email*</Form.Label>
                   <Form.Control
                     type="email"
                     name="email"
@@ -389,7 +389,7 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
             </Row>
 
             <Row>
-              <Col md={6}>
+              <Col md={12}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Contato Emergência</Form.Label>
                   <Form.Control
@@ -400,7 +400,7 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6}>
+              <Col md={12}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Observações</Form.Label>
                   <Form.Control

@@ -114,7 +114,6 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>RG*</Form.Label>
                   <InputMask
-                    mask="99.999.999-9"
                     value={formData.rg || ""}
                     onChange={handleChange}
                   >
