@@ -16,28 +16,31 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
   const [showHistoricoModal, setShowHistoricoModal] = useState(false);
   const [mensagemErroControle, setMensagemErroControle] = useState("");
   const navigate = useNavigate();
-  const [searchText, setSearchText] = useState();
+  const [searchText, setSearchText] = useState("");
+
+  // Ordena a lista em ordem alfabética pelo nome
+  const alunosOrdenados = useMemo(() => {
+    return [...alunos].sort((a, b) => a.nome.localeCompare(b.nome));
+  }, [alunos]);
 
   const alunosFiltrados = useMemo(() => {
-    const list = alunos?.filter((aluno) => {
-      const currentSearch = searchText?.toLowerCase();
-
+    const currentSearch = searchText?.toLowerCase() || "";
+    const list = alunosOrdenados.filter((aluno) => {
       return (
-        aluno?.nome?.toLowerCase()?.includes(currentSearch) ||
-        aluno?.cpf?.toLowerCase()?.includes(currentSearch) ||
-        aluno?.alunoTurma?.toLowerCase()?.includes(currentSearch)
+        aluno?.nome?.toLowerCase().includes(currentSearch) ||
+        aluno?.cpf?.toLowerCase().includes(currentSearch) ||
+        aluno?.alunoTurma?.toLowerCase().includes(currentSearch)
       );
     });
 
-    return list?.length > 0 ? list : alunos;
-  }, [searchText, alunos]);
+    return list.length > 0 ? list : alunosOrdenados;
+  }, [searchText, alunosOrdenados]);
 
-  // Função para buscar todos os alunos
   const fetchAlunos = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
@@ -52,23 +55,22 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         const data = await response.json();
         setAlunos(data);
       } else {
-        setMensagemErro("Erro ao carregar os alunos.");
+        toast.warning("Erro ao carregar os alunos.");
       }
     } catch (error) {
-      setMensagemErro("Erro ao conectar com o servidor.");
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
   useEffect(() => {
-    fetchAlunos(); // Carrega os alunos ao iniciar a página
+    fetchAlunos();
   }, [navigate]);
 
-  // Função para buscar os detalhes do aluno pelo ID
   const handleDetalhes = async (id) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
@@ -86,22 +88,21 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
           setAlunoSelecionado(data[0]);
           setShowModal(true);
         } else {
-          setMensagemErro("Dados do aluno não encontrados.");
+          toast.warning("Dados do aluno não encontrados.");
         }
       } else {
-        setMensagemErro("Erro ao carregar detalhes do aluno.");
+        toast.warning("Erro ao carregar detalhes do aluno.");
       }
     } catch (error) {
-      setMensagemErro("Erro ao conectar com o servidor.");
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
   const handleHistorico = async (id) => {
-    console.log("ID do aluno:", id);
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
@@ -113,7 +114,7 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         }
       );
 
-      const data = await response.json(); // Pegando a resposta do backend
+      const data = await response.json();
 
       if (!response.ok) {
         toast.warning(data.message || "Erro ao carregar histórico do aluno.");
@@ -123,20 +124,17 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
       if (data) {
         setAlunoSelecionado({ id, ...data });
         setShowHistoricoModal(true);
-        setMensagemErro(""); // Limpa erro se carregar com sucesso
-        setMensagemErroControle(""); // Limpa erro da API
+        setMensagemErro("");
+        setMensagemErroControle("");
       } else {
-        setMensagemErro("Histórico do aluno não encontrado.");
+        toast.warning("Histórico do aluno não encontrado.");
       }
     } catch (error) {
-      setMensagemErro("Erro ao conectar com o servidor.");
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
-  // Função para salvar as alterações do aluno
   const handleSave = async (formData) => {
-    console.log("Tentando salvar:", formData);
-
     if (formData.dataNascimento) {
       const date = new Date(formData.dataNascimento);
       date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
@@ -146,7 +144,7 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
@@ -164,22 +162,19 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
       );
 
       const data = await response.json();
-      console.log("Resposta do servidor:", data);
 
       if (response.ok) {
         setAlunos((prevState) =>
           prevState.map((p) => (p.id === formData.id ? formData : p))
         );
       } else {
-        setMensagemErro("Erro ao salvar alterações do aluno.");
+        toast.warning("Erro ao salvar alterações do aluno.");
       }
     } catch (error) {
-      console.error("Erro na atualização:", error.message);
-      setMensagemErro("Erro ao conectar com o servidor.");
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
-  // Função para fechar o modal de detalhes
   const closeModal = () => {
     setShowModal(false);
     setAlunoSelecionado(null);
@@ -190,16 +185,22 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
     setAlunoSelecionado(null);
   };
 
+  // Confirmação na exclusão
   const handleExcluirAluno = async (id) => {
+    const confirmado = window.confirm(
+      "Tem certeza que deseja excluir este aluno?"
+    );
+    if (!confirmado) return;
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setMensagemErro("Token não encontrado. Faça login novamente.");
+        toast.warning("Token não encontrado. Faça login novamente.");
         navigate("/login");
         return;
       }
 
-      await fetch(`http://localhost:5001/api/aluno/aluno/${id}`, {
+      const response = await fetch(`http://localhost:5001/api/aluno/aluno/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -207,10 +208,14 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         },
       });
 
-      fetchAlunos();
+      if (response.ok) {
+        toast.success("Aluno excluído com sucesso.");
+        fetchAlunos();
+      } else {
+        toast.warning("Erro ao apagar o aluno.");
+      }
     } catch (error) {
-      console.error("Erro na exclusão:", error.message);
-      setMensagemErro("Erro ao conectar com o servidor.");
+      toast.warning("Erro ao conectar com o servidor.");
     }
   };
 
@@ -224,16 +229,18 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
       </div>
       <InputGroup className="mb-3">
         <Form.Control
-          aria-label="Example text with button addon"
-          aria-describedby="basic-addon1"
           placeholder="Busque o aluno"
           onChange={(e) => setSearchText(e.target.value)}
+          value={searchText}
+          aria-label="Busca de aluno"
         />
         <Button variant="outline-secondary" id="button-addon1">
           <i className="bi bi-search"></i>
         </Button>
       </InputGroup>
+
       {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
+
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -244,7 +251,7 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
           </tr>
         </thead>
         <tbody>
-          {alunosFiltrados?.map((aluno) => (
+          {alunosFiltrados.map((aluno) => (
             <tr key={aluno.id}>
               <td>{aluno.nome}</td>
               <td>{aluno.cpf}</td>
@@ -271,7 +278,7 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
                 </Button>
                 <Button
                   variant="danger"
-                  onClick={() => handleExcluirAluno(aluno?.id)}
+                  onClick={() => handleExcluirAluno(aluno.id)}
                 >
                   Excluir
                 </Button>
@@ -288,24 +295,31 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
           onHide={closeModal}
           aluno={alunoSelecionado}
           onSave={handleSave}
+          mensagemErro={mensagemErroControle}
+          setMensagemErro={setMensagemErroControle}
         />
       )}
-      <AlunoHistorico
-        show={showHistoricoModal}
-        onHide={() => setShowHistoricoModal(false)}
-        alunoId={alunoSelecionado?.id}
-        mensagemErroControle={mensagemErroControle}
-      />
 
-      {/* Modal de Cadastro de Aluno */}
-      <FormularioAluno
-        show={showCadastroModal}
-        onHide={() => {
-          setShowCadastroModal(false);
-          fetchAlunos(); // Atualiza a lista de alunos após fechar o modal
-        }}
-        onAlunosAtualizados={fetchAlunos} // Passa a função para atualizar a lista
-      />
+      {/* Modal de Cadastro */}
+      {showCadastroModal && (
+        <FormularioAluno
+          show={showCadastroModal}
+          onHide={() => setShowCadastroModal(false)}
+          onSave={() => {
+            setShowCadastroModal(false);
+            fetchAlunos();
+          }}
+        />
+      )}
+
+      {/* Modal de Histórico */}
+      {showHistoricoModal && (
+        <AlunoHistorico
+          show={showHistoricoModal}
+          onHide={closeHistoricoModal}
+          aluno={alunoSelecionado}
+        />
+      )}
     </Container>
   );
 };

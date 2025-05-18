@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, Container, Row, Col } from 'react-bootstrap';
+import { Modal, Button, Form, Container, Row, Col, Alert } from 'react-bootstrap';
+import InputMask from 'react-input-mask';
 
 const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
-  const [formData, setFormData] = useState(aluno);
+  const [formData, setFormData] = useState(aluno || {});
+  const [mostrarAlertaObrigatorios, setMostrarAlertaObrigatorios] = useState(false);
+  const [alertaMensagem, setAlertaMensagem] = useState('');
 
   useEffect(() => {
-    setFormData(aluno);
+    setFormData(aluno || {});
+    setMostrarAlertaObrigatorios(false);
+    setAlertaMensagem('');
   }, [aluno]);
 
   const handleChange = (e) => {
@@ -13,23 +18,95 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const validarEmail = (email) => {
+    // validação simples de email
+    return /\S+@\S+/.test(email);
+  };
+
+  const validarTodosCampos = () => {
+    const obrigatorios = [
+      'nome',
+      'cpf',
+      'rg',
+      'dataNascimento',
+      'sexo',
+      'numeroBeneficio',
+      'alunoTurma',
+      'endereco',
+      'num',
+      'celular',
+      'email',
+    ];
+
+    for (let campo of obrigatorios) {
+      if (!formData[campo] || formData[campo].toString().trim() === '') {
+        setAlertaMensagem(`Campo "${campo}" é obrigatório.`);
+        return false;
+      }
+    }
+
+    // Validar formato CPF (básico, só tamanho e dígitos)
+    const cpfLimpo = formData.cpf.replace(/\D/g, '');
+    if (cpfLimpo.length !== 11) {
+      setAlertaMensagem('CPF inválido.');
+      return false;
+    }
+
+    // Validar RG numérico
+    const rgLimpo = formData.rg.replace(/\D/g, '');
+    if (rgLimpo.length < 5) {
+      setAlertaMensagem('RG inválido.');
+      return false;
+    }
+
+    // Validar número (num) como número inteiro positivo
+    if (isNaN(formData.num) || Number(formData.num) <= 0) {
+      setAlertaMensagem('Número inválido.');
+      return false;
+    }
+
+    // Validar celular com máscara (11 dígitos)
+    const celularLimpo = formData.celular.replace(/\D/g, '');
+    if (celularLimpo.length !== 11) {
+      setAlertaMensagem('Celular inválido.');
+      return false;
+    }
+
+    // Validar email
+    if (!validarEmail(formData.email)) {
+      setAlertaMensagem('Email inválido.');
+      return false;
+    }
+
+    setAlertaMensagem('');
+    return true;
+  };
+
   const handleSubmit = () => {
+    if (!validarTodosCampos()) {
+      setMostrarAlertaObrigatorios(true);
+      return;
+    }
+    setMostrarAlertaObrigatorios(false);
     onSave(formData);
     onHide();
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="xl"> {/* Aumentando a largura do modal */}
+    <Modal show={show} onHide={onHide} size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Detalhes do Aluno</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container className="mt-4">
+          {mostrarAlertaObrigatorios && (
+            <Alert variant="danger">{alertaMensagem || 'Por favor, preencha todos os campos obrigatórios.'}</Alert>
+          )}
           <Form>
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Nome</Form.Label>
+                  <Form.Label>Nome *</Form.Label>
                   <Form.Control
                     type="text"
                     name="nome"
@@ -40,31 +117,47 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>CPF</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="cpf"
+                  <Form.Label>CPF *</Form.Label>
+                  <InputMask
+                    mask="999.999.999-99"
                     value={formData.cpf || ''}
                     onChange={handleChange}
-                  />
+                  >
+                    {(inputProps) => (
+                      <Form.Control
+                        {...inputProps}
+                        type="text"
+                        name="cpf"
+                      />
+                    )}
+                  </InputMask>
                 </Form.Group>
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>RG</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="rg"
+                  <Form.Label>RG *</Form.Label>
+                  <InputMask
+                    mask="999999999"
+                    maskChar=""
                     value={formData.rg || ''}
                     onChange={handleChange}
-                  />
+                  >
+                    {(inputProps) => (
+                      <Form.Control
+                        {...inputProps}
+                        type="text"
+                        name="rg"
+                      />
+                    )}
+                  </InputMask>
                 </Form.Group>
               </Col>
             </Row>
+
             <Row>
               <Col md={2}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Dt Nascimento</Form.Label>
+                  <Form.Label>Dt Nascimento *</Form.Label>
                   <Form.Control
                     type="date"
                     name="dataNascimento"
@@ -73,9 +166,10 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
                   />
                 </Form.Group>
               </Col>
+
               <Col md={2}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Sexo</Form.Label>
+                  <Form.Label>Sexo *</Form.Label>
                   <Form.Select
                     name="sexo"
                     value={formData.sexo || ''}
@@ -88,9 +182,10 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
                   </Form.Select>
                 </Form.Group>
               </Col>
+
               <Col md={4}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>RA</Form.Label>
+                  <Form.Label>RA *</Form.Label>
                   <Form.Control
                     type="text"
                     name="numeroBeneficio"
@@ -99,9 +194,10 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
                   />
                 </Form.Group>
               </Col>
+
               <Col md={4}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Turma</Form.Label>
+                  <Form.Label>Turma *</Form.Label>
                   <Form.Control
                     type="text"
                     name="alunoTurma"
@@ -111,10 +207,11 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
                 </Form.Group>
               </Col>
             </Row>
+
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Endereço</Form.Label>
+                  <Form.Label>Endereço *</Form.Label>
                   <Form.Control
                     type="text"
                     name="endereco"
@@ -123,17 +220,20 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
                   />
                 </Form.Group>
               </Col>
+
               <Col md={1}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Número</Form.Label>
+                  <Form.Label>Número *</Form.Label>
                   <Form.Control
-                    type="text"
+                    type="number"
                     name="num"
                     value={formData.num || ''}
                     onChange={handleChange}
+                    min={1}
                   />
                 </Form.Group>
               </Col>
+
               <Col md={5}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Complemento</Form.Label>
@@ -146,32 +246,49 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
                 </Form.Group>
               </Col>
             </Row>
+
             <Row>
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Celular</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    name="celular"
+                  <Form.Label>Celular *</Form.Label>
+                  <InputMask
+                    mask="(99) 99999-9999"
                     value={formData.celular || ''}
                     onChange={handleChange}
-                  />
+                  >
+                    {(inputProps) => (
+                      <Form.Control
+                        {...inputProps}
+                        type="tel"
+                        name="celular"
+                      />
+                    )}
+                  </InputMask>
                 </Form.Group>
               </Col>
+
               <Col md={3}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Telefone</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    name="telefone"
+                  <InputMask
+                    mask="(99) 9999-9999"
                     value={formData.telefone || ''}
                     onChange={handleChange}
-                  />
+                  >
+                    {(inputProps) => (
+                      <Form.Control
+                        {...inputProps}
+                        type="tel"
+                        name="telefone"
+                      />
+                    )}
+                  </InputMask>
                 </Form.Group>
               </Col>
+
               <Col md={6}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>E-mail</Form.Label>
+                  <Form.Label>E-mail *</Form.Label>
                   <Form.Control
                     type="email"
                     name="email"
@@ -181,35 +298,37 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
                 </Form.Group>
               </Col>
             </Row>
+
             <Row>
               <Col md={12}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Contato de Emergência</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    name="contatoEmergencia"
+                  <InputMask
+                    mask="(99) 99999-9999"
                     value={formData.contatoEmergencia || ''}
                     onChange={handleChange}
-                  />
+                  >
+                    {(inputProps) => (
+                      <Form.Control
+                        {...inputProps}
+                        type="tel"
+                        name="contatoEmergencia"
+                      />
+                    )}
+                  </InputMask>
                 </Form.Group>
               </Col>
             </Row>
-            <Form.Group className="mb-3 text-start">
-              <Form.Label>Observações</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                name="observacoes"
-                value={formData.observacoes || ''}
-                onChange={handleChange}
-              />
-            </Form.Group>
           </Form>
         </Container>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>Fechar</Button>
-        <Button variant="primary" onClick={handleSubmit}>Salvar</Button>
+        <Button variant="secondary" onClick={onHide}>
+          Cancelar
+        </Button>
+        <Button variant="primary" onClick={handleSubmit}>
+          Salvar
+        </Button>
       </Modal.Footer>
     </Modal>
   );
