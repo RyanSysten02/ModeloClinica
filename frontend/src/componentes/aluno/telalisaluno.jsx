@@ -300,26 +300,22 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         />
       )}
 
-      {/* Modal de Cadastro */}
-      {showCadastroModal && (
-        <FormularioAluno
-          show={showCadastroModal}
-          onHide={() => setShowCadastroModal(false)}
-          onSave={() => {
-            setShowCadastroModal(false);
-            fetchAlunos();
-          }}
-        />
-      )}
+      <AlunoHistorico
+        show={showHistoricoModal}
+        onHide={() => setShowHistoricoModal(false)}
+        alunoId={alunoSelecionado?.id}
+        mensagemErroControle={mensagemErroControle}
+      />
 
-      {/* Modal de Histórico */}
-      {showHistoricoModal && (
-        <AlunoHistorico
-          show={showHistoricoModal}
-          onHide={closeHistoricoModal}
-          aluno={alunoSelecionado}
-        />
-      )}
+      {/* Modal de Cadastro de Aluno */}
+      <FormularioAluno
+        show={showCadastroModal}
+        onHide={() => {
+          setShowCadastroModal(false);
+          fetchAlunos(); // Atualiza a lista de alunos após fechar o modal
+        }}
+        onAlunosAtualizados={fetchAlunos} // Passa a função para atualizar a lista
+      />
     </Container>
   );
 };

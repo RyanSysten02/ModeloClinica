@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Container, Table, Button, Form } from 'react-bootstrap';
+import { useNavigate } from "react-router-dom";
 
 export default function ConfiguracoesDeSeguranca() {
   const [roles, setRoles] = useState([]);
   const [recursos, setRecursos] = useState(['aluno', 'professor', 'responsavel']);
   const [permissoes, setPermissoes] = useState({}); // { ADM: { aluno: true, professor: false, ... }, ... }
-
+  const navigate = useNavigate();
   useEffect(() => {
     fetch('http://localhost:5001/api/permissoes')
       .then(res => res.json())
@@ -64,11 +65,18 @@ export default function ConfiguracoesDeSeguranca() {
           ))}
         </tbody>
       </Table>
-      <div className="text-center">
-        <Button variant="primary" onClick={salvarPermissoes} className="mt-3">
-          Salvar Permissões
-        </Button>
-      </div>
+
+    <div className="d-flex justify-content-center gap-3 mt-4">
+      <Button variant="primary" onClick={salvarPermissoes}>
+        Salvar Permissões
+      </Button>
+
+      <Button variant="secondary" onClick={() => navigate("/paginicial")}>
+        <i className="bi bi-house-door-fill me-2"></i>
+        Voltar para o início
+      </Button>
+    </div>
+
     </Container>
   );
 }

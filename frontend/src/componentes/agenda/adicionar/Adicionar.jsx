@@ -125,18 +125,18 @@ function Adicionar({ show, onHide, onUpdate }) {
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Nova Consulta</Modal.Title>
+        <Modal.Title>Registrar Aulas</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
         {mensagemSucesso && <Alert variant="success">{mensagemSucesso}</Alert>}
         <Form onSubmit={handleSubmit}>
           <Form.Group controlId="formBasicAluno" className="mb-3">
-            <Form.Label>Aluno</Form.Label>
+            <Form.Label>Turma</Form.Label>
             <div className="d-flex align-items-center">
               <Form.Control
                 type="text"
-                placeholder="Selecione um aluno"
+                placeholder="Selecione uma Turma"
                 name="alunoNome"
                 value={novoEvento.alunoNome} // Exibe o nome do aluno
                 readOnly // Torna o campo não editável
@@ -181,13 +181,13 @@ function Adicionar({ show, onHide, onUpdate }) {
             />
           </Form.Group>
           <Form.Group controlId="formBasicTipo" className="mb-3">
-            <Form.Label>Especialidade</Form.Label>
+            <Form.Label>Disciplina</Form.Label>
             <Form.Select
               name="tipo"
               value={novoEvento.tipo}
               onChange={handleChange}
             >
-              <option value="">Selecione uma matéria</option>
+              <option value="">Selecione uma Disciplina</option>
                 <option value="Matemática">Matemática</option>
                 <option value="Português">Português</option>
                 <option value="História">História</option>

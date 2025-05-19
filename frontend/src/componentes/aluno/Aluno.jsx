@@ -324,7 +324,7 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
                             </Col>
                             <Col md={1}>
                                 <Form.Group className="mb-3 text-start">
-                                    <Form.Label>Número *</Form.Label>
+                                    <Form.Label>Núm.*</Form.Label>
                                     <Form.Control
                                         type="text"
                                         name="num"
@@ -380,7 +380,7 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
                                     </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
-                            <Col md={6}>
+                            <Col md={3}>
                                 <Form.Group className="mb-3 text-start">
                                     <Form.Label>Contato Emergência</Form.Label>
                                     <Form.Control
@@ -389,6 +389,21 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
                                         value={aluno.contatoEmergencia}
                                         onChange={handleChange}
                                     />
+                                </Form.Group>
+                            </Col>
+                            <Col md={3}>
+                                <Form.Group className="mb-3 text-start">
+                                    <Form.Label>Email *</Form.Label>
+                                    <Form.Control
+                                        type="email"
+                                        name="email"
+                                        value={aluno.email}
+                                        onChange={handleChange}
+                                        isInvalid={!!erros.email}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {erros.email}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                         </Row>

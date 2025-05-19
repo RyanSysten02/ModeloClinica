@@ -223,7 +223,7 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
 
               <Col md={1}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Número *</Form.Label>
+                  <Form.Label>Núm.*</Form.Label>
                   <Form.Control
                     type="number"
                     name="num"
