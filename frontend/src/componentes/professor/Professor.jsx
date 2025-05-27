@@ -66,7 +66,7 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
     if (name === "cpf") {
       novoValor = aplicarMascara(value, "###.###.###-##");
     } else if (name === "rg") {
-      novoValor = aplicarMascara(value, "##.###.###-#");
+      novoValor = aplicarMascara(value, "#########");
     } else if (name === "cep") {
       novoValor = aplicarMascara(value, "#####-###");
     } else if (name === "telefone") {
