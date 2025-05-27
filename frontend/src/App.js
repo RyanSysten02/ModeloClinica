@@ -1,90 +1,90 @@
-import React from "react";
-import "./App.css";
-import Login from "./componentes/login";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import ProtectedRoute from "./componentes/protect";
-import Registro from "./componentes/register";
-import Calendario from "./componentes/Calendario";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import PagLogin from "./pages/login";
-import FullLayout from "./pages/paginicial";
-import TelaProfessor from "./pages/telaprofessor";
-import RouteModals from "./componentes/RouteModals";
-import TelaListaAlunos from "./componentes/aluno/telalisaluno";
-import Layoutaluno from "./pages/pagaluno";
-import TelaListaResponsavels from "./componentes/responsavel/telalisresponsavel";
-import Layoutresponsavel from "./pages/pagResponsavel";
-import Layoutprofessor from "./pages/pagprofessor";
-import ConfiguracoesDeSeguranca from "./pages/ConfiguracoesDeSeguranca";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import AcessoNegado from "./pages/acessoNegado";
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './App.css';
+import ProtectedRoute from './componentes/protect';
+import Registro from './componentes/register';
+import PagLogin from './pages/login';
+import { LayoutDisciplina } from './pages/pagDisciplina';
+import Layoutresponsavel from './pages/pagResponsavel';
+import { LayoutTurma } from './pages/pagTurma';
+import Layoutaluno from './pages/pagaluno';
+import FullLayout from './pages/paginicial';
+import Layoutprofessor from './pages/pagprofessor';
+import TelaProfessor from './pages/telaprofessor';
 
 function App() {
   return (
-    <Router>
-      <div className="App">
+    <div className='App'>
+      <BrowserRouter>
         <Routes>
-          <Route path="/" element={<PagLogin />} />
-          <Route path="/login" element={<PagLogin />} />
-          <Route path="/registro" element={<Registro />} />
-
+          <Route path='/' element={<PagLogin />} />
+          <Route path='/login' element={<PagLogin />} />
+          <Route path='/registro' element={<Registro />} />
           <Route
-            path="/paginicial"
+            path='/paginicial'
             element={
               <ProtectedRoute>
                 <FullLayout />
               </ProtectedRoute>
             }
           />
-
           <Route
-            path="/pagAluno"
+            path='/pagAluno'
             element={
-              <ProtectedRoute allowedPermissions={['aluno']}>
+              <ProtectedRoute>
                 <Layoutaluno />
               </ProtectedRoute>
             }
           />
-
           <Route
-            path="/pagResponsavel"
+            path='/pagResponsavel'
             element={
-              <ProtectedRoute allowedPermissions={['responsavel']}>
+              <ProtectedRoute>
                 <Layoutresponsavel />
               </ProtectedRoute>
             }
           />
-
           <Route
-            path="/pagProfessor"
+            path='/pagProfessor'
             element={
-              <ProtectedRoute allowedPermissions={['professor']}>
+              <ProtectedRoute>
                 <Layoutprofessor />
               </ProtectedRoute>
             }
           />
-
           <Route
-            path="/configuracoes-de-seguranca"
+            path='/pagProfessor'
             element={
-              <ProtectedRoute allowedPermissions={['configuracoes']}>
-                <ConfiguracoesDeSeguranca />
+              <ProtectedRoute>
+                <TelaProfessor />
               </ProtectedRoute>
             }
           />
-          <Route path="/acesso-negado" element={<AcessoNegado />} />
-
+          <Route
+            path='/pagDisciplina'
+            element={
+              <ProtectedRoute>
+                <LayoutDisciplina />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/pagTurma'
+            element={
+              <ProtectedRoute>
+                <LayoutTurma />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
 
-        
-
-        <RouteModals />
-        <ToastContainer position="bottom-right" autoClose={5000} />
-      </div>
-    </Router>
+        <ToastContainer position='bottom-right' autoClose={5000} />
+      </BrowserRouter>
+    </div>
   );
 }
 
