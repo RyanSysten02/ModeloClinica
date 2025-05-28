@@ -15,6 +15,7 @@ import Layoutaluno from './pages/pagaluno';
 import FullLayout from './pages/paginicial';
 import Layoutprofessor from './pages/pagprofessor';
 import TelaProfessor from './pages/telaprofessor';
+import { LayoutMatricula } from './pages/pagmatricula';
 
 function App() {
   return (
@@ -61,6 +62,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <TelaProfessor />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/pagMatricula'
+            element={
+              <ProtectedRoute>
+                <LayoutMatricula />
               </ProtectedRoute>
             }
           />

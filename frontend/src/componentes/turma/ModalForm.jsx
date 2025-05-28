@@ -43,7 +43,7 @@ export const ModalForm = ({ show, onHide, onSave, selected }) => {
                 required
                 type="text"
                 name="nome"
-                placeholder="Digite o nome da Disciplina"
+                placeholder="Digite o nome da Turma"
                 defaultValue={selected?.nome}
               />
               <Form.Control.Feedback type="invalid">

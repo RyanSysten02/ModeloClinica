@@ -119,7 +119,7 @@ export const ListaTurma = () => {
         <Form.Control
           aria-label="Example text with button addon"
           aria-describedby="basic-addon1"
-          placeholder="Busque o aluno"
+          placeholder="Busque a Turma"
           onChange={(e) => setSearchText(e.target.value)}
         />
 

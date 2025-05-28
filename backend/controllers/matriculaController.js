@@ -1,4 +1,4 @@
-const matriculaService = require('../services/matriculaService');
+const matriculaService = require('../services/matriculaServices');
 const jwt = require('jsonwebtoken');
 
 const createMatricula = async (req, res) => {

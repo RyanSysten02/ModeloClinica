@@ -103,6 +103,16 @@ const Sidebar = () => {
             <Button
               color='link'
               className='nav-link text-secondary py-3'
+              onClick={() => navigate('/pagMatricula')}
+            >
+              <i class='bi bi-backpack3'></i>
+              <span className='ms-3 d-inline-block'>Matricula</span>
+            </Button>
+          </NavItem>
+          <NavItem className='sidenav-bg'>
+            <Button
+              color='link'
+              className='nav-link text-secondary py-3'
               onClick={() => navigate('/pagDisciplina')}
             >
               <i class='bi bi-book'></i>
@@ -119,6 +129,7 @@ const Sidebar = () => {
               <span className='ms-3 d-inline-block'>Turmas</span>
             </Button>
           </NavItem>
+          
         </Nav>
       </div>
       {/* Modais */}
