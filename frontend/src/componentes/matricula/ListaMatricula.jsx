@@ -86,7 +86,7 @@ const ListaMatriculasModal = ({ show, onHide, onSelectMatricula }) => {
                 <tr key={matricula.id}>
                   <td>{matricula.aluno_nome}</td>
                   <td>{matricula.turma_nome}</td>
-                  <td>{matricula.responsavel_nome || "-"}</td>
+                  <td>{matricula.responsavel_nome}</td>
                   <td>
                     <Button variant="primary" onClick={() => handleDetalhes(matricula.id)}>
                       Detalhes

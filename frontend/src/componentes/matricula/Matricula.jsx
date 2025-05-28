@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Container, Row, Col, Alert } from "react-bootstrap";
+import TurmaService from "../../services/Turma";
+
 
 function FormularioMatricula({ show, onHide, onMatriculaRealizada }) {
   const [dados, setDados] = useState({
@@ -15,19 +17,20 @@ function FormularioMatricula({ show, onHide, onMatriculaRealizada }) {
   const [erro, setErro] = useState("");
 
   const carregarDados = async () => {
-    try {
-      const [alunoRes, turmaRes, respRes] = await Promise.all([
-        fetch("http://localhost:5001/api/aluno/allaluno").then((res) => res.json()),
-        fetch("http://localhost:5001/api/turma/allturma").then((res) => res.json()),
-        fetch("http://localhost:5001/api/responsavel/allresponsavel").then((res) => res.json()),
-      ]);
-      setAlunos(alunoRes);
-      setTurmas(turmaRes);
-      setResponsaveis(respRes);
-    } catch (e) {
-      setErro("Erro ao carregar dados.");
-    }
-  };
+  try {
+    const [alunoRes, turmaRes, respRes] = await Promise.all([
+      fetch("http://localhost:5001/api/aluno/allaluno").then((res) => res.json()),
+      TurmaService.findAll(),
+      fetch("http://localhost:5001/api/responsavel/allresponsavel").then((res) => res.json()),
+    ]);
+
+    setAlunos(alunoRes);
+    setTurmas(turmaRes); 
+    setResponsaveis(respRes);
+  } catch (e) {
+    setErro("Erro ao carregar dados.");
+  }
+};
 
   useEffect(() => {
     if (show) carregarDados();

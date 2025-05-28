@@ -39,18 +39,28 @@ const TelaListaMatriculas = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:5001/api/matricula/all", {
+      const response = await fetch("http://localhost:5001/api/matricula/allmatricula", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setMatriculas(data);
-      } else {
-        toast.warning("Erro ao carregar as matrículas.");
-      }
+        if (response.ok) {
+            const data = await response.json();
+
+            const adaptados = data.map((m) => ({
+              ...m,
+              aluno: { nome: m.aluno_nome, cpf: m.aluno_cpf },
+              turma: { nome: m.turma_nome },
+              responsavel: { nome: m.responsavel_nome },
+              data: m.data_matricula,
+            }));
+
+            setMatriculas(adaptados);
+          } else {
+            toast.warning("Erro ao carregar as matrículas.");
+          }
+
     } catch (error) {
       toast.error("Erro ao conectar com o servidor.");
     }
@@ -71,7 +81,7 @@ const TelaListaMatriculas = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5001/api/matricula/${id}`, {
+      const response = await fetch(`http://localhost:5001/api/matricula/matricula/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -112,7 +122,6 @@ const TelaListaMatriculas = () => {
         <thead>
           <tr>
             <th>Aluno</th>
-            <th>CPF</th>
             <th>Turma</th>
             <th>Data</th>
             <th>Ações</th>
@@ -122,7 +131,6 @@ const TelaListaMatriculas = () => {
           {matriculasFiltradas.map((m) => (
             <tr key={m.id}>
               <td>{m.aluno?.nome}</td>
-              <td>{m.aluno?.cpf}</td>
               <td>{m.turma?.nome}</td>
               <td>{format(new Date(m.data), "dd/MM/yyyy")}</td>
               <td style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
