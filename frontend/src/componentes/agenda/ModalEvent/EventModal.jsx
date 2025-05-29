@@ -299,7 +299,7 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
       <Modal show={true} onHide={onClose}>
         <Modal.Header>
           <Modal.Title>
-            {editedEvent.title} - turma: {evento.turma_nome}
+            {editedEvent.title} - Prof: {novoEvento.professorNome}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>

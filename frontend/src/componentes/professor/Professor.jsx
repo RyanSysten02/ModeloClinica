@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Container, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import DisciplinaService from "../../services/Disciplina";
 
 function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
   const [professor, setProfessor] = useState({
@@ -23,8 +24,21 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
     sexo: "",
   });
 
+  const [listaDisciplinas, setListaDisciplinas] = useState([]);
   const [mensagemErro, setMensagemErro] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchDisciplinas = async () => {
+      try {
+        const disciplinas = await DisciplinaService.findAll();
+        setListaDisciplinas(disciplinas);
+      } catch (error) {
+        console.error("Erro ao carregar disciplinas:", error);
+      }
+    };
+    fetchDisciplinas();
+  }, []);
 
   const camposObrigatorios = [
     "nome",
@@ -141,33 +155,36 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
   return (
     <Modal show={show} onHide={onHide} size="xl">
       <Modal.Header closeButton>
-        <Modal.Title>Formulário de Professor</Modal.Title>
+        <Modal.Title>Cadastro de Professor</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container className="mt-4">
-          <h1>Formulário de Professor</h1>
           {mensagemErro && (
             <div className="alert alert-danger">{mensagemErro}</div>
           )}
           <Form onSubmit={handleSubmit}>
             <Row>
-              {[
-                { label: "Nome*", name: "nome", md: 6 },
-                { label: "CPF*", name: "cpf", md: 3 },
-                { label: "RG*", name: "rg", md: 3 },
-                { label: "Endereço*", name: "end_rua", md: 6 },
-                { label: "Número*", name: "end_numero", md: 1 },
-                { label: "Bairro*", name: "bairro", md: 2 },
-                { label: "Cidade*", name: "cidade", md: 3 },
-                { label: "CEP*", name: "cep", md: 2 },
-                { label: "Data de Nascimento*", name: "data_nasc", md: 2, type: "date" },
-                { label: "Número de Registro (CRE)*", name: "num_regis", md: 3 },
-                { label: "Habilitação*", name: "habilitacao", md: 5 },
-                { label: "Telefone*", name: "telefone", md: 4 },
-                { label: "Email*", name: "email", md: 4 },
-                { label: "Especializações", name: "especializacao", md: 12 },
-                { label: "Cursos e Experiências", name: "cursos", md: 12 },
-              ].map(({ label, name, md, type = "text" }) => (
+              {[{
+                label: "Nome*", name: "nome", md: 6
+              }, {
+                label: "CPF*", name: "cpf", md: 3
+              }, {
+                label: "RG*", name: "rg", md: 3
+              }, {
+                label: "Endereço*", name: "end_rua", md: 6
+              }, {
+                label: "Número*", name: "end_numero", md: 1
+              }, {
+                label: "Bairro*", name: "bairro", md: 2
+              }, {
+                label: "Cidade*", name: "cidade", md: 3
+              }, {
+                label: "CEP*", name: "cep", md: 2
+              }, {
+                label: "Data de Nascimento*", name: "data_nasc", md: 2, type: "date"
+              }, {
+                label: "Número de Registro (CRE)*", name: "num_regis", md: 3
+              }].map(({ label, name, md, type = "text" }) => (
                 <Col md={md} key={name}>
                   <Form.Group className="mb-3 text-start">
                     <Form.Label>{label}</Form.Label>
@@ -181,6 +198,23 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
                 </Col>
               ))}
 
+              <Col md={5}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Label>Disciplina*</Form.Label>
+                  <Form.Select
+                    name="habilitacao"
+                    value={professor.habilitacao}
+                    onChange={handleChange}
+                  >
+                    <option value="">Selecione uma disciplina</option>
+                    {listaDisciplinas.map((disciplina) => (
+                      <option key={disciplina.id} value={disciplina.nome}>
+                        {disciplina.nome}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
               <Col md={4}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Sexo*</Form.Label>
@@ -195,6 +229,30 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
                   </Form.Select>
                 </Form.Group>
               </Col>
+
+              {[{
+                label: "Telefone*", name: "telefone", md: 4
+              }, {
+                label: "Email*", name: "email", md: 4
+              }, {
+                label: "Especializações", name: "especializacao", md: 12
+              }, {
+                label: "Cursos e Experiências", name: "cursos", md: 12
+              }].map(({ label, name, md }) => (
+                <Col md={md} key={name}>
+                  <Form.Group className="mb-3 text-start">
+                    <Form.Label>{label}</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name={name}
+                      value={professor[name]}
+                      onChange={handleChange}
+                    />
+                  </Form.Group>
+                </Col>
+              ))}
+
+              
             </Row>
           </Form>
         </Container>
