@@ -37,7 +37,7 @@ export const ListaTurma = () => {
 
       setListAll(response);
     } catch (error) {
-      setMessageError(error?.message);
+      setMessageError(error?.response?.data?.message);
     }
   };
 
@@ -55,7 +55,7 @@ export const ListaTurma = () => {
 
       onCloseModal();
     } catch (error) {
-      setMessageError(error?.message);
+      setMessageError(error?.response?.data?.message);
     }
   };
 
@@ -67,7 +67,7 @@ export const ListaTurma = () => {
       await getData();
       onCloseModal();
     } catch (error) {
-      setMessageError(error?.message);
+      setMessageError(error?.response?.data?.message);
     }
   };
 
@@ -88,7 +88,7 @@ export const ListaTurma = () => {
       await getData();
       onCloseModal();
     } catch (error) {
-      setMessageError(error?.message);
+      setMessageError(error?.response?.data?.message);
     }
   };
 

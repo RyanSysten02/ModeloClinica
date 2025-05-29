@@ -1,51 +1,27 @@
 const model = require('../models/turma.model');
 
 const create = async (data) => {
-  try {
-    return await model.create(data);
-  } catch (error) {
-    return error.message;
-  }
+  return await model.create(data);
 };
 
 const findAll = async () => {
-  try {
-    return await model.findAll();
-  } catch (error) {
-    return error.message;
-  }
+  return await model.findAll();
 };
 
 const findById = async (id) => {
-  try {
-    return await model.findById(id);
-  } catch (error) {
-    return error.message;
-  }
+  return await model.findById(id);
 };
 
 const update = async (id, data) => {
-  try {
-    return await model.update(id, data);
-  } catch (error) {
-    return error.message;
-  }
+  return await model.update(id, data);
 };
 
 const deleteById = async (id) => {
-  try {
-    await model.deleteById(id);
-  } catch (error) {
-    return error.message;
-  }
+  await model.deleteById(id);
 };
 
 const listStudents = async (id) => {
-  try {
-    return await model.listStudents(id);
-  } catch (error) {
-    return error.message;
-  }
+  return await model.listStudents(id);
 };
 
 module.exports = {

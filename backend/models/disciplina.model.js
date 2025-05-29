@@ -1,54 +1,34 @@
-const knex = require("../lib/knex");
+const knex = require('../lib/knex');
 
 const create = async (data) => {
-  try {
-    const result = await knex("disciplina").insert(data);
+  const result = await knex('disciplina').insert(data);
 
-    return result;
-  } catch (error) {
-    return error.message;
-  }
+  return result;
 };
 
 const findAll = async () => {
-  try {
-    const result = await knex("disciplina").select();
+  const result = await knex('disciplina').select();
 
-    if (!result) return [];
+  if (!result) return [];
 
-    return result;
-  } catch (error) {
-    return error.message;
-  }
+  return result;
 };
 
 const findById = async (id) => {
-  try {
-    const result = await knex("disciplina").select().where({ id });
+  const result = await knex('disciplina').select().where({ id });
 
-    if (!result) return [];
+  if (!result) return [];
 
-    return result?.at(0);
-  } catch (error) {
-    return error.message;
-  }
+  return result?.at(0);
 };
 
 const update = async (id, data) => {
-  try {
-    const result = await knex("disciplina").update(data).where({ id });
-    return result;
-  } catch (error) {
-    return error.message;
-  }
+  const result = await knex('disciplina').update(data).where({ id });
+  return result;
 };
 
 const deleteById = async (id) => {
-  try {
-    await await knex("disciplina").delete().where({ id });
-  } catch (error) {
-    return error.message;
-  }
+  await knex('disciplina').delete().where({ id });
 };
 
 module.exports = {

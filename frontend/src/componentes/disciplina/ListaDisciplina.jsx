@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import { Button, Container, Form, InputGroup, Table } from "react-bootstrap";
-import { toast } from "react-toastify";
-import DisciplinaService from "../../services/Disciplina";
-import { ModalForm } from "./ModalForm";
+import { useEffect, useMemo, useState } from 'react';
+import { Button, Container, Form, InputGroup, Table } from 'react-bootstrap';
+import { toast } from 'react-toastify';
+import DisciplinaService from '../../services/Disciplina';
+import { ModalForm } from './ModalForm';
 
 export const ListaDisciplina = () => {
   const [listAll, setListAll] = useState(null);
@@ -29,7 +29,7 @@ export const ListaDisciplina = () => {
 
       setListAll(response);
     } catch (error) {
-      setMessageError(error?.message);
+      setMessageError(error?.response?.data?.message);
     }
   };
 
@@ -41,25 +41,25 @@ export const ListaDisciplina = () => {
   const handleSave = async (formData) => {
     try {
       await DisciplinaService.create(formData);
-      toast.success("Disciplina cadastrada com sucesso!");
+      toast.success('Disciplina cadastrada com sucesso!');
 
       await getData();
 
       onCloseModal();
     } catch (error) {
-      setMessageError(error?.message);
+      setMessageError(error?.response?.data?.message);
     }
   };
 
   const handleUpdate = async (formData) => {
     try {
       await DisciplinaService.update(selected?.id, formData);
-      toast.success("Disciplina atualizada com sucesso!");
+      toast.success('Disciplina atualizada com sucesso!');
 
       await getData();
       onCloseModal();
     } catch (error) {
-      setMessageError(error?.message);
+      setMessageError(error?.response?.data?.message);
     }
   };
 
@@ -75,12 +75,12 @@ export const ListaDisciplina = () => {
   const handleDelete = async (id) => {
     try {
       await DisciplinaService.delete(id);
-      toast.success("Disciplina deletada com sucesso!");
+      toast.success('Disciplina deletada com sucesso!');
 
       await getData();
       onCloseModal();
     } catch (error) {
-      setMessageError(error?.message);
+      setMessageError(error?.response?.data?.message);
     }
   };
 
@@ -101,28 +101,28 @@ export const ListaDisciplina = () => {
 
   return (
     <Container>
-      <h1 className="mt-4">Lista de Disciplinas</h1>
+      <h1 className='mt-4'>Lista de Disciplinas</h1>
 
-      <div className="mb-2 d-flex justify-content-start">
-        <Button variant="info" onClick={() => setShowModal(true)}>
+      <div className='mb-2 d-flex justify-content-start'>
+        <Button variant='info' onClick={() => setShowModal(true)}>
           Cadastrar Disciplina
         </Button>
       </div>
 
-      <InputGroup className="mb-3">
+      <InputGroup className='mb-3'>
         <Form.Control
-          aria-label="Example text with button addon"
-          aria-describedby="basic-addon1"
-          placeholder="Busque o aluno"
+          aria-label='Example text with button addon'
+          aria-describedby='basic-addon1'
+          placeholder='Busque o aluno'
           onChange={(e) => setSearchText(e.target.value)}
         />
 
-        <Button variant="outline-secondary" id="button-addon1">
-          <i className="bi bi-search"></i>
+        <Button variant='outline-secondary' id='button-addon1'>
+          <i className='bi bi-search'></i>
         </Button>
       </InputGroup>
 
-      {messageError && <p className="text-danger">{messageError}</p>}
+      {messageError && <p className='text-danger'>{messageError}</p>}
 
       <Table striped bordered hover>
         <thead>
@@ -137,17 +137,17 @@ export const ListaDisciplina = () => {
               <td>{item?.nome}</td>
               <td
                 style={{
-                  display: "inline-flex",
+                  display: 'inline-flex',
                   gap: 10,
-                  width: "100%",
-                  justifyContent: "center",
+                  width: '100%',
+                  justifyContent: 'center',
                 }}
               >
-                <Button variant="primary" onClick={() => onDetails(item)}>
+                <Button variant='primary' onClick={() => onDetails(item)}>
                   Detalhes
                 </Button>
 
-                <Button variant="danger" onClick={() => handleDelete(item?.id)}>
+                <Button variant='danger' onClick={() => handleDelete(item?.id)}>
                   Excluir
                 </Button>
               </td>
