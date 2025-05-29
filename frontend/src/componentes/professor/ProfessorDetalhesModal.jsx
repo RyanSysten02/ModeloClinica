@@ -9,6 +9,7 @@ import {
   Alert,
 } from "react-bootstrap";
 import InputMask from "react-input-mask";
+import DisciplinaService from "../../services/Disciplina";
 
 const camposObrigatorios = [
   "nome",
@@ -29,11 +30,24 @@ const camposObrigatorios = [
 const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
   const [formData, setFormData] = useState(professor);
   const [erros, setErros] = useState({});
+  const [listaDisciplinas, setListaDisciplinas] = useState([]);
 
   useEffect(() => {
     setFormData(professor);
     setErros({});
   }, [professor]);
+
+  useEffect(() => {
+    const fetchDisciplinas = async () => {
+      try {
+        const disciplinas = await DisciplinaService.findAll();
+        setListaDisciplinas(disciplinas);
+      } catch (error) {
+        console.error("Erro ao carregar disciplinas:", error);
+      }
+    };
+    fetchDisciplinas();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -227,7 +241,7 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
                 </Form.Group>
               </Col>
 
-              <Col md={3}>
+              <Col md={4}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Telefone*</Form.Label>
                   <InputMask
@@ -250,7 +264,7 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
                 </Form.Group>
               </Col>
 
-              <Col md={3}>
+              <Col md={4}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Email*</Form.Label>
                   <Form.Control
@@ -286,7 +300,7 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
                 </Form.Group>
               </Col>
 
-              <Col md={3}>
+              <Col md={4}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Número de Registro (CRE)*</Form.Label>
                   <Form.Control
@@ -304,14 +318,20 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
 
               <Col md={5}>
                 <Form.Group className="mb-3 text-start">
-                  <Form.Label>Habilitação*</Form.Label>
-                  <Form.Control
-                    type="text"
+                  <Form.Label>Disciplina*</Form.Label>
+                  <Form.Select
                     name="habilitacao"
                     value={formData.habilitacao || ""}
                     onChange={handleChange}
                     isInvalid={!!erros.habilitacao}
-                  />
+                  >
+                    <option value="">Selecione uma disciplina</option>
+                    {listaDisciplinas.map((disciplina) => (
+                      <option key={disciplina.id} value={disciplina.nome}>
+                        {disciplina.nome}
+                      </option>
+                    ))}
+                  </Form.Select>
                   <Form.Control.Feedback type="invalid">
                     {erros.habilitacao}
                   </Form.Control.Feedback>

@@ -168,24 +168,23 @@ const ListaProfessoresModal = ({ show, onHide, onSelectProfessor }) => {
           <thead>
             <tr>
               <th>Nome</th>
-              <th>Registro</th>
-              <th>Função</th>
-              <th>Habilitacao</th>
+              <th>Diciplina</th>
+              <th>Opções</th>
             </tr>
           </thead>
           <tbody>
             {professores.map((professor) => (
               <tr key={professor.id}>
                 <td>{professor.nome}</td>
-                <td>{professor.Registro}</td>
-                <td>{professor.Habilitacao}</td>
+                <td>{professor.habilitacao}</td>
                 <td>
+                  {/*
                   <Button
                     variant="primary"
                     onClick={() => handleDetalhes(professor.id)}
                   >
                     Detalhes
-                  </Button>
+                  </Button>*/}
                   <Button
                     variant="success"
                     onClick={() => onSelectProfessor(professor)}

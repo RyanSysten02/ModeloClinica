@@ -195,7 +195,7 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
           <tr>
             <th>Nome</th>
             <th>Registro</th>
-            <th>Habilitação</th>
+            <th>Diciplina</th>
             <th>Ações</th>
           </tr>
         </thead>
