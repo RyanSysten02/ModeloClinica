@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Button, Form, Container, Row, Col, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import {
     validarCPF,
     aplicarMascaraCPF,
@@ -152,6 +153,7 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
             const data = await response.json();
 
             if (response.ok) {
+                toast.success("Aluno cadastrado com sucesso!");
                 setAluno({
                     nome: "",
                     cpf: "",

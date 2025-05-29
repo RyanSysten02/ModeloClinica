@@ -1,6 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importação do hook
+import { useNavigate } from 'react-router-dom';
 import { Button, Nav, NavItem } from 'reactstrap';
 import Adicionar from '../componentes/agenda/adicionar/Adicionar';
 import probg from '../componentes/assets/images/bg/download.jpg';
@@ -10,12 +10,17 @@ import './sibar2.css';
 
 const Sidebar = () => {
   const [userName, setUserName] = useState('');
+  const [permissoes, setPermissoes] = useState([]);
   const [showAdicionarModal, setShowAdicionarModal] = useState(false);
   const [showProfessoresModal, setShowProfessoresModal] = useState(false);
-  const navigate = useNavigate(); // Inicialização do hook
+  const navigate = useNavigate();
 
   const showMobilemenu = () => {
     document.getElementById('sidebarArea').classList.toggle('showSidebar');
+  };
+
+  const podeAcessar = (recurso) => {
+    return Array.isArray(permissoes) && permissoes.includes(recurso);
   };
 
   useEffect(() => {
@@ -23,6 +28,25 @@ const Sidebar = () => {
     if (token) {
       const decoded = jwtDecode(token);
       setUserName(decoded.nome);
+
+      fetch('http://localhost:5001/api/permissoes', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const role = decoded.role;
+          const permissoesDaRole = data[role] || {};
+          const recursosPermitidos = Object.entries(permissoesDaRole)
+            .filter(([_, permitido]) => permitido)
+            .map(([recurso]) => recurso);
+          setPermissoes(recursosPermitidos);
+        })
+        .catch((err) => {
+          console.error('Erro ao buscar permissões:', err);
+          setPermissoes([]);
+        });
     }
   }, []);
 
@@ -47,6 +71,7 @@ const Sidebar = () => {
           {userName ? userName : ''}
         </div>
       </div>
+
       <div className='p-3 mt-2'>
         <Nav vertical className='sidebarNav'>
           <NavItem className='sidenav-bg'>
@@ -59,6 +84,7 @@ const Sidebar = () => {
               <span className='ms-3 d-inline-block'>Minha Agenda</span>
             </Button>
           </NavItem>
+
           <NavItem className='sidenav-bg'>
             <Button
               color='link'
@@ -69,69 +95,112 @@ const Sidebar = () => {
               <span className='ms-3 d-inline-block'>Atribuir Aulas</span>
             </Button>
           </NavItem>
-          <NavItem className='sidenav-bg'>
-            <Button
-              color='link'
-              className='nav-link text-secondary py-3'
-              onClick={() => navigate('/pagAluno')} // Navegação para a página
-            >
-              <i className='bi bi-person'></i>
-              <span className='ms-3 d-inline-block'>Alunos</span>
-            </Button>
-          </NavItem>
-          <NavItem className='sidenav-bg'>
-            <Button
-              color='link'
-              className='nav-link text-secondary py-3'
-              onClick={() => navigate('/pagResponsavel')} // Navegação para a página
-            >
-              <i className='bi bi-people'></i>
-              <span className='ms-3 d-inline-block'>Responsaveis</span>
-            </Button>
-          </NavItem>
-          <NavItem className='sidenav-bg'>
-            <Button
-              color='link'
-              className='nav-link text-secondary py-3'
-              onClick={() => navigate('/pagProfessor')} // Navegação para a página
-            >
-              <i className='bi bi-person-badge'></i>
-              <span className='ms-3 d-inline-block'>Professores</span>
-            </Button>
-          </NavItem>
-          <NavItem className='sidenav-bg'>
-            <Button
-              color='link'
-              className='nav-link text-secondary py-3'
-              onClick={() => navigate('/pagMatricula')}
-            >
-              <i class='bi bi-backpack3'></i>
-              <span className='ms-3 d-inline-block'>Matricula</span>
-            </Button>
-          </NavItem>
-          <NavItem className='sidenav-bg'>
-            <Button
-              color='link'
-              className='nav-link text-secondary py-3'
-              onClick={() => navigate('/pagDisciplina')}
-            >
-              <i class='bi bi-book'></i>
-              <span className='ms-3 d-inline-block'>Disciplinas</span>
-            </Button>
-          </NavItem>
-          <NavItem className='sidenav-bg'>
-            <Button
-              color='link'
-              className='nav-link text-secondary py-3'
-              onClick={() => navigate('/pagTurma')}
-            >
-              <i class='bi bi-123'></i>
-              <span className='ms-3 d-inline-block'>Turmas</span>
-            </Button>
-          </NavItem>
-          
+
+          {podeAcessar('aluno') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
+                onClick={() => navigate('/pagAluno')}
+              >
+                <i className='bi bi-person'></i>
+                <span className='ms-3 d-inline-block'>Alunos</span>
+              </Button>
+            </NavItem>
+          )}
+
+          {podeAcessar('responsavel') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
+                onClick={() => navigate('/pagResponsavel')}
+              >
+                <i className='bi bi-people'></i>
+                <span className='ms-3 d-inline-block'>Responsáveis</span>
+              </Button>
+            </NavItem>
+          )}
+
+          {podeAcessar('professor') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
+                onClick={() => navigate('/pagProfessor')}
+              >
+                <i className='bi bi-person-badge'></i>
+                <span className='ms-3 d-inline-block'>Professores</span>
+              </Button>
+            </NavItem>
+          )}
+
+          {podeAcessar('matricula') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
+                onClick={() => navigate('/pagMatricula')}
+              >
+                <i className='bi bi-backpack3'></i>
+                <span className='ms-3 d-inline-block'>Matrícula</span>
+              </Button>
+            </NavItem>
+          )}
+
+          {podeAcessar('disciplina') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
+                onClick={() => navigate('/pagDisciplina')}
+              >
+                <i className='bi bi-book'></i>
+                <span className='ms-3 d-inline-block'>Disciplinas</span>
+              </Button>
+            </NavItem>
+          )}
+
+          {podeAcessar('turma') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
+                onClick={() => navigate('/pagTurma')}
+              >
+                <i className='bi bi-123'></i>
+                <span className='ms-3 d-inline-block'>Turmas</span>
+              </Button>
+            </NavItem>
+          )}
+          {podeAcessar('configuracoes') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
+                onClick={() => navigate('/configuracoes-de-seguranca')}
+              >
+                <i className='bi bi-gear'></i>
+                <span className='ms-3 d-inline-block'>Configurações</span>
+              </Button>
+            </NavItem>
+          )}
+          {podeAcessar('cadastrousuario') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
+                onClick={() => navigate('/registro')}
+              >
+                <i className='bi bi-person-fill-lock'></i>
+                <span className='ms-3 d-inline-block'>Novo Usuario</span>
+              </Button>
+            </NavItem>
+          )}
+
         </Nav>
       </div>
+
       {/* Modais */}
       <Adicionar
         show={showAdicionarModal}

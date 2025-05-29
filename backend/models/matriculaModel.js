@@ -1,13 +1,14 @@
 const pool = require('../db');
 
-const createMatricula = async (aluno_id, turma_id, responsavel_id = null, observacoes = null) => {
+const createMatricula = async (aluno_id, turma_id, responsavel_id, observacoes, data_matricula, ano_letivo, turno) => {
   const [result] = await pool.query(
-    `INSERT INTO matricula (aluno_id, turma_id, responsavel_id, observacoes)
-     VALUES (?, ?, ?, ?)`,
-    [aluno_id, turma_id, responsavel_id, observacoes]
+    `INSERT INTO matricula (aluno_id, turma_id, responsavel_id, observacoes, data_matricula, ano_letivo, turno)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [aluno_id, turma_id, responsavel_id, observacoes, data_matricula, ano_letivo, turno]
   );
   return result.insertId;
 };
+
 
 const getMatriculas = async () => {
   const [rows] = await pool.query(`
@@ -46,10 +47,21 @@ const deleteMatricula = async (id) => {
   await pool.query(`DELETE FROM matricula WHERE id = ?`, [id]);
 };
 
+const atualizarStatusMatricula = async (id, status) => {
+  const [result] = await pool.query(
+    `UPDATE matricula SET status = ? WHERE id = ?`,
+    [status, id]
+  );
+  return result.affectedRows > 0;
+};
+
+
+
 module.exports = {
   createMatricula,
   getMatriculas,
   getMatriculaById,
   updateMatricula,
   deleteMatricula,
+  atualizarStatusMatricula,
 };

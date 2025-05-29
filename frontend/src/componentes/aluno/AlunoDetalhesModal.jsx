@@ -82,15 +82,29 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
     return true;
   };
 
-  const handleSubmit = () => {
-    if (!validarTodosCampos()) {
-      setMostrarAlertaObrigatorios(true);
-      return;
-    }
+const handleSubmit = async () => {
+  if (!validarTodosCampos()) {
+    setMostrarAlertaObrigatorios(true);
+    return;
+  }
+
+  try {
+    const formDataCorrigido = {
+      ...formData,
+      cpf: formData.cpf.replace(/\D/g, ''),
+    };
+
     setMostrarAlertaObrigatorios(false);
-    onSave(formData);
+    await onSave(formDataCorrigido);
     onHide();
-  };
+  } catch (error) {
+    const msg = error?.message || 'Erro ao salvar dados. Tente novamente.';
+    setAlertaMensagem(msg);
+    setMostrarAlertaObrigatorios(true);
+  }
+};
+
+
 
   return (
     <Modal show={show} onHide={onHide} size="xl">
@@ -319,6 +333,19 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
                 </Form.Group>
               </Col>
             </Row>
+            <Row>
+            <Col md={12}>
+                <Form.Group className="mb-3 text-start">
+                    <Form.Label>Observações</Form.Label>
+                    <Form.Control
+                        as="textarea"
+                        name="observacoes"
+                        value={aluno.observacoes}
+                        onChange={handleChange}
+                    />
+                </Form.Group>
+            </Col>
+        </Row>
           </Form>
         </Container>
       </Modal.Body>

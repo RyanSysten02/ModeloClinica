@@ -75,29 +75,7 @@ const TelaListaMatriculas = () => {
     setShowDetalhesModal(true);
   };
 
-  const handleExcluir = async (id) => {
-    const confirmado = window.confirm("Deseja realmente excluir esta matrícula?");
-    if (!confirmado) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5001/api/matricula/matricula/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        toast.success("Matrícula excluída com sucesso.");
-        fetchMatriculas();
-      } else {
-        toast.warning("Erro ao excluir matrícula.");
-      }
-    } catch (error) {
-      toast.error("Erro ao conectar com o servidor.");
-    }
-  };
+ 
 
   return (
     <Container>
@@ -109,7 +87,7 @@ const TelaListaMatriculas = () => {
 
       <InputGroup className="mb-3">
         <Form.Control
-          placeholder="Buscar por aluno, CPF ou turma"
+          placeholder="Buscar por aluno ou turma"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />
@@ -137,9 +115,7 @@ const TelaListaMatriculas = () => {
                 <Button variant="info" onClick={() => handleDetalhes(m)}>
                   Detalhes
                 </Button>
-                <Button variant="danger" onClick={() => handleExcluir(m.id)}>
-                  Excluir
-                </Button>
+                
               </td>
             </tr>
           ))}

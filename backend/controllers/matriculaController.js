@@ -2,7 +2,7 @@ const matriculaService = require('../services/matriculaServices');
 const jwt = require('jsonwebtoken');
 
 const createMatricula = async (req, res) => {
-  const { aluno_id, turma_id, responsavel_id, observacoes } = req.body;
+  const { aluno_id, turma_id, responsavel_id, observacoes, data_matricula, ano_letivo, turno } = req.body;
 
   const token = req.header('Authorization');
   if (!token) return res.status(401).json({ message: 'Token não fornecido' });
@@ -16,14 +16,19 @@ const createMatricula = async (req, res) => {
       aluno_id,
       turma_id,
       responsavel_id,
-      observacoes
+      observacoes,
+      data_matricula,
+      ano_letivo,
+      turno
     );
 
     res.status(201).json({ message: 'Matrícula realizada com sucesso' });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error(error);
+    res.status(400).json({ message: error.message || 'Erro ao cadastrar matrícula.' });
   }
 };
+
 
 const getMatriculas = async (req, res) => {
   try {
@@ -92,10 +97,36 @@ const deleteMatricula = async (req, res) => {
   }
 };
 
+const atualizarStatusMatricula = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const statusPermitidos = ['ativa', 'inativa', 'cancelada'];
+  if (!statusPermitidos.includes(status)) {
+    return res.status(400).json({ message: 'Status inválido.' });
+  }
+
+  try {
+    const atualizou = await matriculaService.atualizarStatusMatricula(id, status);
+
+    if (!atualizou) {
+      return res.status(404).json({ message: 'Matrícula não encontrada.' });
+    }
+
+    res.status(200).json({ message: `Status da matrícula atualizado para ${status}.` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao atualizar status da matrícula.' });
+  }
+};
+
+
+
 module.exports = {
   createMatricula,
   getMatriculas,
   getMatriculaById,
   updateMatricula,
-  deleteMatricula
+  deleteMatricula,
+  atualizarStatusMatricula,
 };

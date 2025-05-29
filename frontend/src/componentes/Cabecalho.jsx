@@ -14,7 +14,7 @@ import {
   Button,
 } from "reactstrap";
 import Logo from "./Logo";
-import { ReactComponent as LogoWhite } from "./assets/images/logos/materialprowhite.svg";
+//import { ReactComponent as LogoWhite } from "./assets/images/logos/materialprowhite.svg";
 import user1 from "./assets/images/users/user4.jpg";
 
 const Cabecalho = () => {
@@ -43,7 +43,7 @@ const Cabecalho = () => {
           <Logo />
         </div>
         <NavbarBrand href="/">
-          <LogoWhite className=" d-lg-none" />
+          {/*<LogoWhite className=" d-lg-none" />*/}
         </NavbarBrand>
         <Button
           color="primary"

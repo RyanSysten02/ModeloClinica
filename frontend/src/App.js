@@ -14,8 +14,9 @@ import { LayoutTurma } from './pages/pagTurma';
 import Layoutaluno from './pages/pagaluno';
 import FullLayout from './pages/paginicial';
 import Layoutprofessor from './pages/pagprofessor';
-import TelaProfessor from './pages/telaprofessor';
 import { LayoutMatricula } from './pages/pagmatricula';
+import ConfiguracoesDeSeguranca from './pages/ConfiguracoesDeSeguranca';
+import AcessoNegado from './pages/acessoNegado';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path='/' element={<PagLogin />} />
           <Route path='/login' element={<PagLogin />} />
           <Route path='/registro' element={<Registro />} />
+
           <Route
             path='/paginicial'
             element={
@@ -33,62 +35,71 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path='/pagAluno'
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedPermissions={['aluno']}>
                 <Layoutaluno />
               </ProtectedRoute>
             }
           />
+
           <Route
             path='/pagResponsavel'
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedPermissions={['responsavel']}>
                 <Layoutresponsavel />
               </ProtectedRoute>
             }
           />
+
           <Route
             path='/pagProfessor'
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedPermissions={['professor']}>
                 <Layoutprofessor />
               </ProtectedRoute>
             }
           />
-          <Route
-            path='/pagProfessor'
-            element={
-              <ProtectedRoute>
-                <TelaProfessor />
-              </ProtectedRoute>
-            }
-          />
+
           <Route
             path='/pagMatricula'
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedPermissions={['matricula']}>
                 <LayoutMatricula />
               </ProtectedRoute>
             }
           />
+
           <Route
             path='/pagDisciplina'
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedPermissions={['disciplina']}>
                 <LayoutDisciplina />
               </ProtectedRoute>
             }
           />
+
           <Route
             path='/pagTurma'
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedPermissions={['turma']}>
                 <LayoutTurma />
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path='/configuracoes-de-seguranca'
+            element={
+              <ProtectedRoute allowedPermissions={['configuracoes']}>
+                <ConfiguracoesDeSeguranca />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path='/acesso-negado' element={<AcessoNegado />} />
         </Routes>
 
         <ToastContainer position='bottom-right' autoClose={5000} />

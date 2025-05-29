@@ -50,10 +50,19 @@ const deleteAluno = async (id) => {
     return result;
 };
 
+const getAlunoByCpf = async (cpf) => {
+    const result = await pool.query('SELECT * FROM aluno WHERE cpf = ?', [cpf]);
+    const alunos = result[0]; // geralmente é um array de resultados
+    return alunos.length > 0 ? alunos[0] : null;
+};
+
+
+
 module.exports = {
     createAluno,
     getAluno,
     getAlunoById,
     updateAluno,
-    deleteAluno
+    deleteAluno,
+    getAlunoByCpf,
 };

@@ -7,12 +7,11 @@ const createAluno = async (nome, cpf, rg, dataNascimento, sexo, numeroBeneficio,
     return aluno;
 };
 
-const getAluno = async (nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma,
-    endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes) => {
-    const aluno = await alunomodel.getAluno(nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma,
-        endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes);
+const getAluno = async () => {
+    const aluno = await alunomodel.getAluno();
     return aluno;
 };
+
 
 const updateAluno = async (id, nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma,
     endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes) => {
@@ -30,10 +29,16 @@ const deleteAluno = async (id) => {
     return aluno;
 };
 
+const getAlunoByCpf = async (cpf) => {
+    return await alunomodel.getAlunoByCpf(cpf);
+};
+
+
 module.exports = {
     createAluno,
     getAluno,
     deleteAluno,
     updateAluno,
     getAlunoById,  
+    getAlunoByCpf,
 };

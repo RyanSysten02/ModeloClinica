@@ -10,6 +10,7 @@ const responsavelRoutes = require('./routes/responsavelRoutes');
 const disciplinaRoutes = require('./routes/disciplina.routes');
 const turmaRoutes = require('./routes/turma.routes');
 const matriculaRoutes = require('./routes/matricularoutes');
+const permissaoRoutes = require('./routes/permissaoroutes');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/api/responsavel', responsavelRoutes);
 app.use('/api/disciplina', disciplinaRoutes);
 app.use('/api/turma', turmaRoutes);
 app.use('/api/matricula', matriculaRoutes);
+app.use('/api/permissoes', permissaoRoutes);
 
 const PORT = 5001;
 app.listen(PORT, () => console.log('Servidor rodando:' + PORT));

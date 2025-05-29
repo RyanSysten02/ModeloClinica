@@ -16,4 +16,6 @@ router.put('/aluno/:id', alunoController.updateAluno);
 
 router.delete('/aluno/:id', alunoController.deleteAluno);
 
+router.get('/verificarcpf/:cpf', alunoController.verificarCpfExistente);
+
 module.exports = router;

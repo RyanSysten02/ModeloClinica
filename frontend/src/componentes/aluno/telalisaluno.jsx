@@ -135,45 +135,49 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
   };
 
   const handleSave = async (formData) => {
-    if (formData.dataNascimento) {
-      const date = new Date(formData.dataNascimento);
-      date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-      formData.dataNascimento = format(date, "yyyy-MM-dd");
+  if (formData.dataNascimento) {
+    const date = new Date(formData.dataNascimento);
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+    formData.dataNascimento = format(date, "yyyy-MM-dd");
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.warning("Token não encontrado. Faça login novamente.");
+      navigate("/login");
+      return;
     }
 
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.warning("Token não encontrado. Faça login novamente.");
-        navigate("/login");
-        return;
+    const response = await fetch(
+      `http://localhost:5001/api/aluno/aluno/${formData.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
       }
+    );
 
-      const response = await fetch(
-        `http://localhost:5001/api/aluno/aluno/${formData.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        }
+    const data = await response.json();
+
+    if (response.ok) {
+      setAlunos((prevState) =>
+        prevState.map((p) => (p.id === formData.id ? formData : p))
       );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setAlunos((prevState) =>
-          prevState.map((p) => (p.id === formData.id ? formData : p))
-        );
-      } else {
-        toast.warning("Erro ao salvar alterações do aluno.");
-      }
-    } catch (error) {
-      toast.warning("Erro ao conectar com o servidor.");
+      toast.success("Dados do aluno atualizados com sucesso!");
+    } else {
+      toast.error(data.message || "Erro ao salvar alterações do aluno.");
+      throw new Error(data.message || "Erro ao salvar alterações.");
     }
-  };
+  } catch (error) {
+    toast.error(error.message || "Erro ao conectar com o servidor.");
+    throw error;
+  }
+};
+
 
   const closeModal = () => {
     setShowModal(false);
@@ -185,39 +189,40 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
     setAlunoSelecionado(null);
   };
 
-  // Confirmação na exclusão
-  const handleExcluirAluno = async (id) => {
-    const confirmado = window.confirm(
-      "Tem certeza que deseja excluir este aluno?"
-    );
-    if (!confirmado) return;
+const handleExcluirAluno = async (id) => {
+  const confirmado = window.confirm(
+    "Tem certeza que deseja excluir este aluno?"
+  );
+  if (!confirmado) return;
 
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.warning("Token não encontrado. Faça login novamente.");
-        navigate("/login");
-        return;
-      }
-
-      const response = await fetch(`http://localhost:5001/api/aluno/aluno/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        toast.success("Aluno excluído com sucesso.");
-        fetchAlunos();
-      } else {
-        toast.warning("Erro ao apagar o aluno.");
-      }
-    } catch (error) {
-      toast.warning("Erro ao conectar com o servidor.");
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.warning("Token não encontrado. Faça login novamente.");
+      navigate("/login");
+      return;
     }
-  };
+
+    const response = await fetch(`http://localhost:5001/api/aluno/aluno/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json(); // <- pega a mensagem do backend
+
+    if (response.ok) {
+      toast.success("Aluno excluído com sucesso.");
+      fetchAlunos();
+    } else {
+      toast.warning(data.message || "Erro ao apagar o aluno.");
+    }
+  } catch (error) {
+    toast.warning("Erro ao conectar com o servidor.");
+  }
+};
 
   return (
     <Container>
@@ -270,12 +275,12 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
                 >
                   Detalhes
                 </Button>
-                <Button
+                {/*<Button
                   variant="warning"
                   onClick={() => handleHistorico(aluno.id)}
                 >
                   Histórico
-                </Button>
+                </Button>*/}
                 <Button
                   variant="danger"
                   onClick={() => handleExcluirAluno(aluno.id)}
@@ -300,12 +305,15 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
         />
       )}
 
+      {showHistoricoModal && (
       <AlunoHistorico
         show={showHistoricoModal}
-        onHide={() => setShowHistoricoModal(false)}
+        onHide={closeHistoricoModal}
         alunoId={alunoSelecionado?.id}
         mensagemErroControle={mensagemErroControle}
       />
+    )}
+
 
       {/* Modal de Cadastro de Aluno */}
       <FormularioAluno

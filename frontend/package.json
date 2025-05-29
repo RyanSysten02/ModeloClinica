@@ -10,6 +10,8 @@
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
+    "framer-motion": "^12.15.0",
     "jwt-decode": "^4.0.0",
     "moment": "^2.30.1",
     "react": "^18.3.1",
@@ -19,6 +21,7 @@
     "react-input-mask": "^2.0.4",
     "react-router-dom": "^6.26.2",
     "react-scripts": "5.0.1",
+    "react-select": "^5.10.1",
     "react-toastify": "^10.0.6",
     "reactstrap": "^9.2.3",
     "web-vitals": "^2.1.4"

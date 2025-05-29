@@ -12,4 +12,7 @@ router.put('/matricula/:id', matriculaController.updateMatricula);
 
 router.delete('/matricula/:id', matriculaController.deleteMatricula);
 
+router.patch('/matricula/:id/status', matriculaController.atualizarStatusMatricula);
+
+
 module.exports = router;
