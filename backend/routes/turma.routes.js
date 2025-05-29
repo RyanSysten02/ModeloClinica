@@ -13,4 +13,6 @@ router.put('/update/:id', auth.verifyToken, controller.update);
 
 router.delete('/delete/:id', auth.verifyToken, controller.deleteById);
 
+router.get('/list/students/:id', auth.verifyToken, controller.listStudents);
+
 module.exports = router;

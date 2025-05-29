@@ -8,6 +8,7 @@ class TurmaService {
     create: () => `${this.baseURL}/create`,
     update: (id) => `${this.baseURL}/update/${id}`,
     delete: (id) => `${this.baseURL}/delete/${id}`,
+    listStudents: (id) => `${this.baseURL}/list/students/${id}`,
   };
 
   static async findAll() {
@@ -32,6 +33,12 @@ class TurmaService {
 
   static async delete(id) {
     await ApiConfig.delete(this.endpoints.delete(id));
+  }
+
+  static async listStudents(id) {
+    const { data } = await ApiConfig.get(this.endpoints.listStudents(id));
+
+    return data;
   }
 }
 

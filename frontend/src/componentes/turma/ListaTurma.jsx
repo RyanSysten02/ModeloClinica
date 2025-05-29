@@ -1,14 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
-import { Button, Container, Form, InputGroup, Table } from "react-bootstrap";
-import { toast } from "react-toastify";
-import TurmaService from "../../services/Turma";
-import { ModalForm } from "./ModalForm";
+import { useEffect, useMemo, useState } from 'react';
+import { Button, Container, Form, InputGroup, Table } from 'react-bootstrap';
+import { toast } from 'react-toastify';
+import TurmaService from '../../services/Turma';
+import { ModalForm } from './ModalForm';
+import { ModalList } from './ModalList';
 
 export const ListaTurma = () => {
   const [listAll, setListAll] = useState(null);
   const [messageError, setMessageError] = useState(null);
   const [selected, setSelected] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showModalList, setShowModalList] = useState(false);
   const [searchText, setSearchText] = useState();
 
   const listFiltered = useMemo(() => {
@@ -47,7 +49,7 @@ export const ListaTurma = () => {
   const handleSave = async (formData) => {
     try {
       await TurmaService.create(formData);
-      toast.success("Turma cadastrada com sucesso!");
+      toast.success('Turma cadastrada com sucesso!');
 
       await getData();
 
@@ -60,7 +62,7 @@ export const ListaTurma = () => {
   const handleUpdate = async (formData) => {
     try {
       await TurmaService.update(selected?.id, formData);
-      toast.success("Turma atualizada com sucesso!");
+      toast.success('Turma atualizada com sucesso!');
 
       await getData();
       onCloseModal();
@@ -81,7 +83,7 @@ export const ListaTurma = () => {
   const handleDelete = async (id) => {
     try {
       await TurmaService.delete(id);
-      toast.success("Turma deletada com sucesso!");
+      toast.success('Turma deletada com sucesso!');
 
       await getData();
       onCloseModal();
@@ -107,28 +109,28 @@ export const ListaTurma = () => {
 
   return (
     <Container>
-      <h1 className="mt-4">Lista de Turmas</h1>
+      <h1 className='mt-4'>Lista de Turmas</h1>
 
-      <div className="mb-2 d-flex justify-content-start">
-        <Button variant="info" onClick={() => setShowModal(true)}>
+      <div className='mb-2 d-flex justify-content-start'>
+        <Button variant='info' onClick={() => setShowModal(true)}>
           Cadastrar Turma
         </Button>
       </div>
 
-      <InputGroup className="mb-3">
+      <InputGroup className='mb-3'>
         <Form.Control
-          aria-label="Example text with button addon"
-          aria-describedby="basic-addon1"
-          placeholder="Busque a Turma"
+          aria-label='Example text with button addon'
+          aria-describedby='basic-addon1'
+          placeholder='Busque a turma'
           onChange={(e) => setSearchText(e.target.value)}
         />
 
-        <Button variant="outline-secondary" id="button-addon1">
-          <i className="bi bi-search"></i>
+        <Button variant='outline-secondary' id='button-addon1'>
+          <i className='bi bi-search'></i>
         </Button>
       </InputGroup>
 
-      {messageError && <p className="text-danger">{messageError}</p>}
+      {messageError && <p className='text-danger'>{messageError}</p>}
 
       <Table striped bordered hover>
         <thead>
@@ -151,17 +153,27 @@ export const ListaTurma = () => {
               <td>{item?.status}</td>
               <td
                 style={{
-                  display: "inline-flex",
+                  display: 'inline-flex',
                   gap: 10,
-                  width: "100%",
-                  justifyContent: "center",
+                  width: '100%',
+                  justifyContent: 'center',
                 }}
               >
-                <Button variant="primary" onClick={() => onDetails(item)}>
+                <Button variant='primary' onClick={() => onDetails(item)}>
                   Detalhes
                 </Button>
 
-                <Button variant="danger" onClick={() => handleDelete(item?.id)}>
+                <Button
+                  variant='info'
+                  onClick={() => {
+                    setShowModalList(true);
+                    setSelected(item);
+                  }}
+                >
+                  Alunos matrículados
+                </Button>
+
+                <Button variant='danger' onClick={() => handleDelete(item?.id)}>
                   Excluir
                 </Button>
               </td>
@@ -174,6 +186,15 @@ export const ListaTurma = () => {
         show={showModal}
         onHide={onCloseModal}
         onSave={onSubmit}
+        selected={selected}
+      />
+
+      <ModalList
+        show={showModalList}
+        onHide={() => {
+          setShowModalList(false);
+          setSelected(null);
+        }}
         selected={selected}
       />
     </Container>
