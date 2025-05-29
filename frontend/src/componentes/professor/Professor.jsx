@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Container, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import DisciplinaService from "../../services/Disciplina";
 
 function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
@@ -26,6 +26,7 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
 
   const [listaDisciplinas, setListaDisciplinas] = useState([]);
   const [mensagemErro, setMensagemErro] = useState("");
+  const [camposComErro, setCamposComErro] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,29 +42,20 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
   }, []);
 
   const camposObrigatorios = [
-    "nome",
-    "cpf",
-    "rg",
-    "data_nasc",
-    "end_rua",
-    "end_numero",
-    "bairro",
-    "cidade",
-    "num_regis",
-    "habilitacao",
-    "telefone",
-    "email",
-    "sexo",
+    "nome", "cpf", "rg", "data_nasc", "end_rua", "end_numero", "bairro",
+    "cidade", "num_regis", "habilitacao", "telefone", "email", "sexo"
   ];
 
   const validarCampos = () => {
+    const erros = {};
     for (const campo of camposObrigatorios) {
       const valor = professor[campo];
       if (!valor || typeof valor !== "string" || valor.trim() === "") {
-        return `O campo ${campo} é obrigatório.`;
+        erros[campo] = true;
       }
     }
-    return null;
+    setCamposComErro(erros);
+    return Object.keys(erros).length > 0 ? "Preencha todos os campos obrigatórios." : null;
   };
 
   const aplicarMascara = (value, mascara) => {
@@ -74,20 +66,19 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     let novoValor = value;
 
-    if (name === "cpf") {
-      novoValor = aplicarMascara(value, "###.###.###-##");
-    } else if (name === "rg") {
-      novoValor = aplicarMascara(value, "#########");
-    } else if (name === "cep") {
-      novoValor = aplicarMascara(value, "#####-###");
-    } else if (name === "telefone") {
-      novoValor = aplicarMascara(value, "(##) #####-####");
-    }
+    if (name === "cpf") novoValor = aplicarMascara(value, "###.###.###-##");
+    else if (name === "rg") novoValor = aplicarMascara(value, "#########");
+    else if (name === "cep") novoValor = aplicarMascara(value, "#####-###");
+    else if (name === "telefone") novoValor = aplicarMascara(value, "(##) #####-####");
 
     setProfessor({ ...professor, [name]: novoValor });
+
+    // remove erro visual se o campo for corrigido
+    if (camposComErro[name]) {
+      setCamposComErro({ ...camposComErro, [name]: false });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -122,27 +113,16 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
       const data = await response.json();
 
       if (response.ok) {
+        toast.success("Professor cadastrado com sucesso.");
+
         setProfessor({
-          nome: "",
-          cpf: "",
-          rg: "",
-          end_rua: "",
-          end_numero: "",
-          bairro: "",
-          cidade: "",
-          cep: "",
-          data_nasc: "",
-          num_regis: "",
-          habilitacao: "",
-          especializacao: "",
-          cursos: "",
-          telefone: "",
-          email: "",
-          sexo: "",
+          nome: "", cpf: "", rg: "", end_rua: "", end_numero: "", bairro: "",
+          cidade: "", cep: "", data_nasc: "", num_regis: "", habilitacao: "",
+          especializacao: "", cursos: "", telefone: "", email: "", sexo: ""
         });
 
+        setCamposComErro({});
         if (onCadastroSuccess) onCadastroSuccess();
-
         navigate("/pagProfessor");
       } else {
         toast.warning(data.message || "Falha ao adicionar funcionário");
@@ -159,32 +139,21 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
       </Modal.Header>
       <Modal.Body>
         <Container className="mt-4">
-          {mensagemErro && (
-            <div className="alert alert-danger">{mensagemErro}</div>
-          )}
+          {mensagemErro && <div className="alert alert-danger">{mensagemErro}</div>}
           <Form onSubmit={handleSubmit}>
             <Row>
-              {[{
-                label: "Nome*", name: "nome", md: 6
-              }, {
-                label: "CPF*", name: "cpf", md: 3
-              }, {
-                label: "RG*", name: "rg", md: 3
-              }, {
-                label: "Endereço*", name: "end_rua", md: 6
-              }, {
-                label: "Número*", name: "end_numero", md: 1
-              }, {
-                label: "Bairro*", name: "bairro", md: 2
-              }, {
-                label: "Cidade*", name: "cidade", md: 3
-              }, {
-                label: "CEP*", name: "cep", md: 2
-              }, {
-                label: "Data de Nascimento*", name: "data_nasc", md: 2, type: "date"
-              }, {
-                label: "Número de Registro (CRE)*", name: "num_regis", md: 3
-              }].map(({ label, name, md, type = "text" }) => (
+              {[
+                { label: "Nome*", name: "nome", md: 6 },
+                { label: "CPF*", name: "cpf", md: 3 },
+                { label: "RG*", name: "rg", md: 3 },
+                { label: "Endereço*", name: "end_rua", md: 6 },
+                { label: "Número*", name: "end_numero", md: 1 },
+                { label: "Bairro*", name: "bairro", md: 2 },
+                { label: "Cidade*", name: "cidade", md: 3 },
+                { label: "CEP*", name: "cep", md: 2 },
+                { label: "Data de Nascimento*", name: "data_nasc", md: 2, type: "date" },
+                { label: "Número de Registro (CRE)*", name: "num_regis", md: 3 }
+              ].map(({ label, name, md, type = "text" }) => (
                 <Col md={md} key={name}>
                   <Form.Group className="mb-3 text-start">
                     <Form.Label>{label}</Form.Label>
@@ -193,7 +162,11 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
                       name={name}
                       value={professor[name]}
                       onChange={handleChange}
+                      isInvalid={!!camposComErro[name]}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Campo obrigatório
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </Col>
               ))}
@@ -205,6 +178,7 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
                     name="habilitacao"
                     value={professor.habilitacao}
                     onChange={handleChange}
+                    isInvalid={!!camposComErro["habilitacao"]}
                   >
                     <option value="">Selecione uma disciplina</option>
                     {listaDisciplinas.map((disciplina) => (
@@ -213,8 +187,12 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
                       </option>
                     ))}
                   </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    Campo obrigatório
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={4}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Sexo*</Form.Label>
@@ -222,23 +200,24 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
                     name="sexo"
                     value={professor.sexo}
                     onChange={handleChange}
+                    isInvalid={!!camposComErro["sexo"]}
                   >
                     <option value="">Selecione</option>
                     <option value="Masculino">Masculino</option>
                     <option value="Feminino">Feminino</option>
                   </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    Campo obrigatório
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
 
-              {[{
-                label: "Telefone*", name: "telefone", md: 4
-              }, {
-                label: "Email*", name: "email", md: 4
-              }, {
-                label: "Especializações", name: "especializacao", md: 12
-              }, {
-                label: "Cursos e Experiências", name: "cursos", md: 12
-              }].map(({ label, name, md }) => (
+              {[
+                { label: "Telefone*", name: "telefone", md: 4 },
+                { label: "Email*", name: "email", md: 4 },
+                { label: "Especializações", name: "especializacao", md: 12 },
+                { label: "Cursos e Experiências", name: "cursos", md: 12 }
+              ].map(({ label, name, md }) => (
                 <Col md={md} key={name}>
                   <Form.Group className="mb-3 text-start">
                     <Form.Label>{label}</Form.Label>
@@ -247,23 +226,23 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
                       name={name}
                       value={professor[name]}
                       onChange={handleChange}
+                      isInvalid={!!camposComErro[name]}
                     />
+                    {camposObrigatorios.includes(name) && (
+                      <Form.Control.Feedback type="invalid">
+                        Campo obrigatório
+                      </Form.Control.Feedback>
+                    )}
                   </Form.Group>
                 </Col>
               ))}
-
-              
             </Row>
           </Form>
         </Container>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
-          Fechar
-        </Button>
-        <Button variant="primary" onClick={handleSubmit}>
-          Salvar
-        </Button>
+        <Button variant="secondary" onClick={onHide}>Fechar</Button>
+        <Button variant="primary" onClick={handleSubmit}>Salvar</Button>
       </Modal.Footer>
     </Modal>
   );

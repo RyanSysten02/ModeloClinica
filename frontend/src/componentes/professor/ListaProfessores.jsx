@@ -168,7 +168,7 @@ const ListaProfessoresModal = ({ show, onHide, onSelectProfessor }) => {
           <thead>
             <tr>
               <th>Nome</th>
-              <th>Diciplina</th>
+              <th>Disciplina</th>
               <th>Opções</th>
             </tr>
           </thead>

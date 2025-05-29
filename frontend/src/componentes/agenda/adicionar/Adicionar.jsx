@@ -139,7 +139,7 @@ function Adicionar({ show, onHide, onUpdate }) {
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Registrar Aulas</Modal.Title>
+        <Modal.Title>Atribuir Aulas</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}

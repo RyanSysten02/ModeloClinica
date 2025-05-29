@@ -34,7 +34,6 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
 
       if (response.ok) {
         const data = await response.json();
-        // Ordenar alfabeticamente pelo nome
         data.sort((a, b) => a.nome.localeCompare(b.nome));
         setProfessores(data);
       } else {
@@ -117,10 +116,12 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
       );
 
       const data = await response.json();
+
       if (response.ok) {
         await fetchProfessores();
+        toast.success("Alterações salvas com sucesso."); // ✅ Toast de sucesso
       } else {
-        toast.warning("Erro ao salvar alterações do funcionário.");
+        toast.warning(data.message || "Erro ao salvar alterações do funcionário.");
       }
     } catch (error) {
       toast.warning("Erro ao conectar com o servidor.");
@@ -195,7 +196,7 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
           <tr>
             <th>Nome</th>
             <th>Registro</th>
-            <th>Diciplina</th>
+            <th>Disciplina</th>
             <th>Ações</th>
           </tr>
         </thead>
