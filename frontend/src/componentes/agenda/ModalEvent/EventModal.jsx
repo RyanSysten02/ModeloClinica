@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Button, Form, Collapse, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import ListaAlunosModal from "../../aluno/ListaAlunos";
+import ListaturmasModal from "../../turma/ListaTurmasModal";
 import ListaProfessoresModal from "../../professor/ListaProfessores";
 
 const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
@@ -16,27 +16,27 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
   const [novaDataFim, setNovaDataFim] = useState("");
   const [motivoAdiamento, setMotivoAdiamento] = useState("");
   const [erroAdiamento, setErroAdiamento] = useState("");
-  const [showListaAlunosModal, setShowListaAlunosModal] = useState(false);
+  const [showListaturmasModal, setShowListaturmasModal] = useState(false);
   const [showListaProfessoresModal, setShowListaProfessoresModal] =
     useState(false);
-  const [listaAlunos, setListaAlunos] = useState([]);
+  const [listaturmas, setListaturmas] = useState([]);
   const [listaProfessores, setListaProfessores] = useState([]);
 
   const [novoEvento, setNovoEvento] = useState({
-    id_aluno: evento?.id_aluno || "",
-    alunoNome: evento?.aluno_nome || "",
+    id_turma: evento?.id_turma || "",
+    turmaNome: evento?.turma_nome || "",
     id_func_responsavel: evento?.id_func_responsavel || "",
     professorNome: evento?.professor_nome || "",
     // outros campos, se necessário
   });
 
-  const handleSelectAluno = (aluno) => {
+  const handleSelectturma = (turma) => {
     setNovoEvento({
       ...novoEvento,
-      id_aluno: aluno.id,
-      alunoNome: aluno.nome, // Para exibição
+      id_turma: turma.id,
+      turmaNome: turma.nome, // Para exibição
     });
-    setShowListaAlunosModal(false);
+    setShowListaturmasModal(false);
   };
   const handleSelectProfessor = (professor) => {
     setNovoEvento({
@@ -87,7 +87,7 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
       }
 
       const response = await fetch(
-        `http://localhost:5001/api/consulta/consultas/${evento.id}`,
+        `http://localhost:5001/api/aulas/aula/${evento.id}`,
         {
           method: "DELETE",
           headers: {
@@ -136,7 +136,7 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
       }
 
       const response = await fetch(
-        `http://localhost:5001/api/consulta/consultas/${editedEvent.id}`,
+        `http://localhost:5001/api/aulas/atualizar/${editedEvent.id}`,
         {
           method: "PUT",
           headers: {
@@ -144,7 +144,8 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            id_aluno: editedEvent.id_aluno,
+            id_turma: editedEvent.id_turma,
+            id_func_responsavel: editedEvent.id_func_responsavel ,
             start: formatDateForMySQL(editedEvent.start),
             end: formatDateForMySQL(editedEvent.end),
             desc: editedEvent.desc,
@@ -194,7 +195,7 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
       }
 
       const response = await fetch(
-        `http://localhost:5001/api/consulta/consultacancelamento/${evento.id}`,
+        `http://localhost:5001/api/aulas/cancelar/${evento.id}`,
         {
           method: "PUT",
           headers: {
@@ -298,25 +299,25 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
       <Modal show={true} onHide={onClose}>
         <Modal.Header>
           <Modal.Title>
-            {editedEvent.title} - Aluno: {evento.aluno_nome}
+            {editedEvent.title} - turma: {evento.turma_nome}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
-            <Form.Group controlId="formBasicAluno" className="mb-3">
-              <Form.Label>Aluno</Form.Label>
+            <Form.Group controlId="formBasicturma" className="mb-3">
+              <Form.Label>Turma</Form.Label>
               <div className="d-flex align-items-center">
                 <Form.Control
                   type="text"
-                  placeholder="Selecione um aluno"
-                  name="alunoNome"
-                  value={novoEvento.alunoNome || ""} // Exibe o nome do aluno
+                  placeholder="Selecione turma"
+                  name="turmaNome"
+                  value={novoEvento.turmaNome || ""} // Exibe o nome do turma
                   readOnly // Campo somente leitura
                   style={{ flex: 1, backgroundColor: "#e9ecef" }} // Indica que está desabilitado
                 />
                 <Button
                   variant="secondary"
-                  onClick={() => setShowListaAlunosModal(true)} // Abre o modal de alunos
+                  onClick={() => setShowListaturmasModal(true)} // Abre o modal de turmas
                   className="ms-2"
                 >
                   <i className="bi bi-search"></i>
@@ -405,24 +406,24 @@ const EventModal = ({ evento, onClose, onDelete, onUpdate }) => {
           <Button variant="secondary" onClick={() => setCollapsed(!collapsed)}>
             {!collapsed ? "Ocultar Detalhes" : "Mostrar Detalhes"}
           </Button>
-          {/*<Button variant="danger" onClick={handleDelete}>
+          <Button variant="danger" onClick={handleDelete}>
                         Apagar
-                    </Button> Tiramos o botão de apagar, pois achamos melhor não ter essa opção*/}
+                    </Button> 
           <Button variant="primary" onClick={handleUpdate}>
             Salvar Alterações
           </Button>
-          <Button variant="warning" onClick={handleOpenCancelModal}>
-            Cancelar Consulta
+          {/*<Button variant="danger" onClick={handleOpenCancelModal}>
+            Cancelar Aula
           </Button>
-          <Button variant="info" onClick={() => setShowAdiamentoModal(true)}>
+       <Button variant="info" onClick={() => setShowAdiamentoModal(true)}>
             Adiar Consulta
-          </Button>
+          </Button>*/}
         </Modal.Footer>
         {mensagemErro && <Alert variant="danger">{mensagemErro}</Alert>}
-        <ListaAlunosModal
-          show={showListaAlunosModal}
-          onHide={() => setShowListaAlunosModal(false)}
-          onSelectAluno={handleSelectAluno}
+        <ListaturmasModal
+          show={showListaturmasModal}
+          onHide={() => setShowListaturmasModal(false)}
+          onSelectturma={handleSelectturma}
         />
         <ListaProfessoresModal
           show={showListaProfessoresModal}

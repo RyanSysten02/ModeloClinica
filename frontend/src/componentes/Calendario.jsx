@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import moment from "moment";
-import "moment/locale/pt-br"; // Importa o locale em português
+import "moment/locale/pt-br";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -9,7 +9,7 @@ import "./agenda/Calendario.css";
 import EventModal from "./agenda/ModalEvent/EventModal.jsx";
 import CustomTollbar from "./agenda/CustomCalendar/CustomTollbar.jsx";
 
-moment.locale("pt-br"); // Define o idioma do Moment para português
+moment.locale("pt-br");
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar);
 
@@ -22,23 +22,21 @@ function Calendario() {
   useEffect(() => {
     const fetchEventos = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:5001/api/consulta/allconsultas"
-        );
+        const response = await fetch("http://localhost:5001/api/aulas/listar");
         const data = await response.json();
 
-        const eventosFormatados = data.map((consultas) => ({
-          id: consultas.id,
-          id_aluno: consultas.id_aluno,
-          aluno_nome: consultas.aluno_nome, // Nome do aluno
-          id_func_responsavel: consultas.id_func_responsavel,
-          professor_nome: consultas.professor_nome, // Nome do funcionário
-          start: new Date(consultas.start),
-          end: new Date(consultas.end),
-          desc: consultas.desc,
-          color: consultas.color,
-          tipo: consultas.tipo,
-          title: consultas.aluno_nome || "Consulta",
+        const eventosFormatados = data.map((aula) => ({
+          id: aula.id,
+          id_turma: aula.id_turma,
+          turma_nome: aula.turma_nome,
+          id_func_responsavel: aula.id_func_responsavel,
+          professor_nome: aula.professor_nome,
+          start: new Date(aula.start),
+          end: new Date(aula.end),
+          desc: aula.desc,
+          color: aula.color,
+          tipo: aula.tipo,
+          title: `${aula.turma_nome} - ${aula.tipo}`,
         }));
 
         setEventos(eventosFormatados);
@@ -49,7 +47,7 @@ function Calendario() {
         ].filter((tipo) => tipo !== "");
         setTiposAtividades(tiposUnicos);
       } catch (error) {
-        console.error("Erro ao buscar eventos:", error);
+        console.error("Erro ao buscar aulas agendadas:", error);
       }
     };
 
@@ -81,7 +79,7 @@ function Calendario() {
         }
 
         const response = await fetch(
-          `http://localhost:5001/api/consulta/consultas/${updatedEvent.id}`,
+          `http://localhost:5001/api/aulas/atualizar/${updatedEvent.id}`,
           {
             method: "PUT",
             headers: {
@@ -89,7 +87,7 @@ function Calendario() {
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-              id_aluno: updatedEvent.id_aluno,
+              id_turma: updatedEvent.id_turma,
               id_func_responsavel: updatedEvent.id_func_responsavel,
               start: moment(updatedEvent.start).format("YYYY-MM-DD HH:mm:ss"),
               end: moment(updatedEvent.end).format("YYYY-MM-DD HH:mm:ss"),
@@ -107,10 +105,10 @@ function Calendario() {
           setEventos(updatedEvents);
           setEventosFiltrados(updatedEvents);
         } else {
-          console.error("Erro ao atualizar o evento:", await response.json());
+          console.error("Erro ao atualizar a aula:", await response.json());
         }
       } catch (error) {
-        console.error("Erro ao tentar mover o evento:", error);
+        console.error("Erro ao tentar mover a aula:", error);
       }
     }
   };
@@ -123,55 +121,22 @@ function Calendario() {
     setEventoSelecionado(null);
   };
 
-  const handleAdicionar = (novoEvento) => {
-    const novoId =
-      eventos.length > 0 ? Math.max(...eventos.map((e) => e.id)) + 1 : 1;
-    const eventoComId = { ...novoEvento, id: novoId };
-
-    const eventosAtualizados = [...eventos, eventoComId];
-    setEventos(eventosAtualizados);
-    setEventosFiltrados(eventosAtualizados);
-
-    const tiposAtualizados = [
-      ...new Set(eventosAtualizados.map((evento) => evento.tipo)),
-    ].filter((tipo) => tipo !== "");
-    setTiposAtividades(tiposAtualizados);
-  };
-
-  const handleSelecionarAtividades = useCallback(
-    (atividadesSelecionadas) => {
-      if (atividadesSelecionadas.length === 0) {
-        setEventosFiltrados(eventos);
-      } else {
-        setEventosFiltrados(
-          eventos.filter((evento) =>
-            atividadesSelecionadas.includes(evento.tipo)
-          )
-        );
-      }
-    },
-    [eventos]
-  );
-
   return (
     <div className="tela">
-      <div className="tela">
-        <DragAndDropCalendar
-          defaultDate={moment().toDate()}
-          defaultView="month"
-          events={eventosFiltrados}
-          localizer={localizer}
-          resizable
-          onEventDrop={moverEventos}
-          onEventResize={moverEventos}
-          onSelectEvent={handleEventClick}
-          eventPropGetter={eventStyle}
-          components={{
-            toolbar: CustomTollbar,
-          }}
-          className="tela"
-        />
-      </div>
+      <DragAndDropCalendar
+        defaultDate={moment().toDate()}
+        defaultView="month"
+        events={eventosFiltrados}
+        localizer={localizer}
+        resizable
+        onEventDrop={moverEventos}
+        onEventResize={moverEventos}
+        onSelectEvent={handleEventClick}
+        eventPropGetter={eventStyle}
+        components={{ toolbar: CustomTollbar }}
+        className="tela"
+      />
+
       {eventoSelecionado && (
         <EventModal
           evento={eventoSelecionado}
