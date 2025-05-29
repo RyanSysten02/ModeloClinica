@@ -40,10 +40,19 @@ const deleteById = async (id) => {
   }
 };
 
+const listStudents = async (id) => {
+  try {
+    return await model.listStudents(id);
+  } catch (error) {
+    return error.message;
+  }
+};
+
 module.exports = {
   create,
   findAll,
   findById,
   update,
   deleteById,
+  listStudents,
 };

@@ -63,10 +63,22 @@ const deleteById = async (req, res) => {
   }
 };
 
+const listStudents = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await service.listStudents(id);
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   create,
   findAll,
   findById,
   update,
   deleteById,
+  listStudents,
 };
