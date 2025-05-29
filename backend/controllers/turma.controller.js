@@ -1,4 +1,4 @@
-const service = require('../services/turma.services');
+const service = require("../services/turma.services");
 
 const create = async (req, res) => {
   try {
@@ -17,7 +17,7 @@ const findAll = async (_, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    console.error('Erro ao buscar alunos:', error);
+    console.error("Erro ao buscar alunos:", error);
     return res.status(400).json({ message: error.message });
   }
 };
@@ -30,7 +30,7 @@ const findById = async (req, res) => {
     if (!result) {
       return res
         .status(404)
-        .json({ message: 'Erro ao buscar os dados da turma' });
+        .json({ message: "Erro ao buscar os dados da turma" });
     }
 
     return res.status(200).json(result);
@@ -57,7 +57,18 @@ const deleteById = async (req, res) => {
     const { id } = req.params;
 
     await service.deleteById(id);
-    return res.status(200).json({ message: 'Turma deletada com sucesso' });
+    return res.status(200).json({ message: "Turma deletada com sucesso" });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+const query = async (req, res) => {
+  try {
+    const { name } = req.query;
+
+    const result = await service.query(name);
+    return res.status(200).json(result);
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
@@ -69,4 +80,5 @@ module.exports = {
   findById,
   update,
   deleteById,
+  query,
 };

@@ -1,13 +1,14 @@
-import { ApiConfig } from '../api/config';
+import { ApiConfig } from "../api/config";
 
 class TurmaService {
-  static baseURL = '/turma';
+  static baseURL = "/turma";
   static endpoints = {
     findAll: () => `${this.baseURL}/list`,
     findById: (id) => `${this.baseURL}/${id}`,
     create: () => `${this.baseURL}/create`,
     update: (id) => `${this.baseURL}/update/${id}`,
     delete: (id) => `${this.baseURL}/delete/${id}`,
+    findQuery: () => `${this.baseURL}/list/queries`,
   };
 
   static async findAll() {
@@ -32,6 +33,16 @@ class TurmaService {
 
   static async delete(id) {
     await ApiConfig.delete(this.endpoints.delete(id));
+  }
+
+  static async findQuery(params) {
+    const { data } = await ApiConfig.get(this.endpoints.findQuery(), {
+      params,
+      paramsSerializer: {
+        indexes: null,
+      },
+    });
+    return data;
   }
 }
 

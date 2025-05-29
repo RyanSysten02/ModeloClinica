@@ -1,4 +1,5 @@
-const model = require('../models/turma.model');
+const model = require("../models/turma.model");
+const alunoModel = require("../models/alunoModel");
 
 const create = async (data) => {
   try {
@@ -40,10 +41,19 @@ const deleteById = async (id) => {
   }
 };
 
+const query = async (name) => {
+  try {
+    return await alunoModel.query(name);
+  } catch (error) {
+    return error.message;
+  }
+};
+
 module.exports = {
   create,
   findAll,
   findById,
   update,
   deleteById,
+  query,
 };

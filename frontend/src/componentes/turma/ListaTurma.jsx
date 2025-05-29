@@ -3,12 +3,14 @@ import { Button, Container, Form, InputGroup, Table } from "react-bootstrap";
 import { toast } from "react-toastify";
 import TurmaService from "../../services/Turma";
 import { ModalForm } from "./ModalForm";
+import { ModalList } from "./ModalList";
 
 export const ListaTurma = () => {
   const [listAll, setListAll] = useState(null);
   const [messageError, setMessageError] = useState(null);
   const [selected, setSelected] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showModalList, setShowModalList] = useState(false);
   const [searchText, setSearchText] = useState();
 
   const listFiltered = useMemo(() => {
@@ -161,6 +163,16 @@ export const ListaTurma = () => {
                   Detalhes
                 </Button>
 
+                <Button
+                  variant="info"
+                  onClick={() => {
+                    setShowModalList(true);
+                    setSelected(item);
+                  }}
+                >
+                  Alunos matrículados
+                </Button>
+
                 <Button variant="danger" onClick={() => handleDelete(item?.id)}>
                   Excluir
                 </Button>
@@ -174,6 +186,15 @@ export const ListaTurma = () => {
         show={showModal}
         onHide={onCloseModal}
         onSave={onSubmit}
+        selected={selected}
+      />
+
+      <ModalList
+        show={showModalList}
+        onHide={() => {
+          setShowModalList(false);
+          setSelected(null);
+        }}
         selected={selected}
       />
     </Container>

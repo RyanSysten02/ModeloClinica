@@ -1,16 +1,18 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const controller = require('../controllers/turma.controller');
-const auth = require('../middleware/auth');
+const controller = require("../controllers/turma.controller");
+const auth = require("../middleware/auth");
 
-router.get('/list', auth.verifyToken, controller.findAll);
+router.get("/list", auth.verifyToken, controller.findAll);
 
-router.get('/:id', auth.verifyToken, controller.findById);
+router.get("/:id", auth.verifyToken, controller.findById);
 
-router.post('/create', auth.verifyToken, controller.create);
+router.post("/create", auth.verifyToken, controller.create);
 
-router.put('/update/:id', auth.verifyToken, controller.update);
+router.put("/update/:id", auth.verifyToken, controller.update);
 
-router.delete('/delete/:id', auth.verifyToken, controller.deleteById);
+router.delete("/delete/:id", auth.verifyToken, controller.deleteById);
+
+router.get("/list/queries", auth.verifyToken, controller.query);
 
 module.exports = router;
