@@ -17,7 +17,7 @@ const findAll = async (_, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    console.error('Erro ao buscar alunos:', error);
+    console.error('Erro ao buscar turma:', error);
     return res.status(400).json({ message: error.message });
   }
 };
@@ -59,6 +59,13 @@ const deleteById = async (req, res) => {
     await service.deleteById(id);
     return res.status(200).json({ message: 'Turma deletada com sucesso' });
   } catch (error) {
+    if (error?.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.status(400).json({
+        message:
+          'Turma não pode ser deletada, pois está sendo usada em matrícula.',
+      });
+    }
+
     return res.status(400).json({ message: error.message });
   }
 };

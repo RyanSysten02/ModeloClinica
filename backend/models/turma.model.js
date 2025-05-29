@@ -1,68 +1,46 @@
 const knex = require('../lib/knex');
 
 const create = async (data) => {
-  try {
-    const result = await knex('turma').insert(data);
+  const result = await knex('turma').insert(data);
 
-    return result;
-  } catch (error) {
-    return error.message;
-  }
+  return result;
 };
 
 const findAll = async () => {
-  try {
-    const result = await knex('turma').select();
+  const result = await knex('turma').select();
 
-    if (!result) return [];
+  if (!result) return [];
 
-    return result;
-  } catch (error) {
-    return error.message;
-  }
+  return result;
 };
 
 const findById = async (id) => {
-  try {
-    const result = await knex('turma').select().where({ id });
+  const result = await knex('turma').select().where({ id });
 
-    if (!result) return [];
+  if (!result) return [];
 
-    return result?.at(0);
-  } catch (error) {
-    return error.message;
-  }
+  return result?.at(0);
 };
 
 const update = async (id, data) => {
-  try {
-    const result = await knex('turma').update(data).where({ id });
-    return result;
-  } catch (error) {
-    return error.message;
-  }
+  const result = await knex('turma').update(data).where({ id });
+  return result;
 };
 
 const deleteById = async (id) => {
-  try {
-    await knex('turma').delete().where({ id });
-  } catch (error) {
-    return error.message;
-  }
+  const result = await knex('turma').delete().where({ id });
+
+  return result;
 };
 
 const listStudents = async (id) => {
-  try {
-    const result = await knex
-      .from('turma')
-      .innerJoin('matricula', 'turma.id', 'matricula.turma_id')
-      .innerJoin('aluno', 'matricula.aluno_id', 'aluno.id')
-      .where('turma.id', id);
+  const result = await knex
+    .from('turma')
+    .innerJoin('matricula', 'turma.id', 'matricula.turma_id')
+    .innerJoin('aluno', 'matricula.aluno_id', 'aluno.id')
+    .where('turma.id', id);
 
-    return result;
-  } catch (error) {
-    return error.message;
-  }
+  return result;
 };
 
 module.exports = {
