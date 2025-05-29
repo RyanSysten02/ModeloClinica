@@ -28,8 +28,7 @@ const TelaListaAlunos = ({ onSelectAluno }) => {
     const list = alunosOrdenados.filter((aluno) => {
       return (
         aluno?.nome?.toLowerCase().includes(currentSearch) ||
-        aluno?.cpf?.toLowerCase().includes(currentSearch) ||
-        aluno?.alunoTurma?.toLowerCase().includes(currentSearch)
+        aluno?.cpf?.toLowerCase().includes(currentSearch)
       );
     });
 
@@ -251,7 +250,6 @@ const handleExcluirAluno = async (id) => {
           <tr>
             <th>Nome</th>
             <th>CPF</th>
-            <th>Turma</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -260,7 +258,6 @@ const handleExcluirAluno = async (id) => {
             <tr key={aluno.id}>
               <td>{aluno.nome}</td>
               <td>{aluno.cpf}</td>
-              <td>{aluno.alunoTurma}</td>
               <td
                 style={{
                   display: "inline-flex",

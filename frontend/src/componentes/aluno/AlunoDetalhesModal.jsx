@@ -31,7 +31,6 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
       'dataNascimento',
       'sexo',
       'numeroBeneficio',
-      'alunoTurma',
       'endereco',
       'num',
       'celular',
@@ -204,18 +203,6 @@ const handleSubmit = async () => {
                     type="text"
                     name="numeroBeneficio"
                     value={formData.numeroBeneficio || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={4}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Turma *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="alunoTurma"
-                    value={formData.alunoTurma || ''}
                     onChange={handleChange}
                   />
                 </Form.Group>

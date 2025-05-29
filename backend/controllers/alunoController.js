@@ -2,7 +2,7 @@ const alunoservices = require('../services/alunoservices');
 const jwt = require('jsonwebtoken');
 
 const createAluno = async (req, res) => {
-    const { nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma, endereco, num, complemento, 
+    const { nome, cpf, rg, dataNascimento, sexo, numeroBeneficio,  endereco, num, complemento, 
         celular, telefone, email, contatoEmergencia, observacoes } = req.body;
     const cpfNormalizado = cpf.replace(/\D/g, '');
     const token = req.header('Authorization');
@@ -19,7 +19,7 @@ const createAluno = async (req, res) => {
             return res.status(409).json({ message: 'CPF já cadastrado para outro aluno' });
         }
 
-        await alunoservices.createAluno(nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma, endereco, num, complemento, 
+        await alunoservices.createAluno(nome, cpf, rg, dataNascimento, sexo, numeroBeneficio,  endereco, num, complemento, 
             celular, telefone, email, contatoEmergencia, observacoes);
         res.status(201).json({ message: 'Aluno cadastrado com sucesso' });
     } catch (error) {
@@ -56,7 +56,7 @@ const getAlunoById = async (req, res) => {
 const updateAluno = async (req, res) => {
   const { id } = req.params;
   const {
-    nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma,
+    nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
     endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes
   } = req.body;
   const cpfNormalizado = cpf ? cpf.replace(/\D/g, '') : '';
@@ -78,7 +78,7 @@ const updateAluno = async (req, res) => {
       return res.status(409).json({ message: 'CPF já cadastrado para outro aluno' });
     }
 
-    await alunoservices.updateAluno(id, nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma,
+    await alunoservices.updateAluno(id, nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
       endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes);
 
     res.status(200).json({ message: 'Dados do aluno atualizados com sucesso' });

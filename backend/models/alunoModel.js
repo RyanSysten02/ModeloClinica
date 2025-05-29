@@ -1,16 +1,16 @@
 const pool = require('../db.js');
 
 const createAluno = async (
-    nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma, endereco, num, complemento, 
+    nome, cpf, rg, dataNascimento, sexo, numeroBeneficio,  endereco, num, complemento, 
     celular, telefone, email, contatoEmergencia, observacoes
 ) => {
     const result = await pool.query(
         `INSERT INTO Aluno (
-            nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma, 
+            nome, cpf, rg, dataNascimento, sexo, numeroBeneficio,  
             endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-            nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma,
+            nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
             endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes
         ]
     );
@@ -31,13 +31,13 @@ const getAlunoById = async (id) => {
 };
 
 const updateAluno = async ( id,
-nome,cpf,rg,dataNascimento,sexo,numeroBeneficio,alunoTurma,endereco,num,complemento,
+nome,cpf,rg,dataNascimento,sexo,numeroBeneficio,endereco,num,complemento,
 celular,telefone,email,contatoEmergencia,observacoes
 ) => { const result = await pool.query(
-`UPDATE aluno SET nome = ?,cpf = ?,rg = ?,dataNascimento = ?,sexo = ?,numeroBeneficio = ?,alunoTurma = ?,
+`UPDATE aluno SET nome = ?,cpf = ?,rg = ?,dataNascimento = ?,sexo = ?,numeroBeneficio = ?,
 endereco = ?,num = ?,complemento = ?,celular = ?,telefone = ?,email = ?,contatoEmergencia = ?,observacoes = ? 
 WHERE id = ?`,        [
-            nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma,
+            nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
             endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes, id
         ]
     );

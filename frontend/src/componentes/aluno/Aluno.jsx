@@ -18,7 +18,6 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
         dataNascimento: "",
         sexo: "",
         numeroBeneficio: "",
-        alunoTurma: "",
         endereco: "",
         num: "",
         complemento: "",
@@ -41,7 +40,6 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
         "dataNascimento",
         "sexo",
         "numeroBeneficio",
-        "alunoTurma",
         "endereco",
         "num",
         "celular",
@@ -161,7 +159,6 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
                     dataNascimento: "",
                     sexo: "",
                     numeroBeneficio: "",
-                    alunoTurma: "",
                     endereco: "",
                     num: "",
                     complemento: "",
@@ -289,21 +286,6 @@ function FormularioAluno({ show, onHide, onAlunosAtualizados }) {
                                     />
                                     <Form.Control.Feedback type="invalid">
                                         {erros.numeroBeneficio}
-                                    </Form.Control.Feedback>
-                                </Form.Group>
-                            </Col>
-                            <Col md={4}>
-                                <Form.Group className="mb-3 text-start">
-                                    <Form.Label>Turma *</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="alunoTurma"
-                                        value={aluno.alunoTurma}
-                                        onChange={handleChange}
-                                        isInvalid={!!erros.alunoTurma}
-                                    />
-                                    <Form.Control.Feedback type="invalid">
-                                        {erros.alunoTurma}
                                     </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>

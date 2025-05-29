@@ -1,8 +1,8 @@
 const alunomodel = require('../models/alunoModel');
 
-const createAluno = async (nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma,
+const createAluno = async (nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
     endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes) => {
-    const aluno = await alunomodel.createAluno(nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma,
+    const aluno = await alunomodel.createAluno(nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
         endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes);
     return aluno;
 };
@@ -13,9 +13,9 @@ const getAluno = async () => {
 };
 
 
-const updateAluno = async (id, nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma,
+const updateAluno = async (id, nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
     endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes) => {
-    const aluno = await alunomodel.updateAluno(id, nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, alunoTurma,
+    const aluno = await alunomodel.updateAluno(id, nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
         endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes);
     return aluno;
 };
