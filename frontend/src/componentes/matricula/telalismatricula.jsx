@@ -140,7 +140,11 @@ const TelaListaMatriculas = () => {
             setMatriculaSelecionada(null);
           }}
           matricula={matriculaSelecionada}
+          onStatusAtualizado={() => {
+            fetchMatriculas();
+          }}
         />
+
       )}
     </Container>
   );

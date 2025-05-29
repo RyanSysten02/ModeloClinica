@@ -4,8 +4,7 @@ import Select from "react-select";
 import TurmaService from "../../services/Turma";
 import { toast } from "react-toastify";
 
-
-function FormularioMatricula({ show, onHide, onMatriculaRealizada }) {
+function FormularioMatricula({ show, onHide, onMatriculaRealizada, modoEdicao = false, matriculaEdicao = null }) {
   const [dados, setDados] = useState({
     aluno_id: "",
     turma_id: "",
@@ -19,27 +18,68 @@ function FormularioMatricula({ show, onHide, onMatriculaRealizada }) {
   const [alunos, setAlunos] = useState([]);
   const [turmas, setTurmas] = useState([]);
   const [responsaveis, setResponsaveis] = useState([]);
+  const [matriculasExistentes, setMatriculasExistentes] = useState([]);
   const [erro, setErro] = useState("");
+  const [validados, setValidados] = useState({});
 
   const carregarDados = async () => {
     try {
-      const [alunoRes, turmaRes, respRes] = await Promise.all([
+      const [alunoRes, turmaRes, respRes, matriculasRes] = await Promise.all([
         fetch("http://localhost:5001/api/aluno/allaluno").then((res) => res.json()),
         TurmaService.findAll(),
         fetch("http://localhost:5001/api/responsavel/allresponsavel").then((res) => res.json()),
+        fetch("http://localhost:5001/api/matricula/allmatricula").then((res) => res.json()),
       ]);
 
       setAlunos(alunoRes);
       setTurmas(turmaRes);
       setResponsaveis(respRes);
+      setMatriculasExistentes(matriculasRes);
     } catch (e) {
       setErro("Erro ao carregar dados.");
     }
   };
 
-  useEffect(() => {
-    if (show) carregarDados();
-  }, [show]);
+useEffect(() => {
+  if (show) {
+    carregarDados();
+  } else {
+    setDados({
+      aluno_id: "",
+      turma_id: "",
+      responsavel_id: "",
+      observacoes: "",
+      data_matricula: new Date().toISOString().split("T")[0],
+      ano_letivo: new Date().getFullYear(),
+      turno: "",
+    });
+    setErro("");
+    setValidados({});
+  }
+}, [show]);
+
+useEffect(() => {
+  if (
+    show &&
+    modoEdicao &&
+    matriculaEdicao &&
+    alunos.length > 0 &&
+    turmas.length > 0 &&
+    responsaveis.length > 0
+  ) {
+    setDados({
+      aluno_id: matriculaEdicao.aluno?.id || "",
+      turma_id: matriculaEdicao.turma?.id || "",
+      responsavel_id: matriculaEdicao.responsavel?.id || "",
+      observacoes: matriculaEdicao.observacoes || "",
+      data_matricula: matriculaEdicao.data_matricula?.split("T")[0] || new Date().toISOString().split("T")[0],
+      ano_letivo: matriculaEdicao.ano_letivo || new Date().getFullYear(),
+      turno: matriculaEdicao.turno || "",
+    });
+  }
+}, [show, modoEdicao, matriculaEdicao, alunos, turmas, responsaveis]);
+
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -50,46 +90,72 @@ function FormularioMatricula({ show, onHide, onMatriculaRealizada }) {
     setDados((prev) => ({ ...prev, [name]: selected ? selected.value : "" }));
   };
 
- const handleSubmit = async () => {
-  setErro("");
+  const handleSubmit = async () => {
+    setErro("");
 
-  if (!dados.aluno_id || !dados.turma_id || !dados.ano_letivo || !dados.turno) {
-    toast.error("Aluno, turma, ano letivo e turno são obrigatórios.");
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5001/api/matricula/cadastrarmatricula", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ ...dados, status: "ativa" }),
+    const camposObrigatorios = ["aluno_id", "turma_id", "ano_letivo", "turno"];
+    const erros = {};
+    camposObrigatorios.forEach((campo) => {
+      if (!dados[campo]) erros[campo] = true;
     });
 
-    const resJson = await response.json();
-
-    if (response.ok) {
-      toast.success("Matrícula cadastrada com sucesso!");
-      onHide();
-      onMatriculaRealizada(); // caso precise atualizar a lista
-    } else {
-      toast.error(resJson.message || "Erro ao cadastrar matrícula.");
+    if (Object.keys(erros).length > 0) {
+      setValidados(erros);
+      const msg = "Preencha todos os campos obrigatórios.";
+      setErro(msg);
+      toast.error(msg);
+      return;
     }
-  } catch (e) {
-    console.error("Erro de requisição:", e);
-    toast.error("Erro na requisição.");
-  }
-};
 
+    if (!modoEdicao) {
+      const jaMatriculado = matriculasExistentes.some(
+        (m) => m.aluno_id === dados.aluno_id && m.turma_id === dados.turma_id
+      );
+      if (jaMatriculado) {
+        const msg = "Este aluno já está matriculado nesta turma.";
+        setErro(msg);
+        toast.error(msg);
+        return;
+      }
+    }
 
+    try {
+      const token = localStorage.getItem("token");
+      const url = modoEdicao
+        ? `http://localhost:5001/api/matricula/matricula/${matriculaEdicao.id}`
+        : `http://localhost:5001/api/matricula/cadastrarmatricula`;
+
+      const method = modoEdicao ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ...dados, status: "ativa" }),
+      });
+
+      const resJson = await response.json();
+
+      if (response.ok) {
+        toast.success(`Matrícula ${modoEdicao ? "atualizada" : "cadastrada"} com sucesso!`);
+        onHide();
+      } else {
+        const msg = resJson.message || "Erro ao salvar matrícula.";
+        toast.error(msg);
+        setErro(msg);
+      }
+    } catch (e) {
+      console.error("Erro de requisição:", e);
+      toast.error("Erro na requisição.");
+    }
+  };
 
   return (
     <Modal show={show} onHide={onHide} size="lg">
       <Modal.Header closeButton>
-        <Modal.Title>Cadastrar Matrícula</Modal.Title>
+        <Modal.Title>{modoEdicao ? "Editar Matrícula" : "Cadastrar Matrícula"}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container>
@@ -108,6 +174,7 @@ function FormularioMatricula({ show, onHide, onMatriculaRealizada }) {
                     onChange={handleSelectChange}
                     options={alunos.map((a) => ({ value: a.id, label: a.nome }))}
                     placeholder="Selecione o aluno"
+                    className={validados.aluno_id ? "is-invalid" : ""}
                   />
                 </Form.Group>
               </Col>
@@ -123,6 +190,7 @@ function FormularioMatricula({ show, onHide, onMatriculaRealizada }) {
                     onChange={handleSelectChange}
                     options={turmas.map((t) => ({ value: t.id, label: t.nome }))}
                     placeholder="Selecione a turma"
+                    className={validados.turma_id ? "is-invalid" : ""}
                   />
                 </Form.Group>
               </Col>
@@ -178,13 +246,19 @@ function FormularioMatricula({ show, onHide, onMatriculaRealizada }) {
                     name="ano_letivo"
                     value={dados.ano_letivo}
                     onChange={handleChange}
+                    isInvalid={validados.ano_letivo}
                   />
                 </Form.Group>
               </Col>
               <Col md={4}>
                 <Form.Group>
                   <Form.Label>Turno *</Form.Label>
-                  <Form.Select name="turno" value={dados.turno} onChange={handleChange}>
+                  <Form.Select
+                    name="turno"
+                    value={dados.turno}
+                    onChange={handleChange}
+                    isInvalid={validados.turno}
+                  >
                     <option value="">Selecione o turno</option>
                     <option value="manhã">Manhã</option>
                     <option value="tarde">Tarde</option>
@@ -195,7 +269,7 @@ function FormularioMatricula({ show, onHide, onMatriculaRealizada }) {
             </Row>
 
             <Button className="mt-4" variant="primary" onClick={handleSubmit}>
-              Salvar Matrícula
+              {modoEdicao ? "Salvar Alterações" : "Salvar Matrícula"}
             </Button>
           </Form>
         </Container>

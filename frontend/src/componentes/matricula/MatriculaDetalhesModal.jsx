@@ -1,12 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { Modal, Button, Form, Container, Row, Col, Badge } from "react-bootstrap";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
 import "dayjs/locale/pt-br";
+import FormularioMatricula from "./Matricula";
+
 
 dayjs.locale("pt-br");
 
-function MatriculaDetalhesModal({ show, onHide, matricula }) {
+function MatriculaDetalhesModal({ show, onHide, matricula,onStatusAtualizado }) {
+  const [showEdicao, setShowEdicao] = useState(false);
+
   if (!matricula) return null;
 
   const atualizarStatus = async (id, novoStatus) => {
@@ -26,14 +30,19 @@ function MatriculaDetalhesModal({ show, onHide, matricula }) {
 
       if (response.ok) {
         toast.success(`Matrícula ${novoStatus === "cancelada" ? "cancelada" : "inativada"} com sucesso.`);
-        onHide(); // Fecha o modal após a atualização
-      } else {
+        if (onStatusAtualizado) onStatusAtualizado();
+        onHide();
+      }
+      else {
         toast.warning("Erro ao atualizar status da matrícula.");
       }
     } catch (error) {
       toast.error("Erro ao conectar com o servidor.");
     }
   };
+
+  
+
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -133,6 +142,20 @@ function MatriculaDetalhesModal({ show, onHide, matricula }) {
             Cancelar Matrícula
           </Button>
         )}
+                  {/*<Button variant="primary" onClick={() => setShowEdicao(true)}>
+            Editar Matrícula
+          </Button>
+
+          <FormularioMatricula
+            show={showEdicao}
+            onHide={() => setShowEdicao(false)}
+            onMatriculaRealizada={() => {
+              setShowEdicao(false);
+              onHide(); // Fecha os dois modais e força reload da lista
+            }}
+            modoEdicao
+            matriculaEdicao={matricula}
+          />*/}
       </Modal.Footer>
     </Modal>
   );
