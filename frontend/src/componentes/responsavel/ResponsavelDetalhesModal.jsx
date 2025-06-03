@@ -151,19 +151,6 @@ const ResponsavelDetalhesModal = ({ show, onHide, responsavel, onSave }) => {
                   />
                 </Form.Group>
               </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Turma*</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="responsavelTurma"
-                    value={formData.responsavelTurma || ''}
-                    onChange={handleChange}
-                    isInvalid={!!errors.responsavelTurma}
-                  />
-                  <Form.Control.Feedback type="invalid">{errors.responsavelTurma}</Form.Control.Feedback>
-                </Form.Group>
-              </Col>
             </Row>
 
             <Row>

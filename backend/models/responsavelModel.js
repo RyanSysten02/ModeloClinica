@@ -1,16 +1,16 @@
 const pool = require('../db.js');
 
 const createResponsavel = async (
-    nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, responsavelTurma, endereco, num, complemento, 
+    nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, endereco, num, complemento, 
     celular, telefone, email, contatoEmergencia, observacoes
 ) => {
     const result = await pool.query(
         `INSERT INTO Responsavel (
-            nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, responsavelTurma, 
+            nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
             endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-            nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, responsavelTurma,
+            nome, cpf, rg, dataNascimento, sexo, numeroBeneficio,
             endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes
         ]
     );
@@ -31,13 +31,13 @@ const getResponsavelById = async (id) => {
 };
 
 const updateResponsavel = async ( id,
-nome,cpf,rg,dataNascimento,sexo,numeroBeneficio,responsavelTurma,endereco,num,complemento,
+nome,cpf,rg,dataNascimento,sexo,numeroBeneficioendereco,num,complemento,
 celular,telefone,email,contatoEmergencia,observacoes
 ) => { const result = await pool.query(
 `UPDATE responsavel SET nome = ?,cpf = ?,rg = ?,dataNascimento = ?,sexo = ?,numeroBeneficio = ?,responsavelTurma = ?,
 endereco = ?,num = ?,complemento = ?,celular = ?,telefone = ?,email = ?,contatoEmergencia = ?,observacoes = ? 
 WHERE id = ?`,        [
-            nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, responsavelTurma,
+            nome, cpf, rg, dataNascimento, sexo, numeroBeneficio,
             endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes, id
         ]
     );

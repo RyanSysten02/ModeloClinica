@@ -17,7 +17,6 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
     dataNascimento: "",
     sexo: "",
     numeroBeneficio: "",
-    responsavelTurma: "",
     endereco: "",
     num: "",
     complemento: "",
@@ -41,7 +40,6 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
     "rg",
     "dataNascimento",
     "sexo",
-    "responsavelTurma",
     "endereco",
   ];
 
@@ -276,22 +274,6 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                     value={responsavel.numeroBeneficio}
                     onChange={handleChange}
                   />
-                </Form.Group>
-              </Col>
-
-              <Col md={4}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Turma*</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="responsavelTurma"
-                    value={responsavel.responsavelTurma}
-                    onChange={handleChange}
-                    isInvalid={submitAttempted && !!erros.responsavelTurma}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {erros.responsavelTurma}
-                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
             </Row>
