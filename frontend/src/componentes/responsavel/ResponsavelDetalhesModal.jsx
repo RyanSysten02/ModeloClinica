@@ -84,7 +84,7 @@ const ResponsavelDetalhesModal = ({ show, onHide, responsavel, onSave }) => {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-              <Col md={3}>
+              <Col md={6}>
                 <Form.Group className='mb-3 text-start'>
                   <Form.Label>CPF*</Form.Label>
                   <InputMask
@@ -103,29 +103,10 @@ const ResponsavelDetalhesModal = ({ show, onHide, responsavel, onSave }) => {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-              <Col md={3}>
-                <Form.Group className='mb-3 text-start'>
-                  <Form.Label>RG*</Form.Label>
-                  <InputMask
-                    mask='99.999.999-9'
-                    className='form-control'
-                    name='rg'
-                    value={formData.rg || ''}
-                    onChange={handleChange}
-                  >
-                    {(inputProps) => (
-                      <Form.Control {...inputProps} isInvalid={!!errors.rg} />
-                    )}
-                  </InputMask>
-                  <Form.Control.Feedback type='invalid'>
-                    {errors.rg}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
             </Row>
 
             <Row>
-              <Col md={2}>
+              <Col md={3}>
                 <Form.Group className='mb-3 text-start'>
                   <Form.Label>Dt Nascimento*</Form.Label>
                   <Form.Control
@@ -144,7 +125,7 @@ const ResponsavelDetalhesModal = ({ show, onHide, responsavel, onSave }) => {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-              <Col md={2}>
+              <Col md={3}>
                 <Form.Group className='mb-3 text-start'>
                   <Form.Label>Sexo</Form.Label>
                   <Form.Select
@@ -157,6 +138,26 @@ const ResponsavelDetalhesModal = ({ show, onHide, responsavel, onSave }) => {
                     <option value='Feminino'>Feminino</option>
                     <option value='Outros'>Outro</option>
                   </Form.Select>
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group className='mb-3 text-start'>
+                  <Form.Label>RG*</Form.Label>
+                  <InputMask
+                    mask='99.999.999-9'
+                    className='form-control'
+                    name='rg'
+                    value={formData.rg || ''}
+                    onChange={handleChange}
+                  >
+                    {(inputProps) => (
+                      <Form.Control {...inputProps} isInvalid={!!errors.rg} />
+                    )}
+                  </InputMask>
+                  <Form.Control.Feedback type='invalid'>
+                    {errors.rg}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
             </Row>
