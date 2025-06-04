@@ -2,7 +2,7 @@ const responsavelservices = require('../services/responsavelservices');
 const jwt = require('jsonwebtoken');
 
 const createResponsavel = async (req, res) => {
-    const { nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, endereco, num, complemento, 
+    const { nome, cpf, rg, dataNascimento, sexo,  endereco, num, complemento, 
         celular, telefone, email, contatoEmergencia, observacoes} = req.body;
 
     const token = req.header('Authorization');
@@ -14,7 +14,7 @@ const createResponsavel = async (req, res) => {
         req.user = decoded;
         const id = req.user.id;
 
-        await responsavelservices.createResponsavel( nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, endereco, num, complemento, 
+        await responsavelservices.createResponsavel( nome, cpf, rg, dataNascimento, sexo,  endereco, num, complemento, 
             celular, telefone, email, contatoEmergencia, observacoes);
         res.status(201).json({ message: 'Responsavel cadastrado com sucesso' });
     } catch (error) {
@@ -50,7 +50,7 @@ const getResponsavelById = async (req, res) => {
 
 const updateResponsavel = async (req, res) => {
     const { id } = req.params;
-    const { nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, endereco, num, complemento, 
+    const { nome, cpf, rg, dataNascimento, sexo,  endereco, num, complemento, 
         celular, telefone, email, contatoEmergencia, observacoes } = req.body;
 
     const token = req.header('Authorization');
@@ -66,7 +66,7 @@ const updateResponsavel = async (req, res) => {
             return res.status(404).json({ message: 'Não foi possivel localizar o responsavel' });
         }
 
-        await responsavelservices.updateResponsavel(id, nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, endereco, num, complemento, 
+        await responsavelservices.updateResponsavel(id, nome, cpf, rg, dataNascimento, sexo,  endereco, num, complemento, 
             celular, telefone, email, contatoEmergencia, observacoes);
         res.status(200).json({ message: 'Dados do responsavel atualizados com sucesso' });
     } catch (error) {

@@ -1,22 +1,22 @@
 const responsavelmodel = require('../models/responsavelModel');
 
-const createResponsavel = async (nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
+const createResponsavel = async (nome, cpf, rg, dataNascimento, sexo,  
     endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes) => {
-    const responsavel = await responsavelmodel.createResponsavel(nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
+    const responsavel = await responsavelmodel.createResponsavel(nome, cpf, rg, dataNascimento, sexo,  
         endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes);
     return responsavel;
 };
 
-const getResponsavel = async (nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
+const getResponsavel = async (nome, cpf, rg, dataNascimento, sexo,  
     endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes) => {
-    const responsavel = await responsavelmodel.getResponsavel(nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
+    const responsavel = await responsavelmodel.getResponsavel(nome, cpf, rg, dataNascimento, sexo,  
         endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes);
     return responsavel;
 };
 
-const updateResponsavel = async (id, nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
+const updateResponsavel = async (id, nome, cpf, rg, dataNascimento, sexo,  
     endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes) => {
-    const responsavel = await responsavelmodel.updateResponsavel(id, nome, cpf, rg, dataNascimento, sexo, numeroBeneficio, 
+    const responsavel = await responsavelmodel.updateResponsavel(id, nome, cpf, rg, dataNascimento, sexo,  
         endereco, num, complemento, celular, telefone, email, contatoEmergencia, observacoes);
     return responsavel;
 };

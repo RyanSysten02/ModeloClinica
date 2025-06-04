@@ -1,29 +1,29 @@
-import React, { useState, useEffect } from "react";
-import { Modal, Table, Button } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import ptBR from "date-fns/locale/pt-BR";
-import { differenceInMinutes, format } from "date-fns";
-import "./csshistorico.css";
+import React, { useState, useEffect } from 'react';
+import { Modal, Table, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import ptBR from 'date-fns/locale/pt-BR';
+import { differenceInMinutes, format } from 'date-fns';
+import './csshistorico.css';
 
 const AlunoHistorico = ({ show, onHide, alunoId, mensagemErroControle }) => {
   const [historicos, setHistoricos] = useState([]);
-  const [mensagemErro, setMensagemErro] = useState("");
+  const [mensagemErro, setMensagemErro] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchHistorico = async () => {
       if (!alunoId) {
-        setMensagemErro("ID do aluno não foi fornecido.");
+        setMensagemErro('ID do aluno não foi fornecido.');
         return;
       }
 
-      setMensagemErro(""); // Limpa mensagem de erro ao iniciar a busca
+      setMensagemErro(''); // Limpa mensagem de erro ao iniciar a busca
 
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem('token');
         if (!token) {
-          setMensagemErro("Token não encontrado. Faça login novamente.");
-          navigate("/login");
+          setMensagemErro('Token não encontrado. Faça login novamente.');
+          navigate('/login');
           return;
         }
 
@@ -40,10 +40,10 @@ const AlunoHistorico = ({ show, onHide, alunoId, mensagemErroControle }) => {
           const data = await response.json();
           setHistoricos(data);
         } else {
-          setMensagemErro("Erro ao carregar os históricos.");
+          setMensagemErro('Erro ao carregar os históricos.');
         }
       } catch (error) {
-        setMensagemErro("Erro ao conectar com o servidor.");
+        setMensagemErro('Erro ao conectar com o servidor.');
       }
     };
 
@@ -53,7 +53,7 @@ const AlunoHistorico = ({ show, onHide, alunoId, mensagemErroControle }) => {
   }, [alunoId, navigate]);
 
   const formatDate = (dateString) => {
-    return format(new Date(dateString), "dd/MM/yyyy HH:mm", { locale: ptBR });
+    return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: ptBR });
   };
 
   const calculateDuration = (start, end) => {
@@ -66,14 +66,14 @@ const AlunoHistorico = ({ show, onHide, alunoId, mensagemErroControle }) => {
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="xl" centered>
+    <Modal show={show} onHide={onHide} size='xl' centered>
       <Modal.Header closeButton>
         <Modal.Title>Histórico do Aluno</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
+        {mensagemErro && <p className='text-danger'>{mensagemErro}</p>}
         {mensagemErroControle && (
-          <p style={{ color: "orange" }}>
+          <p style={{ color: 'orange' }}>
             Erro do Backend: {mensagemErroControle}
           </p>
         )}
@@ -136,7 +136,7 @@ const AlunoHistorico = ({ show, onHide, alunoId, mensagemErroControle }) => {
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
+        <Button variant='secondary' onClick={onHide}>
           Fechar
         </Button>
       </Modal.Footer>
