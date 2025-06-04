@@ -200,7 +200,7 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-              <Col md={3}>
+              <Col md={6}>
                 <Form.Group className='mb-3 text-start'>
                   <Form.Label>CPF*</Form.Label>
                   <Form.Control
@@ -215,25 +215,10 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-              <Col md={3}>
-                <Form.Group className='mb-3 text-start'>
-                  <Form.Label>RG*</Form.Label>
-                  <Form.Control
-                    type='text'
-                    name='rg'
-                    value={responsavel.rg}
-                    onChange={handleChange}
-                    isInvalid={submitAttempted && !!erros.rg}
-                  />
-                  <Form.Control.Feedback type='invalid'>
-                    {erros.rg}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
             </Row>
 
             <Row>
-              <Col md={2}>
+              <Col md={3}>
                 <Form.Group className='mb-3 text-start'>
                   <Form.Label>Data Nascimento*</Form.Label>
                   <Form.Control
@@ -249,7 +234,7 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                 </Form.Group>
               </Col>
 
-              <Col md={2}>
+              <Col md={3}>
                 <Form.Group className='mb-3 text-start'>
                   <Form.Label>Sexo*</Form.Label>
                   <Form.Select
@@ -265,6 +250,22 @@ function FormularioResponsavel({ show, onHide, onResponsavelsAtualizados }) {
                   </Form.Select>
                   <Form.Control.Feedback type='invalid'>
                     {erros.sexo}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group className='mb-3 text-start'>
+                  <Form.Label>RG*</Form.Label>
+                  <Form.Control
+                    type='text'
+                    name='rg'
+                    value={responsavel.rg}
+                    onChange={handleChange}
+                    isInvalid={submitAttempted && !!erros.rg}
+                  />
+                  <Form.Control.Feedback type='invalid'>
+                    {erros.rg}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
