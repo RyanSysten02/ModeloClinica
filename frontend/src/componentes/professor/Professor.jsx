@@ -75,7 +75,6 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
 
     setProfessor({ ...professor, [name]: novoValor });
 
-    // remove erro visual se o campo for corrigido
     if (camposComErro[name]) {
       setCamposComErro({ ...camposComErro, [name]: false });
     }
