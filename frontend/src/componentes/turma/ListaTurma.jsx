@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import TurmaService from '../../services/Turma';
 import { ModalForm } from './ModalForm';
 import { ModalList } from './ModalList';
+import { ModalDeletar } from '../ModalDeletar';
 
 export const ListaTurma = () => {
   const [listAll, setListAll] = useState(null);
@@ -12,6 +13,7 @@ export const ListaTurma = () => {
   const [showModal, setShowModal] = useState(false);
   const [showModalList, setShowModalList] = useState(false);
   const [searchText, setSearchText] = useState();
+  const [showModalDelete, setShowModalDelete] = useState(false);
 
   const listFiltered = useMemo(() => {
     if (!searchText) return listAll;
@@ -52,7 +54,6 @@ export const ListaTurma = () => {
       toast.success('Turma cadastrada com sucesso!');
 
       await getData();
-
       onCloseModal();
     } catch (error) {
       setMessageError(error?.response?.data?.message);
@@ -80,9 +81,9 @@ export const ListaTurma = () => {
     await handleUpdate(formData);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
     try {
-      await TurmaService.delete(id);
+      await TurmaService.delete(selected?.id);
       toast.success('Turma deletada com sucesso!');
 
       await getData();
@@ -94,7 +95,14 @@ export const ListaTurma = () => {
 
   const onCloseModal = () => {
     setShowModal(false);
+    setShowModalDelete(false);
     setSelected(null);
+  };
+
+  const resetAll = () => {
+    setMessageError(null);
+    setSelected(null);
+    setSearchText(null);
   };
 
   useEffect(() => {
@@ -112,7 +120,13 @@ export const ListaTurma = () => {
       <h1 className='mt-4'>Lista de Turmas</h1>
 
       <div className='mb-2 d-flex justify-content-start'>
-        <Button variant='info' onClick={() => setShowModal(true)}>
+        <Button
+          variant='info'
+          onClick={() => {
+            setShowModal(true);
+            resetAll();
+          }}
+        >
           Cadastrar Turma
         </Button>
       </div>
@@ -138,7 +152,7 @@ export const ListaTurma = () => {
             <th>Nome</th>
             <th>Ano Letivo</th>
             <th>Período</th>
-            <th>Semestre</th>
+            <th>Série</th>
             <th>Status</th>
             <th>Ações</th>
           </tr>
@@ -173,7 +187,13 @@ export const ListaTurma = () => {
                   Alunos matrículados
                 </Button>
 
-                <Button variant='danger' onClick={() => handleDelete(item?.id)}>
+                <Button
+                  variant='danger'
+                  onClick={() => {
+                    setShowModalDelete(true);
+                    setSelected(item);
+                  }}
+                >
                   Excluir
                 </Button>
               </td>
@@ -196,6 +216,13 @@ export const ListaTurma = () => {
           setSelected(null);
         }}
         selected={selected}
+      />
+
+      <ModalDeletar
+        onCancel={onCloseModal}
+        onSave={handleDelete}
+        show={showModalDelete}
+        entity='Turma'
       />
     </Container>
   );

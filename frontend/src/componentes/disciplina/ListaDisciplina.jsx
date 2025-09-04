@@ -3,6 +3,7 @@ import { Button, Container, Form, InputGroup, Table } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import DisciplinaService from '../../services/Disciplina';
 import { ModalForm } from './ModalForm';
+import { ModalDeletar } from '../ModalDeletar';
 
 export const ListaDisciplina = () => {
   const [listAll, setListAll] = useState(null);
@@ -10,6 +11,7 @@ export const ListaDisciplina = () => {
   const [selected, setSelected] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [searchText, setSearchText] = useState();
+  const [showModalDelete, setShowModalDelete] = useState(false);
 
   const listFiltered = useMemo(() => {
     if (!searchText) return listAll;
@@ -72,9 +74,9 @@ export const ListaDisciplina = () => {
     await handleUpdate(formData);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
     try {
-      await DisciplinaService.delete(id);
+      await DisciplinaService.delete(selected?.id);
       toast.success('Disciplina deletada com sucesso!');
 
       await getData();
@@ -86,7 +88,14 @@ export const ListaDisciplina = () => {
 
   const onCloseModal = () => {
     setShowModal(false);
+    setShowModalDelete(false);
     setSelected(null);
+  };
+
+  const resetAll = () => {
+    setMessageError(null);
+    setSelected(null);
+    setSearchText(null);
   };
 
   useEffect(() => {
@@ -104,7 +113,13 @@ export const ListaDisciplina = () => {
       <h1 className='mt-4'>Lista de Disciplinas</h1>
 
       <div className='mb-2 d-flex justify-content-start'>
-        <Button variant='info' onClick={() => setShowModal(true)}>
+        <Button
+          variant='info'
+          onClick={() => {
+            resetAll();
+            setShowModal(true);
+          }}
+        >
           Cadastrar Disciplina
         </Button>
       </div>
@@ -147,7 +162,13 @@ export const ListaDisciplina = () => {
                   Detalhes
                 </Button>
 
-                <Button variant='danger' onClick={() => handleDelete(item?.id)}>
+                <Button
+                  variant='danger'
+                  onClick={() => {
+                    setShowModalDelete(true);
+                    setSelected(item);
+                  }}
+                >
                   Excluir
                 </Button>
               </td>
@@ -161,6 +182,13 @@ export const ListaDisciplina = () => {
         onHide={onCloseModal}
         onSave={onSubmit}
         selected={selected}
+      />
+
+      <ModalDeletar
+        onCancel={onCloseModal}
+        onSave={handleDelete}
+        show={showModalDelete}
+        entity='Disciplina'
       />
     </Container>
   );
