@@ -173,6 +173,18 @@ const Sidebar = () => {
               </Button>
             </NavItem>
           )}
+          {podeAcessar('registrofrequencia') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
+                onClick={() => navigate('/pagRegistroFrequencia')}
+              >
+                <i className='bi bi-card-list'></i>
+                <span className='ms-3 d-inline-block'>Registrar Frequência</span>
+              </Button>
+            </NavItem>
+          )}
           {podeAcessar('configuracoes') && (
             <NavItem className='sidenav-bg'>
               <Button

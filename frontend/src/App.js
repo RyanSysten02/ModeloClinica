@@ -11,6 +11,7 @@ import PagLogin from './pages/login';
 import { LayoutDisciplina } from './pages/pagDisciplina';
 import Layoutresponsavel from './pages/pagResponsavel';
 import { LayoutTurma } from './pages/pagTurma';
+import { LayoutRegistroFrequencia } from './pages/pagRegistroFrequencia';
 import Layoutaluno from './pages/pagaluno';
 import FullLayout from './pages/paginicial';
 import Layoutprofessor from './pages/pagprofessor';
@@ -95,6 +96,14 @@ function App() {
             element={
               <ProtectedRoute allowedPermissions={['configuracoes']}>
                 <ConfiguracoesDeSeguranca />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/pagRegistroFrequencia'
+            element={
+              <ProtectedRoute allowedPermissions={['registrofrequencia']}>
+                <LayoutRegistroFrequencia />
               </ProtectedRoute>
             }
           />
