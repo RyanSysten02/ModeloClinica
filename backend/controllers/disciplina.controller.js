@@ -1,6 +1,7 @@
 const service = require('../services/disciplina.services');
 const { ExceptionFactory } = require('../utils/exception');
 
+
 const create = async (req, res) => {
   try {
     const data = req.body;
