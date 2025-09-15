@@ -196,7 +196,6 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
           <tr>
             <th>Nome</th>
             <th>Registro</th>
-            <th>Disciplina</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -204,7 +203,6 @@ const TelaListaProfessores = ({ onSelectProfessor }) => {
           {professoresFiltrados.map((professor) => (
             <tr key={professor.id}>
               <td>{professor.nome}</td>
-              <td>{professor.num_regis}</td>
               <td>{professor.habilitacao}</td>
               <td>
                 <Button

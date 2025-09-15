@@ -9,7 +9,9 @@ export const ModalForm = ({ show, onHide, onSave, selected }) => {
     const form = event.currentTarget;
     const isValid = form.checkValidity();
 
-    if (!isValid) event.stopPropagation();
+    if (!isValid) {
+      event.stopPropagation();
+    }
 
     setValidated(true);
 
@@ -55,13 +57,19 @@ export const ModalForm = ({ show, onHide, onSave, selected }) => {
           <Row className='mb-3'>
             <Form.Group as={Col} md={3} controlId='validationCustomAnoLetivo'>
               <Form.Label>Ano Letivo</Form.Label>
-              <Form.Control
-                required
-                type='number'
+              <Form.Select
                 name='ano_letivo'
-                placeholder='Digite o ano letivo'
-                defaultValue={selected?.ano_letivo}
-              />
+                placeholder='Escolha o ano letivo'
+                required
+                defaultValue={selected?.ano_letivo ?? ''}
+              >
+                <option value='' defaultValue=''>
+                  Selecione o ano
+                </option>
+                <option value='2025'>2025</option>
+                <option value='2026'>2026</option>
+                <option value='2027'>2027</option>
+              </Form.Select>
               <Form.Control.Feedback type='invalid'>
                 Campo obrigatório
               </Form.Control.Feedback>
@@ -69,27 +77,39 @@ export const ModalForm = ({ show, onHide, onSave, selected }) => {
 
             <Form.Group as={Col} md={3} controlId='validationCustomPeriodo'>
               <Form.Label>Período</Form.Label>
-              <Form.Control
-                required
-                type='text'
+              <Form.Select
                 name='periodo'
-                placeholder='Digite o ano período'
-                defaultValue={selected?.periodo}
-              />
+                placeholder='Escolha o período'
+                required
+                defaultValue={selected?.periodo ?? ''}
+              >
+                <option value='' defaultValue=''>
+                  Selecione o periodo
+                </option>
+                <option value='manha'>Manhã</option>
+                <option value='tarde'>Tarde</option>
+                <option value='noite'>Noite</option>
+              </Form.Select>
               <Form.Control.Feedback type='invalid'>
                 Campo obrigatório
               </Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group as={Col} md={3} controlId='validationCustomSemestre'>
-              <Form.Label>Semestre</Form.Label>
-              <Form.Control
-                required
-                type='number'
+              <Form.Label>Série</Form.Label>
+              <Form.Select
                 name='semestre'
-                placeholder='Digite o semestre'
-                defaultValue={selected?.semestre}
-              />
+                placeholder='Escolha a série'
+                required
+                defaultValue={selected?.semestre ?? ''}
+              >
+                <option value='' defaultValue=''>
+                  Selecione a série
+                </option>
+                <option value='1'>1</option>
+                <option value='2'>2</option>
+                <option value='3'>3</option>
+              </Form.Select>
               <Form.Control.Feedback type='invalid'>
                 Campo obrigatório
               </Form.Control.Feedback>
@@ -101,9 +121,11 @@ export const ModalForm = ({ show, onHide, onSave, selected }) => {
                 aria-label='Escolha o status'
                 required
                 name='status'
-                defaultValue={selected?.status}
+                defaultValue={selected?.status ?? ''}
               >
-                <option>Escolha o status</option>
+                <option value='' defaultValue=''>
+                  Escolha o status
+                </option>
                 <option value='Em andamento'>Em andamento</option>
                 <option value='Encerrada'>Encerrada</option>
                 <option value='Concluída'>Concluída</option>

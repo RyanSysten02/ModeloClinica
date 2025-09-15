@@ -29,7 +29,7 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
   const [camposComErro, setCamposComErro] = useState({});
   const navigate = useNavigate();
 
-  useEffect(() => {
+ {/* useEffect(() => {
     const fetchDisciplinas = async () => {
       try {
         const disciplinas = await DisciplinaService.findAll();
@@ -39,11 +39,11 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
       }
     };
     fetchDisciplinas();
-  }, []);
+  }, []);*/}
 
   const camposObrigatorios = [
     "nome", "cpf", "rg", "data_nasc", "end_rua", "end_numero", "bairro",
-    "cidade", "num_regis", "habilitacao", "telefone", "email", "sexo"
+    "cidade", "num_regis","telefone", "email", "sexo"
   ];
 
   const validarCampos = () => {
@@ -170,7 +170,7 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
                 </Col>
               ))}
 
-              <Col md={5}>
+              {/*<Col md={5}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Disciplina*</Form.Label>
                   <Form.Select
@@ -190,7 +190,7 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
                     Campo obrigatório
                   </Form.Control.Feedback>
                 </Form.Group>
-              </Col>
+              </Col>*/}
 
               <Col md={4}>
                 <Form.Group className="mb-3 text-start">
