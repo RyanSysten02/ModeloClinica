@@ -17,6 +17,8 @@ import Layoutprofessor from './pages/pagprofessor';
 import { LayoutMatricula } from './pages/pagmatricula';
 import ConfiguracoesDeSeguranca from './pages/ConfiguracoesDeSeguranca';
 import AcessoNegado from './pages/acessoNegado';
+import Layoutnotifica from './pages/pagnotifica';
+import LayoutAtendimento from './pages/pagAtendimento';
 
 function App() {
   return (
@@ -50,6 +52,23 @@ function App() {
             element={
               <ProtectedRoute allowedPermissions={['responsavel']}>
                 <Layoutresponsavel />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path='/notifica'
+            element={
+              <ProtectedRoute allowedPermissions={['notifica']}>
+                <Layoutnotifica />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/atendimento'
+            element={
+              <ProtectedRoute allowedPermissions={['notifica']}>
+                <LayoutAtendimento />
               </ProtectedRoute>
             }
           />

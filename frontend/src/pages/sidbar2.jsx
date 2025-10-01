@@ -173,6 +173,30 @@ const Sidebar = () => {
               </Button>
             </NavItem>
           )}
+          {podeAcessar('turma') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
+                onClick={() => navigate('/notifica')}
+              >
+                <i className='bi bi-chat-square-dots-fill'></i>
+                <span className='ms-3 d-inline-block'>Notificar faltas</span>
+              </Button>
+            </NavItem>
+          )}
+           {podeAcessar('turma') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
+                onClick={() => navigate('/atendimento')}
+              >
+                <i className='bi bi-chat-dots'></i>
+                <span className='ms-3 d-inline-block'>Atendimento</span>
+              </Button>
+            </NavItem>
+          )}
           {podeAcessar('configuracoes') && (
             <NavItem className='sidenav-bg'>
               <Button
