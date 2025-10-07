@@ -21,6 +21,8 @@ import ConfiguracoesDeSeguranca from './pages/ConfiguracoesDeSeguranca';
 import AcessoNegado from './pages/acessoNegado';
 import TelaSubstituicaoProfessor from './componentes/Substituicoes/TelaSubstituicaoProfessor';
 import { LayoutSubstituicoes } from './pages/pagSubstituicoes';
+import Layoutnotifica from './pages/pagnotifica';
+import LayoutAtendimento from './pages/pagAtendimento';
 
 function App() {
   return (
@@ -54,6 +56,23 @@ function App() {
             element={
               <ProtectedRoute allowedPermissions={['responsavel']}>
                 <Layoutresponsavel />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path='/notifica'
+            element={
+              <ProtectedRoute allowedPermissions={['notifica']}>
+                <Layoutnotifica />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/atendimento'
+            element={
+              <ProtectedRoute allowedPermissions={['notifica']}>
+                <LayoutAtendimento />
               </ProtectedRoute>
             }
           />
