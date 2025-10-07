@@ -84,19 +84,21 @@ const getFrequenciaById = async (req, res) => {
 };
 
 const getFrequenciasAgrupadas = async (req, res) => {
-  try {
-    // Pegamos os filtros dos query parameters da URL
-    const { turma_id, professor_id, periodo } = req.query;
-    if (!turma_id || !professor_id || !periodo) {
-      return res.status(400).json({ message: "Todos os filtros (turma, professor, período) são obrigatórios." });
-    }
+    try {
+        // --- ALTERADO: disciplina_id agora é opcional
+        const { turma_id, professor_id, disciplina_id, data_inicial, data_final } = req.query;
+        
+        // --- ALTERADO: Validação agora exige apenas turma, professor e datas
+        if (!turma_id || !professor_id || !data_inicial || !data_final) {
+            return res.status(400).json({ message: "Os filtros de turma, professor, data inicial e data final são obrigatórios." });
+        }
 
-    const frequencias = await frequenciaServices.getFrequenciasAgrupadas(turma_id, professor_id, periodo);
-    res.status(200).json(frequencias);
-  } catch (error) {
-    console.error("Erro ao buscar frequências agrupadas:", error);
-    res.status(500).json({ message: error.message });
-  }
+        const frequencias = await frequenciaServices.getFrequenciasAgrupadas(turma_id, professor_id, disciplina_id, data_inicial, data_final);
+        res.status(200).json(frequencias);
+    } catch (error) {
+        console.error("Erro ao buscar frequências agrupadas:", error);
+        res.status(500).json({ message: error.message });
+    }
 };
 
 const updateFrequencia = async (req, res) => {
@@ -163,15 +165,14 @@ const getFrequenciasPorMatricula = async (req, res) => {
 };
 
 const getFrequenciaDetalhadaPorAula = async (req, res) => {
-  try {
-    const { turma_id, professor_id, data_aula, periodo } = req.query;
-    if (!turma_id || !professor_id || !data_aula || !periodo) {
-      return res.status(400).json({ message: "Todos os parâmetros (turma, professor, data, período) são obrigatórios." });
-    }
-
-    const detalhes = await frequenciaServices.getFrequenciaDetalhadaPorAula(turma_id, professor_id, data_aula, periodo);
-    res.status(200).json(detalhes);
-  } catch (error) {
+    try {
+        const { turma_id, professor_id, disciplina_id, data_aula } = req.query; // Período removido
+        if (!turma_id || !professor_id || !disciplina_id || !data_aula) { // Período removido
+            return res.status(400).json({ message: "Todos os parâmetros (turma, professor, disciplina, data) são obrigatórios." });
+        }
+        const detalhes = await frequenciaServices.getFrequenciaDetalhadaPorAula(turma_id, professor_id, disciplina_id, data_aula); // Período removido
+        res.status(200).json(detalhes);
+    } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
@@ -196,6 +197,20 @@ const updateBulkFrequencia = async (req, res) => {
   }
 };
 
+const deleteBulkFrequencia = async (req, res) => {
+    try {
+        const { turma_id, professor_id, disciplina_id, data_aula } = req.body; // Período removido
+        if (!turma_id || !professor_id || !disciplina_id || !data_aula) { // Período removido
+            return res.status(400).json({ message: 'Todos os campos (turma, professor, disciplina, data) são obrigatórios para exclusão.' });
+        }
+        await frequenciaServices.deleteBulkFrequencia(turma_id, professor_id, disciplina_id, data_aula); // Período removido
+        res.status(200).json({ message: 'Frequência(s) do dia excluída(s) com sucesso.' });
+    } catch (error) {
+        console.error("ERRO AO EXCLUIR FREQUÊNCIAS:", error);
+        res.status(500).json({ message: 'Erro ao excluir frequência.' });
+    }
+};
+
 module.exports = {
   createFrequencia,
   createBulkFrequencia,
@@ -207,4 +222,5 @@ module.exports = {
   getFrequenciasPorMatricula,
   getFrequenciasAgrupadas,
   getFrequenciaDetalhadaPorAula,
+  deleteBulkFrequencia
 };
