@@ -6,6 +6,8 @@ router.post('/cadastrarmatricula', matriculaController.createMatricula);
 
 router.get('/allmatricula', matriculaController.getMatriculas);
 
+router.get('/por-turma/:id', matriculaController.getMatriculasByTurma);
+
 router.get('/matricula/:id', matriculaController.getMatriculaById);
 
 router.put('/matricula/:id', matriculaController.updateMatricula);

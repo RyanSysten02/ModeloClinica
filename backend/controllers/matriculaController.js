@@ -120,7 +120,17 @@ const atualizarStatusMatricula = async (req, res) => {
   }
 };
 
+const getMatriculasByTurma = async (req, res) => {
+  const { id } = req.params; // Pega o ID da turma da URL
 
+  try {
+    // Chama o serviço para buscar as matrículas
+    const matriculas = await matriculaService.getMatriculasByTurma(id);
+    res.status(200).json(matriculas); // Retorna as matrículas encontradas (pode ser um array vazio)
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 module.exports = {
   createMatricula,
@@ -129,4 +139,5 @@ module.exports = {
   updateMatricula,
   deleteMatricula,
   atualizarStatusMatricula,
+  getMatriculasByTurma,
 };

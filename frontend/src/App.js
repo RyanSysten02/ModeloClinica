@@ -12,12 +12,15 @@ import { LayoutDisciplina } from './pages/pagDisciplina';
 import Layoutresponsavel from './pages/pagResponsavel';
 import { LayoutTurma } from './pages/pagTurma';
 import { LayoutRegistroFrequencia } from './pages/pagRegistroFrequencia';
+import { LayoutConsultaFrequencia } from './pages/pagConsultaFrequencia';
 import Layoutaluno from './pages/pagaluno';
 import FullLayout from './pages/paginicial';
 import Layoutprofessor from './pages/pagprofessor';
 import { LayoutMatricula } from './pages/pagmatricula';
 import ConfiguracoesDeSeguranca from './pages/ConfiguracoesDeSeguranca';
 import AcessoNegado from './pages/acessoNegado';
+import TelaSubstituicaoProfessor from './componentes/Substituicoes/TelaSubstituicaoProfessor';
+import { LayoutSubstituicoes } from './pages/pagSubstituicoes';
 
 function App() {
   return (
@@ -104,6 +107,23 @@ function App() {
             element={
               <ProtectedRoute allowedPermissions={['registrofrequencia']}>
                 <LayoutRegistroFrequencia />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/pagConsultarFrequencias'
+            element={
+              <ProtectedRoute allowedPermissions={['registrofrequencia']}>
+                <LayoutConsultaFrequencia />
+              </ProtectedRoute>
+            }
+          />
+
+                    <Route
+            path='/pagSubstituicoes'
+            element={
+              <ProtectedRoute allowedPermissions={['registrofrequencia']}>
+                <LayoutSubstituicoes/>
               </ProtectedRoute>
             }
           />

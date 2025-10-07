@@ -11,6 +11,7 @@ const turmaRoutes = require('./routes/turma.routes');
 const matriculaRoutes = require('./routes/matricularoutes');
 const aulasRoutes = require('./routes/aularoutes'); 
 const permissaoRoutes = require('./routes/permissaoroutes');
+const frequenciaRoutes = require('./routes/frequenciaroutes');
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/disciplina', disciplinaRoutes);
 app.use('/api/turma', turmaRoutes);
 app.use('/api/matricula', matriculaRoutes);
 app.use('/api/permissoes', permissaoRoutes);
+app.use('/api/frequencia', frequenciaRoutes);
 
 const PORT = 5001;
 app.listen(PORT, () => console.log('Servidor rodando na porta ' + PORT));

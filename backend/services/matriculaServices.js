@@ -26,6 +26,10 @@ const atualizarStatusMatricula = async (id, status) => {
   return result;
 };
 
+const getMatriculasByTurma = async (turmaId) => {
+  return await matriculaModel.getMatriculasByTurma(turmaId);
+};
+
 
 module.exports = {
   createMatricula,
@@ -34,4 +38,5 @@ module.exports = {
   updateMatricula,
   deleteMatricula,
   atualizarStatusMatricula,
+  getMatriculasByTurma,
 };

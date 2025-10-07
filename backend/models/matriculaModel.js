@@ -34,6 +34,19 @@ const getMatriculaById = async (id) => {
   return rows[0];
 };
 
+const getMatriculasByTurma = async (turmaId) => {
+  // A query é a mesma de getMatriculas, mas com um "WHERE" para filtrar por turma.
+  const [rows] = await pool.query(`
+    SELECT m.*, a.nome AS aluno_nome, a.id AS aluno_id, t.nome AS turma_nome, r.nome AS responsavel_nome
+    FROM matricula m
+    JOIN aluno a ON m.aluno_id = a.id
+    JOIN turma t ON m.turma_id = t.id
+    LEFT JOIN responsavel r ON m.responsavel_id = r.id
+    WHERE m.turma_id = ?
+  `, [turmaId]); // Passar o ID como parâmetro previne SQL Injection
+  return rows;
+};
+
 const updateMatricula = async (id, turma_id, responsavel_id, status, observacoes) => {
   await pool.query(
     `UPDATE matricula
@@ -64,4 +77,5 @@ module.exports = {
   updateMatricula,
   deleteMatricula,
   atualizarStatusMatricula,
+  getMatriculasByTurma,
 };
