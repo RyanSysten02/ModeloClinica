@@ -1,12 +1,12 @@
 const pool = require('../db.js');
 
-// Horários
+
 const getHorarios = async () => {
   const result = await pool.query('SELECT * FROM horarios ORDER BY sequencia ASC');
   return result[0] || [];
 };
 
-// Aulas por dia
+
 const getAulasByDia = async (dia_semana) => {
   const sql = `
     SELECT a.id, a.dia_semana, a.horario_id, a.turma, a.disciplina_id, d.nome AS disciplina_nome,
@@ -20,7 +20,7 @@ const getAulasByDia = async (dia_semana) => {
   return result[0] || [];
 };
 
-// Substituir TODAS as aulas de um dia (transaction): apaga e reinsere
+
 const replaceDia = async (dia_semana, aulas) => {
   const conn = await pool.getConnection();
   try {

@@ -84,18 +84,7 @@ const Sidebar = () => {
               <span className='ms-3 d-inline-block'>Minha Agenda</span>
             </Button>
           </NavItem>
-
-          <NavItem className='sidenav-bg'>
-            <Button
-              color='link'
-              className='nav-link text-secondary py-3'
-              onClick={() => setShowAdicionarModal(true)}
-            >
-              <i className='bi bi-card-text'></i>
-              <span className='ms-3 d-inline-block'>Atribuir Aulas</span>
-            </Button>
-          </NavItem>
-
+           
           {podeAcessar('aluno') && (
             <NavItem className='sidenav-bg'>
               <Button

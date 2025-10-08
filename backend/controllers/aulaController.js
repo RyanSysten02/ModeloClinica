@@ -20,7 +20,7 @@ const getHorarios = async (req, res) => {
 };
 
 const getAulasPorDia = async (req, res) => {
-  const { dia } = req.query; // ex.: ?dia=Segunda
+  const { dia } = req.query; 
   try {
     authGuard(req);
     if (!dia)
@@ -32,7 +32,7 @@ const getAulasPorDia = async (req, res) => {
   }
 };
 
-// Recebe o dia e uma lista de aulas e substitui tudo daquele dia
+
 const salvarDia = async (req, res) => {
   const { dia, aulas } = req.body;
   try {
