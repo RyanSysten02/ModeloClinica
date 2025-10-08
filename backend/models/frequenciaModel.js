@@ -1,12 +1,12 @@
 const pool = require('../db.js');
 
 // Criar registro de frequência
-const createFrequencia = async (matricula_id, professor_id, presente, data_aula, periodo, cod_usuario_inclusao) => {
+const createFrequencia = async (matricula_id, professor_id, disciplina_id, presente, data_aula, cod_usuario_inclusao) => {
   const result = await pool.query(
     `INSERT INTO frequencia (
-       matricula_id, professor_id, presente, data_aula, periodo, cod_usuario_inclusao
-     ) VALUES (?, ?, ?, ?, ?, ?)`,
-    [matricula_id, professor_id, presente, data_aula, periodo, cod_usuario_inclusao]
+        matricula_id, professor_id, disciplina_id, presente, data_aula, cod_usuario_inclusao
+       ) VALUES (?, ?, ?, ?, ?, ?)`,
+    [matricula_id, professor_id, disciplina_id, presente, data_aula, cod_usuario_inclusao]
   );
   return result;
 };
@@ -23,52 +23,61 @@ const getFrequenciaById = async (id) => {
   return result[0][0]; // único registro ou undefined
 };
 
-const getFrequenciasAgrupadas = async (turmaId, professorId, periodo) => {
-  // Nota: Usamos m.turma_id no WHERE, pois a tabela frequencia não tem turma_id diretamente.
-  const [rows] = await pool.query(`
-    SELECT
-      f.data_aula,
-      f.periodo,
-      f.professor_id,
-      p.nome AS professor_nome,
-      m.turma_id,
-      t.nome AS turma_nome
-    FROM frequencia AS f
-    INNER JOIN matricula AS m ON f.matricula_id = m.id
-    INNER JOIN turma AS t ON m.turma_id = t.id
-    INNER JOIN professor AS p ON f.professor_id = p.id
-    WHERE
-      m.turma_id = ?
-      AND f.professor_id = ?
-      AND f.periodo = ?
-    GROUP BY
-      f.data_aula, f.periodo, f.professor_id, m.turma_id, t.nome, p.nome
-    ORDER BY
-      f.data_aula DESC;
-  `, [turmaId, professorId, periodo]);
 
-  return rows;
+const getFrequenciasAgrupadas = async (turmaId, professorId, disciplinaId, dataInicial, dataFinal) => {
+    
+    // --- CORRIGIDO --- Query SQL sem nenhuma referência à coluna 'periodo'.
+    let query = `
+        SELECT
+            f.data_aula, f.professor_id, p.nome AS professor_nome,
+            m.turma_id, t.nome AS turma_nome,
+            f.disciplina_id, d.nome AS disciplina_nome
+        FROM frequencia AS f
+        INNER JOIN matricula AS m ON f.matricula_id = m.id
+        INNER JOIN turma AS t ON m.turma_id = t.id
+        INNER JOIN professor AS p ON f.professor_id = p.id
+        INNER JOIN disciplina AS d ON f.disciplina_id = d.id
+        WHERE
+            m.turma_id = ?
+            AND f.professor_id = ?
+            AND f.data_aula BETWEEN ? AND ?
+    `;
+    
+    const params = [turmaId, professorId, dataInicial, dataFinal];
+
+    // Lógica dinâmica para o filtro opcional de disciplina
+    if (disciplinaId) {
+        query += ` AND f.disciplina_id = ?`;
+        params.push(disciplinaId);
+    }
+
+    query += `
+        GROUP BY
+            f.data_aula, f.professor_id, m.turma_id, f.disciplina_id, t.nome, p.nome, d.nome
+        ORDER BY
+            f.data_aula DESC, d.nome ASC;
+    `;
+
+    const [rows] = await pool.query(query, params);
+    return rows;
 };
 
-const getFrequenciaDetalhadaPorAula = async (turmaId, professorId, dataAula, periodo) => {
+
+const getFrequenciaDetalhadaPorAula = async (turmaId, professorId, disciplinaId, dataAula) => { // Período removido
   const [rows] = await pool.query(`
     SELECT
       m.id AS matricula_id,
       a.id AS aluno_id,
       a.nome AS aluno_nome,
-      f.presente
+      (SELECT f.presente FROM frequencia f WHERE f.matricula_id = m.id AND f.professor_id = ? AND f.disciplina_id = ? AND f.data_aula = ? LIMIT 1) AS presente
     FROM matricula AS m
     INNER JOIN aluno AS a ON m.aluno_id = a.id
-    LEFT JOIN frequencia AS f ON m.id = f.matricula_id
-      AND f.professor_id = ?
-      AND f.data_aula = ?
-      AND f.periodo = ?
     WHERE
       m.turma_id = ? AND m.status = 'ativa'
     ORDER BY
       a.nome;
-  `, [professorId, dataAula, periodo, turmaId]);
-  
+  `, [professorId, disciplinaId, dataAula, turmaId]); // Período removido dos parâmetros
+
   return rows;
 };
 
@@ -100,18 +109,28 @@ const getFrequenciasPorMatricula = async (matricula_id) => {
 };
 
 const upsertFrequencia = async (frequenciaData, cod_usuario_alteracao) => {
-  const { matricula_id, professor_id, presente, data_aula, periodo } = frequenciaData;
-
-  // Esta query especial do MySQL insere um novo registro. Se a chave única já existir,
-  // ele executa a parte do ON DUPLICATE KEY UPDATE.
+  const { matricula_id, professor_id, disciplina_id, presente, data_aula } = frequenciaData;
   await pool.query(`
-    INSERT INTO frequencia (matricula_id, professor_id, presente, data_aula, periodo, cod_usuario_inclusao)
+    INSERT INTO frequencia (matricula_id, professor_id, disciplina_id, presente, data_aula, cod_usuario_inclusao)
     VALUES (?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
       presente = VALUES(presente),
       cod_usuario_alteracao = VALUES(cod_usuario_inclusao),
       data_alteracao = NOW();
-  `, [matricula_id, professor_id, presente, data_aula, periodo, cod_usuario_alteracao]);
+  `, [matricula_id, professor_id, disciplina_id, presente, data_aula, cod_usuario_alteracao]);
+};
+
+const deleteBulkFrequencia = async (turma_id, professor_id, disciplina_id, data_aula) => { // Período removido
+    const [result] = await pool.query(`
+        DELETE FROM frequencia
+        WHERE
+            professor_id = ? AND
+            disciplina_id = ? AND
+            data_aula = ? AND
+            matricula_id IN (SELECT id FROM matricula WHERE turma_id = ?);
+    `, [professor_id, disciplina_id, data_aula, turma_id]); // Período removido dos parâmetros
+
+    return result;
 };
 
 module.exports = {
@@ -124,4 +143,5 @@ module.exports = {
   getFrequenciasAgrupadas,
   getFrequenciaDetalhadaPorAula,
   upsertFrequencia,
+  deleteBulkFrequencia,
 };

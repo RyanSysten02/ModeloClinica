@@ -15,7 +15,7 @@ router.get('/frequencia/:id', frequenciaController.getFrequenciaById);
 router.put('/frequencia/:id', frequenciaController.updateFrequencia);
 
 // Deletar frequência
-router.delete('/frequencia/:id', frequenciaController.deleteFrequencia);
+router.delete('/excluir', frequenciaController.deleteBulkFrequencia);
 
 // Buscar frequências de uma matrícula específica (ex: histórico do aluno)
 router.get('/frequencias/matricula/:matricula_id', frequenciaController.getFrequenciasPorMatricula);
