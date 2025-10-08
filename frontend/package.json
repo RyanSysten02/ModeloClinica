@@ -13,6 +13,7 @@
     "dayjs": "^1.11.13",
     "framer-motion": "^12.15.0",
     "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.545.0",
     "moment": "^2.30.1",
     "react": "^18.3.1",
     "react-big-calendar": "^1.15.0",

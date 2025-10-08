@@ -101,6 +101,19 @@ const Sidebar = () => {
               <Button
                 color='link'
                 className='nav-link text-secondary py-3'
+                onClick={() => navigate('/pagAulas')}
+              >
+                <i className='bi bi-table'></i>
+                <span className='ms-3 d-inline-block'>Aulas</span>
+              </Button>
+            </NavItem>
+          )}
+
+          {podeAcessar('aluno') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
                 onClick={() => navigate('/pagAluno')}
               >
                 <i className='bi bi-person'></i>
@@ -108,6 +121,7 @@ const Sidebar = () => {
               </Button>
             </NavItem>
           )}
+
 
           {podeAcessar('responsavel') && (
             <NavItem className='sidenav-bg'>

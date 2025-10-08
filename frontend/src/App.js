@@ -23,6 +23,7 @@ import TelaSubstituicaoProfessor from './componentes/Substituicoes/TelaSubstitui
 import { LayoutSubstituicoes } from './pages/pagSubstituicoes';
 import Layoutnotifica from './pages/pagnotifica';
 import LayoutAtendimento from './pages/pagAtendimento';
+import LayoutAulas from './pages/Aulas';
 
 function App() {
   return (
@@ -47,6 +48,15 @@ function App() {
             element={
               <ProtectedRoute allowedPermissions={['aluno']}>
                 <Layoutaluno />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path='/pagAulas'
+            element={
+              <ProtectedRoute allowedPermissions={['aluno']}>
+                <LayoutAulas/>
               </ProtectedRoute>
             }
           />

@@ -1,4 +1,3 @@
-import Calendario from "../componentes/Calendario";
 import TelaListaAlunos from "../componentes/aluno/telalisaluno";
 import Pagina from "./PagPadrao";
 
