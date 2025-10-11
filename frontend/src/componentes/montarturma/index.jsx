@@ -91,14 +91,12 @@ export const MontarTurma = () => {
 
         await handleFiltered();
 
-        handleSelectedRow(payload);
-
         toast.success('Aluno alocado a turma com sucesso');
       } catch (error) {
         toast.error('Erro ao salvar');
       }
     },
-    [updateMatricula, handleFiltered, handleSelectedRow]
+    [updateMatricula, handleFiltered]
   );
 
   const handleEdit = useCallback(
@@ -142,20 +140,15 @@ export const MontarTurma = () => {
   const isDisabled = useCallback(
     (turmaId) => {
       const filtered = turmas?.find((turma) => turma?.id === turmaId);
-      const oldData = matriculas?.find(
-        (matricula) => matricula?.turma_id === turmaId
-      );
 
-      if (!filtered || oldData) return true;
-
-      console.log('filtered', filtered);
+      if (!filtered) return true;
 
       return (
         filtered?.status?.toLowerCase() !== 'Não iniciada'.toLowerCase() &&
         filtered?.status?.toLowerCase() !== 'Aberta para Alocação'.toLowerCase()
       );
     },
-    [turmas, matriculas]
+    [turmas]
   );
 
   useEffect(() => {
@@ -244,8 +237,7 @@ export const MontarTurma = () => {
 
       {selectedRows?.length > 0 && (
         <Row>
-          <hr className='w-100 mt-4' />
-          <h2 className='mb-4'>Adicione as Turmas</h2>
+          <hr className='w-100 mt-4 mb-4' />
           <Col>
             <Table striped bordered hover>
               <thead>
