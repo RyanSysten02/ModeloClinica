@@ -39,6 +39,16 @@ const getMatriculas = async (req, res) => {
   }
 };
 
+const getMatriculasQuery = async (req, res) => {
+  try {
+    const query = req.query
+    const matriculas = await matriculaService.getMatriculasQuery(query);
+    res.status(200).json(matriculas);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 const getMatriculaById = async (req, res) => {
   const { id } = req.params;
 
@@ -140,4 +150,5 @@ module.exports = {
   deleteMatricula,
   atualizarStatusMatricula,
   getMatriculasByTurma,
+  getMatriculasQuery
 };

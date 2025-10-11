@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Container, Table, Button, InputGroup, Form } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import FormularioMatricula from "./Matricula"; // Modal de cadastro
-import MatriculaDetalhesModal from "./MatriculaDetalhesModal"; // Modal de detalhes (você precisa criar)
-import { format } from "date-fns";
+import { format } from 'date-fns';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Button, Container, Form, InputGroup, Table } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import FormularioMatricula from './Matricula'; // Modal de cadastro
+import MatriculaDetalhesModal from './MatriculaDetalhesModal'; // Modal de detalhes (você precisa criar)
 
 const TelaListaMatriculas = () => {
   const [matriculas, setMatriculas] = useState([]);
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState('');
   const [showCadastroModal, setShowCadastroModal] = useState(false);
   const [showDetalhesModal, setShowDetalhesModal] = useState(false);
   const [matriculaSelecionada, setMatriculaSelecionada] = useState(null);
@@ -32,37 +32,39 @@ const TelaListaMatriculas = () => {
 
   const fetchMatriculas = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
       if (!token) {
-        toast.warning("Token não encontrado. Faça login novamente.");
-        navigate("/login");
+        toast.warning('Token não encontrado. Faça login novamente.');
+        navigate('/login');
         return;
       }
 
-      const response = await fetch("http://localhost:5001/api/matricula/allmatricula", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        'http://localhost:5001/api/matricula/allmatricula',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-        if (response.ok) {
-            const data = await response.json();
+      if (response.ok) {
+        const data = await response.json();
 
-            const adaptados = data.map((m) => ({
-              ...m,
-              aluno: { nome: m.aluno_nome, cpf: m.aluno_cpf },
-              turma: { nome: m.turma_nome },
-              responsavel: { nome: m.responsavel_nome },
-              data: m.data_matricula,
-            }));
+        const adaptados = data.map((m) => ({
+          ...m,
+          aluno: { nome: m.aluno_nome, cpf: m.aluno_cpf },
+          turma: { nome: m.turma_nome },
+          responsavel: { nome: m.responsavel_nome },
+          data: m.data_matricula,
+        }));
 
-            setMatriculas(adaptados);
-          } else {
-            toast.warning("Erro ao carregar as matrículas.");
-          }
-
+        setMatriculas(adaptados);
+      } else {
+        toast.warning('Erro ao carregar as matrículas.');
+      }
     } catch (error) {
-      toast.error("Erro ao conectar com o servidor.");
+      toast.error('Erro ao conectar com o servidor.');
     }
   };
 
@@ -75,24 +77,24 @@ const TelaListaMatriculas = () => {
     setShowDetalhesModal(true);
   };
 
- 
-
   return (
     <Container>
-      <h2 className="mt-4">Lista de Matrículas</h2>
+      <h2 className='mt-4'>Lista de Matrículas</h2>
 
-      <div className="d-flex justify-content-start mb-3">
-        <Button onClick={() => setShowCadastroModal(true)}>Nova Matrícula</Button>
+      <div className='d-flex justify-content-start mb-3'>
+        <Button onClick={() => setShowCadastroModal(true)}>
+          Nova Matrícula
+        </Button>
       </div>
 
-      <InputGroup className="mb-3">
+      <InputGroup className='mb-3'>
         <Form.Control
-          placeholder="Buscar por aluno ou turma"
+          placeholder='Buscar por aluno ou turma'
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />
-        <Button variant="outline-secondary">
-          <i className="bi bi-search"></i>
+        <Button variant='outline-secondary'>
+          <i className='bi bi-search'></i>
         </Button>
       </InputGroup>
 
@@ -109,13 +111,18 @@ const TelaListaMatriculas = () => {
           {matriculasFiltradas.map((m) => (
             <tr key={m.id}>
               <td>{m.aluno?.nome}</td>
-              <td>{m.turma?.nome}</td>
-              <td>{format(new Date(m.data), "dd/MM/yyyy")}</td>
-              <td style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-                <Button variant="info" onClick={() => handleDetalhes(m)}>
+              <td>{m.turma?.nome || 'Sem turma'}</td>
+              <td>{format(new Date(m.data), 'dd/MM/yyyy')}</td>
+              <td
+                style={{
+                  display: 'flex',
+                  gap: '10px',
+                  justifyContent: 'center',
+                }}
+              >
+                <Button variant='info' onClick={() => handleDetalhes(m)}>
                   Detalhes
                 </Button>
-                
               </td>
             </tr>
           ))}
@@ -144,7 +151,6 @@ const TelaListaMatriculas = () => {
             fetchMatriculas();
           }}
         />
-
       )}
     </Container>
   );

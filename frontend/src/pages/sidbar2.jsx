@@ -29,6 +29,7 @@ const Sidebar = () => {
       const decoded = jwtDecode(token);
       setUserName(decoded.nome);
 
+
       fetch('http://localhost:5001/api/permissoes', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -151,6 +152,19 @@ const Sidebar = () => {
             </NavItem>
           )}
 
+          {podeAcessar('montarturma') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
+                onClick={() => navigate('/pagMontarTurma')}
+              >
+                <i className='bi bi-backpack3'></i>
+                <span className='ms-3 d-inline-block'>Montar Turma</span>
+              </Button>
+            </NavItem>
+          )}
+
           {podeAcessar('disciplina') && (
             <NavItem className='sidenav-bg'>
               <Button
@@ -184,7 +198,9 @@ const Sidebar = () => {
                 onClick={() => navigate('/pagRegistroFrequencia')}
               >
                 <i className='bi bi-card-list'></i>
-                <span className='ms-3 d-inline-block'>Registrar Frequência</span>
+                <span className='ms-3 d-inline-block'>
+                  Registrar Frequência
+                </span>
               </Button>
             </NavItem>
           )}
@@ -226,7 +242,6 @@ const Sidebar = () => {
               </Button>
             </NavItem>
           )}
-
         </Nav>
       </div>
 
