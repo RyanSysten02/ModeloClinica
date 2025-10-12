@@ -26,7 +26,7 @@ const createMatricula = async (
   return result.insertId;
 };
 
-const getMatriculas = async (query) => {
+const getMatriculas = async () => {
   const [rows] = await pool.query(`
     SELECT m.*, a.nome AS aluno_nome, t.nome AS turma_nome, r.nome AS responsavel_nome
     FROM matricula m
@@ -43,12 +43,14 @@ const getMatriculasQuery = async (query) => {
   const result = await knex
     .select(
       'matricula.*',
+      'aluno_turma.id as aluno_turma_id',
       'aluno.nome as aluno_nome',
       'turma.nome as turma_nome'
     )
     .from('matricula')
     .innerJoin('aluno', 'matricula.aluno_id', 'aluno.id')
     .leftJoin('turma', 'matricula.turma_id', 'turma.id')
+    .leftJoin('aluno_turma', 'matricula.id', 'aluno_turma.matricula_id')
     .whereIn('matricula.ano_letivo', values);
 
   return result;

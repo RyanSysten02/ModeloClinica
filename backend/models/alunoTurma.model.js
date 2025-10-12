@@ -1,7 +1,28 @@
 const knex = require('../lib/knex');
 
+const QUATIDADE_PERMITIDA = 40;
+
+const validate = async (turmaId) => {
+  const result = await knex('aluno_turma').count('turma_id as total').where({
+    turma_id: turmaId,
+  });
+
+  const total = result?.[0]?.total;
+
+  if (total >= QUATIDADE_PERMITIDA) {
+    throw Error(
+      `A quantidade máxima de ${QUATIDADE_PERMITIDA} alunos permitida, já foi preenchida!`
+    );
+  }
+};
+
 const create = async (data) => {
-  const result = await knex('aluno_turma').insert({ ...data });
+  const turmaId = data?.turma_id;
+
+  await validate(turmaId);
+
+  const campo_unico = `${data?.matricula_id}_${data?.ano_letivo}`;
+  const result = await knex('aluno_turma').insert({ ...data, campo_unico });
 
   return result;
 };
@@ -43,6 +64,10 @@ const findByTurmaId = async (turmaId) => {
 };
 
 const update = async (id, data) => {
+  const turmaId = data?.turma_id;
+
+  await validate(turmaId);
+
   const result = await knex('aluno_turma').update(data).where({ id });
   return result;
 };

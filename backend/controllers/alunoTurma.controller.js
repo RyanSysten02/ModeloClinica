@@ -1,5 +1,4 @@
 const service = require('../services/alunoTurma.services');
-const { ExceptionFactory } = require('../utils/exception');
 
 const create = async (req, res) => {
   try {
@@ -9,12 +8,7 @@ const create = async (req, res) => {
     return res.status(201).json(result);
   } catch (error) {
     return res.status(400).json({
-      message: ExceptionFactory({
-        entity: 'AlunoTurma',
-        column: 'matricula_id',
-        code: error?.code,
-        sqlMessage: error?.message ?? error?.sqlMessage,
-      }),
+      message: error.message,
     });
   }
 };

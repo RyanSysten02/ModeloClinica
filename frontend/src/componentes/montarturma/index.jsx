@@ -12,6 +12,9 @@ import DatePicker from 'react-multi-date-picker';
 import Select from 'react-select';
 import { toast } from 'react-toastify';
 import { ApiConfig } from '../../api/config';
+import { useUser } from '../../hooks';
+
+const PERMISSIONS_MOCK = ['ADM', 'COORDENADOR'];
 
 export const MontarTurma = () => {
   const [selectedRows, setSelectedRows] = useState();
@@ -21,6 +24,8 @@ export const MontarTurma = () => {
     periodo: [],
   });
 
+  const roleUser = useUser();
+
   const getData = useCallback(async () => {
     try {
       const result = await ApiConfig.get('/matricula/query', {
@@ -28,7 +33,7 @@ export const MontarTurma = () => {
       });
       setMatriculas(result.data);
     } catch (error) {
-      console.error('Error ao buscar dados =>', error);
+      toast.error('Error ao buscar dados');
     }
   }, [form]);
 
@@ -39,7 +44,7 @@ export const MontarTurma = () => {
 
       setTurmas(filtered);
     } catch (error) {
-      console.error('Error ao buscar dados =>', error);
+      toast.error('Erro ao buscar as turmas para listar');
     }
   };
 
@@ -58,12 +63,15 @@ export const MontarTurma = () => {
     [selectedRows]
   );
 
-  const handleRemoveRow = (item) => {
-    const filteredItems = selectedRows?.filter(
-      (row) => row?.aluno_id !== item?.aluno_id
-    );
-    setSelectedRows(filteredItems);
-  };
+  const handleRemoveRow = useCallback(
+    (item) => {
+      const filteredItems = selectedRows?.filter(
+        (row) => row?.aluno_id !== item?.aluno_id
+      );
+      setSelectedRows(filteredItems);
+    },
+    [selectedRows]
+  );
 
   const handleFiltered = useCallback(async () => {
     await getData();
@@ -76,6 +84,39 @@ export const MontarTurma = () => {
       toast.error('Erro ao atualizar a matrícula');
     }
   }, []);
+
+  const executeFuncionWithRole = useCallback(
+    (functionCallback) => {
+      if (!PERMISSIONS_MOCK.includes(roleUser?.role)) {
+        toast.warning('Você não possui permissão para executar essa ação!');
+        return;
+      }
+
+      functionCallback();
+    },
+    [roleUser?.role]
+  );
+
+  const onUpdate = useCallback(
+    async (id, payload) => {
+      try {
+        await ApiConfig.put(`/aluno-turma/update/${id}`, {
+          matricula_id: payload?.id,
+          turma_id: payload?.turma_id,
+          ano_letivo: payload?.ano_letivo,
+          data_alocacao: new Date().toISOString().split('T')[0],
+        });
+
+        toast.success('Sucesso ao atualizar');
+
+        handleRemoveRow(payload);
+      } catch (error) {
+        const message = error?.response?.data?.message;
+        toast.error(`Erro ao atualizar, ${message}`);
+      }
+    },
+    [handleRemoveRow]
+  );
 
   const onSave = useCallback(
     async (payload) => {
@@ -92,11 +133,30 @@ export const MontarTurma = () => {
         await handleFiltered();
 
         toast.success('Aluno alocado a turma com sucesso');
+
+        handleRemoveRow(payload);
       } catch (error) {
-        toast.error('Erro ao salvar');
+        const message = error?.response?.data?.message;
+        toast.error(`Erro ao salvar, ${message}`);
       }
     },
-    [updateMatricula, handleFiltered]
+    [updateMatricula, handleFiltered, handleRemoveRow]
+  );
+
+  const handleExecuteFunctions = useCallback(
+    (payload) => {
+      const alunoTurmaId = payload?.aluno_turma_id;
+
+      const caseFunction = {
+        edit: () => onUpdate(alunoTurmaId, payload),
+        create: () => onSave(payload),
+      }[alunoTurmaId ? 'edit' : 'create'];
+
+      executeFuncionWithRole(async () => {
+        await caseFunction();
+      });
+    },
+    [executeFuncionWithRole, onSave, onUpdate]
   );
 
   const handleEdit = useCallback(
@@ -116,8 +176,8 @@ export const MontarTurma = () => {
       filtered.type = 'edit';
 
       setSelectedRows((prev) => [
-        filtered,
         ...prev?.filter((row) => row?.id !== id),
+        filtered,
       ]);
     },
     [selectedRows, turmas]
@@ -281,7 +341,7 @@ export const MontarTurma = () => {
                       </Button>
                       <Button
                         variant='primary'
-                        onClick={() => onSave(item)}
+                        onClick={() => handleExecuteFunctions(item)}
                         disabled={isDisabled(item?.turma_id)}
                       >
                         Salvar
