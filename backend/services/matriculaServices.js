@@ -9,6 +9,10 @@ const getMatriculas = async () => {
   return await matriculaModel.getMatriculas();
 };
 
+const getMatriculasQuery = async (query) => {
+  return await matriculaModel.getMatriculasQuery(query);
+};
+
 const getMatriculaById = async (id) => {
   return await matriculaModel.getMatriculaById(id);
 };
@@ -39,4 +43,5 @@ module.exports = {
   deleteMatricula,
   atualizarStatusMatricula,
   getMatriculasByTurma,
+  getMatriculasQuery
 };
