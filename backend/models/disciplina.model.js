@@ -6,8 +6,14 @@ const create = async (data) => {
   return result;
 };
 
+// Em seu arquivo de Model de Disciplina
+
 const findAll = async () => {
-  const result = await knex('disciplina').select();
+  const result = await knex('disciplina').select(
+    'id',
+    'nome',
+    { areaConhecimento: 'area_conhecimento' } 
+  );
 
   if (!result) return [];
 

@@ -128,10 +128,15 @@ const deleteProfessor = async (id) => {
   return professor;
 };
 
+const getAll = async () => {
+  return await professormodel.getAll();
+};
+
 module.exports = {
   createProfessor,
   getProfessor,
   deleteProfessor,
   updateProfessor,
   getProfessorById,
+  getAll,
 };

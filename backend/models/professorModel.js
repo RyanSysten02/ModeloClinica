@@ -108,10 +108,24 @@ const deleteProfessor = async (id) => {
   return result;
 };
 
+const getAll = async () => {
+  const [rows] = await pool.query(`
+    SELECT 
+      id, 
+      nome, 
+      tipo, 
+      area_conhecimento AS areaConhecimento, 
+      carga_horaria AS cargaHoraria 
+    FROM professor
+  `);
+  return rows;
+};
+
 module.exports = {
   createProfessor,
   getProfessor,
   getProfessorById,
   updateProfessor,
   deleteProfessor,
+  getAll,
 };

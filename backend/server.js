@@ -12,7 +12,7 @@ const matriculaRoutes = require('./routes/matricularoutes');
 const aulasRoutes = require('./routes/aularoutes'); 
 const permissaoRoutes = require('./routes/permissaoroutes');
 const frequenciaRoutes = require('./routes/frequenciaroutes');
-
+const substituicaoRoutes = require('./routes/substituicaoRoutes');
 const app = express();
 
 app.use(cors());
@@ -29,6 +29,7 @@ app.use('/api/turma', turmaRoutes);
 app.use('/api/matricula', matriculaRoutes);
 app.use('/api/permissoes', permissaoRoutes);
 app.use('/api/frequencia', frequenciaRoutes);
+app.use('/api/substituicoes', substituicaoRoutes);
 
 const PORT = 5001;
 app.listen(PORT, () => console.log('Servidor rodando na porta ' + PORT));
