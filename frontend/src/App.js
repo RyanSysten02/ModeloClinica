@@ -19,10 +19,11 @@ import Layoutprofessor from './pages/pagprofessor';
 import { LayoutMatricula } from './pages/pagmatricula';
 import ConfiguracoesDeSeguranca from './pages/ConfiguracoesDeSeguranca';
 import AcessoNegado from './pages/acessoNegado';
-import TelaSubstituicaoProfessor from './componentes/Substituicoes/TelaSubstituicaoProfessor';
 import { LayoutSubstituicoes } from './pages/pagSubstituicoes';
 import Layoutnotifica from './pages/pagnotifica';
 import LayoutAtendimento from './pages/pagAtendimento';
+import LayoutAulas from './pages/Aulas';
+import { LayoutMontarTurma } from './pages/pagMontarTurma';
 
 function App() {
   return (
@@ -47,6 +48,15 @@ function App() {
             element={
               <ProtectedRoute allowedPermissions={['aluno']}>
                 <Layoutaluno />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path='/pagAulas'
+            element={
+              <ProtectedRoute allowedPermissions={['aluno']}>
+                <LayoutAulas/>
               </ProtectedRoute>
             }
           />
@@ -91,6 +101,15 @@ function App() {
             element={
               <ProtectedRoute allowedPermissions={['matricula']}>
                 <LayoutMatricula />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path='/pagMontarTurma'
+            element={
+              <ProtectedRoute allowedPermissions={['montarturma']}>
+                <LayoutMontarTurma />
               </ProtectedRoute>
             }
           />

@@ -1,24 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const AulaController = require('../controllers/aulaController');
+const aulaController = require('../controllers/aulaController');
 
 
-router.post('/nova', AulaController.createAula);
+router.get('/horarios', aulaController.getHorarios);
 
-router.post('/adiar/:id', AulaController.adiarAula);
 
-//router.get('/tipo', AulaController.getAulasTipo);
+router.get('/', aulaController.getAulasPorDia);
 
-router.get('/listar', AulaController.getAulas);
 
-router.get('/historico/:id', AulaController.getHistoricoByTurmaId);
-
-router.get('/:id', AulaController.getAulaById);
-
-router.put('/atualizar/:id', AulaController.updateAula);
-
-router.delete("/aula/:id", AulaController.deleteAula);
-
-router.put('/cancelar/:id', AulaController.cancelarAula);
+router.post('/salvar-dia', aulaController.salvarDia);
 
 module.exports = router;
