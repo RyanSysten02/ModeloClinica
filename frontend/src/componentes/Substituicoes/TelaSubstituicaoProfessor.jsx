@@ -134,7 +134,7 @@ export default function TelaSubstituicaoProfessor() {
     const [modalConfig, setModalConfig] = useState({ show: false, title: "", message: "", onConfirm: () => {}, confirmVariant: "primary" });
     const [historicoAberto, setHistoricoAberto] = useState(null);
     const [professoresPriorizados, setProfessoresPriorizados] = useState([]);
-
+    
     useEffect(() => {
         const carregarDadosIniciais = async () => {
             try {
@@ -207,26 +207,52 @@ export default function TelaSubstituicaoProfessor() {
         }
     };
 
-    const handleConfirmarSubstituicao = () => {
-        if (!novoProfessorId) {
-            toast.warn('Por favor, selecione um professor substituto.');
-            return;
-        }
+    const prosseguirParaConfirmacaoFinal = () => {
         const professorNovo = todosProfessoresDB.find(p => p.id === parseInt(novoProfessorId));
         if (!professorNovo) {
             toast.error("Professor selecionado não encontrado. Tente recarregar a página.");
             return;
         }
+        // Mostra o modal final ("Deseja substituir X por Y?")
         setModalConfig({
             show: true,
             title: "Confirmar Substituição",
             message: `Deseja substituir ${aulaParaSubstituir.professor_nome} por ${professorNovo.nome}?`,
             confirmVariant: 'primary',
             onConfirm: () => {
-                executarSubstituicao();
+                executarSubstituicao(); // Chama a função que salva no backend
                 handleCloseConfirmModal();
             }
         });
+    }
+
+   const handleConfirmarSubstituicao = () => {
+        // 1. Validação inicial (já existia)
+        if (!novoProfessorId) {
+            toast.warn('Por favor, selecione um professor substituto.');
+            return;
+        }
+
+        // 2. Verifica a data da aula
+        const dataAula = dayjs(aulaParaSubstituir.start);
+        const hoje = dayjs().startOf('day'); // Pega o início do dia atual
+
+        if (dataAula.isBefore(hoje)) {
+            // 3. Se a data for passada, mostra o aviso de substituição retroativa
+            setModalConfig({
+                show: true,
+                title: "Atenção: Substituição Retroativa",
+                message: "Esta aula já ocorreu. Deseja realmente registrar essa substituição retroativa?",
+                confirmVariant: 'warning', // Usamos warning para destacar
+                onConfirm: () => {
+                    // Se o usuário confirmar o aviso, chamamos a função para mostrar o modal final
+                    prosseguirParaConfirmacaoFinal(); 
+                }
+            });
+        } else {
+            // 4. Se a data for hoje ou futura, vai direto para o modal de confirmação final
+            prosseguirParaConfirmacaoFinal();
+        }
     };
 
     const handleVerHistorico = async (alocId) => {

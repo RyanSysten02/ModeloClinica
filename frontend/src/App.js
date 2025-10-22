@@ -73,7 +73,7 @@ function App() {
           <Route
             path='/notifica'
             element={
-              <ProtectedRoute allowedPermissions={['notifica']}>
+              <ProtectedRoute allowedPermissions={['registrofrequencia']}>
                 <Layoutnotifica />
               </ProtectedRoute>
             }
@@ -169,7 +169,7 @@ function App() {
           <Route path='/acesso-negado' element={<AcessoNegado />} />
         </Routes>
 
-        <ToastContainer position='bottom-right' autoClose={5000} />
+        <ToastContainer position='bottom-right' autoClose={5000} style={{ zIndex: 99999 }}/>
       </BrowserRouter>
     </div>
   );
