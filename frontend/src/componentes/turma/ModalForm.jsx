@@ -126,11 +126,10 @@ export const ModalForm = ({ show, onHide, onSave, selected }) => {
                 <option value='' defaultValue=''>
                   Escolha o status
                 </option>
-                <option value='Não iniciada'>Não iniciada</option>
                 <option value='Em andamento'>Em andamento</option>
-                <option value='Em andamento'>Aberta para Alocação</option>
-                <option value='Concluída'>Concluída</option>
                 <option value='Encerrada'>Encerrada</option>
+                <option value='Concluída'>Concluída</option>
+                <option value='Não iniciada'>Não iniciada</option>
               </Form.Select>
               <Form.Control.Feedback type='invalid'>
                 Campo obrigatório
