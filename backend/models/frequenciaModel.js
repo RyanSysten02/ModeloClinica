@@ -194,6 +194,7 @@ const getDetalhesFaltasParaEmail = async (frequenciaIds) => {
   const query = `
     SELECT
         f.id AS frequencia_id,
+        a.id AS aluno_id,       -- <<< GARANTA QUE ESTA LINHA EXISTE
         a.nome AS aluno_nome,
         r.nome AS responsavel_nome,
         r.email AS responsavel_email,
@@ -201,10 +202,10 @@ const getDetalhesFaltasParaEmail = async (frequenciaIds) => {
         f.data_aula
     FROM frequencia AS f
     INNER JOIN matricula AS m ON f.matricula_id = m.id
-    INNER JOIN aluno AS a ON m.aluno_id = a.id
-    INNER JOIN disciplina AS d ON f.disciplina_id = d.id
-    LEFT JOIN responsavel AS r ON m.responsavel_id = r.id
-    WHERE f.id IN (?)`; // O driver mysql2/promise lida com arrays aqui
+    INNER JOIN aluno AS a ON m.aluno_id = a.id          -- Join com Aluno
+    INNER JOIN disciplina AS d ON f.disciplina_id = d.id -- Join com Disciplina
+    LEFT JOIN responsavel AS r ON m.responsavel_id = r.id -- Join com Responsavel
+    WHERE f.id IN (?)`; // O driver lida com o array
 
   const [rows] = await pool.query(query, [frequenciaIds]);
   return rows;
