@@ -37,32 +37,34 @@ const getMatriculas = async () => {
   return rows;
 };
 
+// =================================================================
+// FUNÇÃO CORRIGIDA
+// =================================================================
 const getMatriculasQuery = async (query) => {
+  // 1. Define os parâmetros a partir da query da requisição
   const periodo = query?.periodo?.split(';');
   const turmaId = query?.turma_id;
 
+  // 2. Inicia a construção da query base com Knex
   let querySelect = knex
     .select(
       'matricula.*',
-      'aluno_turma.id as aluno_turma_id',
-      'aluno_turma.campo_unico as campo_unico',
-      'aluno_turma.ano_letivo as ano_letivo',
-      'aluno_turma.turma_id as turma_id',
-  const values = query?.periodo?.split(';');
-
-  const result = await knex
-    .select(
-      'matricula.*',
-      'aluno_turma.id as aluno_turma_id',
       'aluno.nome as aluno_nome',
-      'turma.nome as turma_nome'
+      'turma.nome as turma_nome',
+      'aluno_turma.id as aluno_turma_id',
+      'aluno_turma.campo_unico as campo_unico'
+      // Obs: Removi 'aluno_turma.ano_letivo' e 'aluno_turma.turma_id' do SELECT
+      // para evitar ambiguidade com 'matricula.ano_letivo' e 'matricula.turma_id'
     )
     .from('matricula')
     .innerJoin('aluno', 'matricula.aluno_id', 'aluno.id')
     .leftJoin('aluno_turma', 'matricula.id', 'aluno_turma.matricula_id')
-    .leftJoin('turma', 'aluno_turma.turma_id', 'turma.id')
+    // Faz o LEFT JOIN com 'turma' usando 'matricula.turma_id',
+    // o que é consistente com os filtros e as outras funções.
+    .leftJoin('turma', 'matricula.turma_id', 'turma.id')
     .whereNotIn('matricula.status', ['inativa', 'cancelada']);
 
+  // 3. Adiciona filtros condicionais à query
   if (periodo && periodo.length > 0) {
     querySelect = querySelect.whereIn('matricula.ano_letivo', periodo);
   }
@@ -75,13 +77,15 @@ const getMatriculasQuery = async (query) => {
     querySelect = querySelect.whereNull('matricula.turma_id');
   }
 
+  // 4. Executa a query construída
   const result = await querySelect;
-    .leftJoin('turma', 'matricula.turma_id', 'turma.id')
-    .leftJoin('aluno_turma', 'matricula.id', 'aluno_turma.matricula_id')
-    .whereIn('matricula.ano_letivo', values);
 
+  // 5. Retorna o resultado
   return result;
 };
+// =================================================================
+// FIM DA FUNÇÃO CORRIGIDA
+// =================================================================
 
 const getMatriculaById = async (id) => {
   const [rows] = await pool.query(
