@@ -9,8 +9,6 @@ class TurmaService {
     update: (id) => `${this.baseURL}/update/${id}`,
     delete: (id) => `${this.baseURL}/delete/${id}`,
     listStudents: (id) => `${this.baseURL}/list/students/${id}`,
-    findByStatusAndYear: () => `${this.baseURL}/by-status-year`,
-    transferStudents: () => `${this.baseURL}/transfer-students`,
   };
 
   static async findAll() {
@@ -40,22 +38,6 @@ class TurmaService {
   static async listStudents(id) {
     const { data } = await ApiConfig.get(this.endpoints.listStudents(id));
 
-    return data;
-  }
-
-  static async findByStatusAndYear(status, anoLetivo) {
-    const { data } = await ApiConfig.get(this.endpoints.findByStatusAndYear(), {
-      params: { status, anoLetivo },
-    });
-    return data;
-  }
-
-  static async transferStudents(sourceTurmaId, targetTurmaId, studentIds) {
-    const { data } = await ApiConfig.post(this.endpoints.transferStudents(), {
-      sourceTurmaId,
-      targetTurmaId,
-      studentIds,
-    });
     return data;
   }
 }

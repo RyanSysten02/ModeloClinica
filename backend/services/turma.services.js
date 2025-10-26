@@ -24,14 +24,6 @@ const listStudents = async (id) => {
   return await model.listStudents(id);
 };
 
-const findByStatusAndYear = async (status, anoLetivo) => {
-  return await model.findByStatusAndYear(status, anoLetivo);
-};
-
-const transferStudents = async (sourceTurmaId, targetTurmaId, studentIds) => {
-  return await model.transferStudents(sourceTurmaId, targetTurmaId, studentIds);
-};
-
 module.exports = {
   create,
   findAll,
@@ -39,6 +31,4 @@ module.exports = {
   update,
   deleteById,
   listStudents,
-  findByStatusAndYear,
-  transferStudents,
 };
