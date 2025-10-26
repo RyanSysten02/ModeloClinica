@@ -5,6 +5,7 @@ import {
   Container,
   InputGroup,
   Row,
+  Spinner,
   Table,
 } from 'react-bootstrap';
 import gregorian_pt_br from 'react-date-object/locales/gregorian_pt_br';
@@ -12,17 +13,28 @@ import DatePicker from 'react-multi-date-picker';
 import Select from 'react-select';
 import { toast } from 'react-toastify';
 import { ApiConfig } from '../../api/config';
-import { useUser } from '../../hooks';
+import { useLoading, useUser } from '../../hooks';
+import { ModalTransferencia } from './ModalTransferencia';
 
 const PERMISSIONS_MOCK = ['ADM', 'COORDENADOR'];
 
 export const MontarTurma = () => {
+  const [isLoadingButton, setIsLoadingButton] = useState(false);
   const [selectedRows, setSelectedRows] = useState();
   const [matriculas, setMatriculas] = useState();
   const [turmas, setTurmas] = useState();
   const [form, setForm] = useState({
     periodo: [],
+    turma_id: '',
   });
+  const [currentTurmaId, setCurrentTurmaId] = useState(null);
+
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [selectedStudentsForTransfer, setSelectedStudentsForTransfer] =
+    useState([]);
+  const [sourceTurmaForTransfer, setSourceTurmaForTransfer] = useState(null);
+
+  const { openLoading, closeLoading } = useLoading();
 
   const roleUser = useUser();
 
@@ -37,16 +49,26 @@ export const MontarTurma = () => {
     }
   }, [form]);
 
-  const getTurmas = async () => {
+  const getTurmas = useCallback(async () => {
     try {
+      openLoading();
       const result = await ApiConfig.get('/turma/list');
-      const filtered = result?.data;
+      const filtered = result?.data ?? [];
 
-      setTurmas(filtered);
+      const turmas = [...filtered, { id: 'null', nome: 'Sem Turma' }].sort(
+        (a, b) => a.nome.localeCompare(b.nome)
+      );
+
+      turmas.unshift(...[{ nome: 'Selecione a turma', id: '' }]);
+
+      setTurmas(turmas);
     } catch (error) {
+      console.error(error);
       toast.error('Erro ao buscar as turmas para listar');
+    } finally {
+      closeLoading();
     }
-  };
+  }, [openLoading, closeLoading]);
 
   const handleSelectedRow = useCallback(
     (item) => {
@@ -59,7 +81,8 @@ export const MontarTurma = () => {
   );
 
   const isSelected = useCallback(
-    (item) => selectedRows?.find((row) => row.aluno_id === item?.aluno_id),
+    (item) =>
+      selectedRows?.find((row) => row.campo_unico === item?.campo_unico),
     [selectedRows]
   );
 
@@ -73,9 +96,25 @@ export const MontarTurma = () => {
     [selectedRows]
   );
 
+  const resetAll = useCallback(() => {
+    setSelectedRows();
+    setMatriculas([]);
+    setCurrentTurmaId(null);
+    setSelectedStudentsForTransfer([]);
+    setSourceTurmaForTransfer(null);
+  }, []);
+
   const handleFiltered = useCallback(async () => {
-    await getData();
-  }, [getData]);
+    setIsLoadingButton(true);
+    resetAll();
+
+    const timer = setTimeout(async () => {
+      await getData();
+
+      setIsLoadingButton(false);
+      clearTimeout(timer);
+    }, 1000);
+  }, [resetAll, getData]);
 
   const updateMatricula = useCallback(async (payload) => {
     try {
@@ -85,7 +124,7 @@ export const MontarTurma = () => {
     }
   }, []);
 
-  const executeFuncionWithRole = useCallback(
+  const executeFunctionWithRole = useCallback(
     (functionCallback) => {
       if (!PERMISSIONS_MOCK.includes(roleUser?.role)) {
         toast.warning('Você não possui permissão para executar essa ação!');
@@ -152,11 +191,11 @@ export const MontarTurma = () => {
         create: () => onSave(payload),
       }[alunoTurmaId ? 'edit' : 'create'];
 
-      executeFuncionWithRole(async () => {
+      executeFunctionWithRole(async () => {
         await caseFunction();
       });
     },
-    [executeFuncionWithRole, onSave, onUpdate]
+    [executeFunctionWithRole, onSave, onUpdate]
   );
 
   const handleEdit = useCallback(
@@ -211,16 +250,54 @@ export const MontarTurma = () => {
     [turmas]
   );
 
+  const canTransferStudents = useCallback(() => {
+    if (!selectedRows?.length) return false;
+
+    return selectedRows.every((aluno) => {
+      const turmaDoAluno = turmas?.find((t) => t.id === aluno.turma_id);
+      return turmaDoAluno?.status === 'Concluída';
+    });
+  }, [selectedRows, turmas]);
+
+  const handleOpenTransferModal = useCallback(() => {
+    if (!canTransferStudents()) {
+      toast.warning(
+        'Apenas alunos de turmas com status "Concluída" podem ser transferidos'
+      );
+      return;
+    }
+
+    const firstStudent = selectedRows[0];
+    const sourceTurma = turmas?.find((t) => t.id === firstStudent.turma_id);
+
+    setSourceTurmaForTransfer(sourceTurma);
+    setSelectedStudentsForTransfer(selectedRows);
+    setShowTransferModal(true);
+  }, [canTransferStudents, turmas, selectedRows]);
+
+  const handleCloseTransferModal = useCallback(() => {
+    setShowTransferModal(false);
+    setSelectedStudentsForTransfer([]);
+    setSourceTurmaForTransfer(null);
+  }, []);
+
+  const handleTransferSuccess = useCallback(() => {
+    setSelectedRows([]);
+    setCurrentTurmaId(null);
+    getData();
+    getTurmas();
+  }, [getData, getTurmas]);
+
   useEffect(() => {
     getTurmas();
-  }, []);
+  }, [getTurmas]);
 
   return (
     <Container>
       <h2 className='mt-4'>Montar Turma</h2>
 
       <Row className='mt-4 mb-4 w-100'>
-        <Col className='col-6'>
+        <Col className='col-5'>
           <InputGroup className='h-100 w-100'>
             <DatePicker
               placeholder='Escolha os anos que deseja filtar'
@@ -241,17 +318,62 @@ export const MontarTurma = () => {
             />
           </InputGroup>
         </Col>
+
+        <Col className='col-5'>
+          <InputGroup className='h-100 w-100'>
+            <Select
+              className='w-100'
+              name='filtro_turma_id'
+              placeholder='Selecione a turma'
+              value={defaultValue(form?.turma_id)}
+              options={turmas?.map((t) => ({
+                value: t.id,
+                label: t.nome,
+              }))}
+              onChange={({ value }) =>
+                setForm((prev) => ({ ...prev, turma_id: value }))
+              }
+            />
+          </InputGroup>
+        </Col>
+
         <Col className='col-2'>
           <Button
             variant='primary'
             className='w-100'
             onClick={handleFiltered}
-            disabled={!form?.periodo?.length}
+            disabled={!form?.periodo?.length && form?.turma_id === ''}
           >
-            Buscar
+            {isLoadingButton ? 'Buscando' : 'Buscar'}&nbsp;
+            {isLoadingButton && (
+              <Spinner as='span' animation='border' size='sm' />
+            )}
           </Button>
         </Col>
       </Row>
+
+      {selectedRows?.length > 0 && canTransferStudents() && (
+        <Row className='mb-4'>
+          <Col>
+            <div className='d-flex justify-content-center'>
+              <Button
+                variant='success'
+                size='lg'
+                onClick={handleOpenTransferModal}
+                className='px-4'
+              >
+                📚 Transferir Alunos para o Próximo Ano
+              </Button>
+            </div>
+            <div className='text-center mt-2'>
+              <small className='text-muted'>
+                Transferir {selectedRows.length} aluno(s) da turma concluída
+                para o ano seguinte
+              </small>
+            </div>
+          </Col>
+        </Row>
+      )}
 
       {matriculas?.length > 0 && (
         <Row>
@@ -259,12 +381,26 @@ export const MontarTurma = () => {
             <Table striped bordered hover>
               <thead>
                 <tr>
+                  <th>
+                    <input
+                      type='checkbox'
+                      name='campo_unico'
+                      onClick={(event) => {
+                        const value = event.target.checked;
+
+                        if (!value) {
+                          setSelectedRows();
+                          return;
+                        }
+
+                        setSelectedRows(matriculas);
+                      }}
+                    />
+                  </th>
                   <th>ID</th>
                   <th>Nome</th>
                   <th>Turma</th>
                   <th>Ano Letivo</th>
-                  <th>Status</th>
-                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -273,20 +409,27 @@ export const MontarTurma = () => {
                     key={item?.aluno_id || index}
                     className='user-select-none'
                   >
+                    <td>
+                      <input
+                        type='checkbox'
+                        name='aluno_id'
+                        checked={isSelected(item)}
+                        onClick={() => {
+                          const isChecked = isSelected(item);
+
+                          if (isChecked) {
+                            handleRemoveRow(item);
+                            return;
+                          }
+
+                          handleSelectedRow(item);
+                        }}
+                      />
+                    </td>
                     <td>{item?.aluno_id}</td>
                     <td>{item?.aluno_nome}</td>
                     <td>{item?.turma_nome || 'Sem turma'}</td>
                     <td>{item?.ano_letivo}</td>
-                    <td>{item?.status}</td>
-                    <td className='d-flex gap-2 justify-content-center'>
-                      <Button
-                        variant='primary'
-                        onClick={() => handleSelectedRow(item)}
-                        disabled={isSelected(item)}
-                      >
-                        Selecionar
-                      </Button>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -302,11 +445,30 @@ export const MontarTurma = () => {
             <Table striped bordered hover>
               <thead>
                 <tr>
+                  <th>
+                    <Select
+                      name='turma_id_selecionados'
+                      onChange={({ value }) => {
+                        setCurrentTurmaId(value);
+
+                        selectedRows?.forEach((row) =>
+                          handleEdit(row?.id, value)
+                        );
+                      }}
+                      options={turmas
+                        ?.filter(
+                          (turma) => turma?.id !== '' && turma?.id !== 'null'
+                        )
+                        ?.map((t) => ({
+                          value: t.id,
+                          label: t.nome,
+                        }))}
+                      placeholder='Selecione a turma'
+                    />
+                  </th>
                   <th>ID</th>
                   <th>Nome</th>
-                  <th>Turma</th>
                   <th>Ano Letivo</th>
-                  <th>Status</th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -316,22 +478,12 @@ export const MontarTurma = () => {
                     key={item?.aluno_id || index}
                     className='user-select-none'
                   >
+                    <td>
+                      <span>{item?.turma_nome || ''}</span>
+                    </td>
                     <td>{item?.aluno_id}</td>
                     <td>{item?.aluno_nome}</td>
-                    <td>
-                      <Select
-                        name='turma_id'
-                        value={defaultValue(item?.turma_id)}
-                        onChange={({ value }) => handleEdit(item?.id, value)}
-                        options={turmas?.map((t) => ({
-                          value: t.id,
-                          label: t.nome,
-                        }))}
-                        placeholder='Selecione a turma'
-                      />
-                    </td>
                     <td>{item?.ano_letivo}</td>
-                    <td>{item?.status}</td>
                     <td className='d-flex gap-2 justify-content-center'>
                       <Button
                         variant='danger'
@@ -339,21 +491,40 @@ export const MontarTurma = () => {
                       >
                         Remover
                       </Button>
-                      <Button
-                        variant='primary'
-                        onClick={() => handleExecuteFunctions(item)}
-                        disabled={isDisabled(item?.turma_id)}
-                      >
-                        Salvar
-                      </Button>
                     </td>
                   </tr>
                 ))}
               </tbody>
+              <tfoot>
+                <tr>
+                  <td colSpan={2}>
+                    <Button
+                      variant='primary'
+                      className='w-100'
+                      onClick={() => {
+                        selectedRows?.forEach((row) =>
+                          handleExecuteFunctions(row)
+                        );
+                      }}
+                      disabled={isDisabled(currentTurmaId)}
+                    >
+                      Salvar
+                    </Button>
+                  </td>
+                </tr>
+              </tfoot>
             </Table>
           </Col>
         </Row>
       )}
+
+      <ModalTransferencia
+        show={showTransferModal}
+        onHide={handleCloseTransferModal}
+        sourceTurma={sourceTurmaForTransfer}
+        selectedStudents={selectedStudentsForTransfer}
+        onTransferSuccess={handleTransferSuccess}
+      />
     </Container>
   );
 };

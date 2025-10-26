@@ -38,6 +38,16 @@ const getMatriculas = async () => {
 };
 
 const getMatriculasQuery = async (query) => {
+  const periodo = query?.periodo?.split(';');
+  const turmaId = query?.turma_id;
+
+  let querySelect = knex
+    .select(
+      'matricula.*',
+      'aluno_turma.id as aluno_turma_id',
+      'aluno_turma.campo_unico as campo_unico',
+      'aluno_turma.ano_letivo as ano_letivo',
+      'aluno_turma.turma_id as turma_id',
   const values = query?.periodo?.split(';');
 
   const result = await knex
@@ -49,6 +59,23 @@ const getMatriculasQuery = async (query) => {
     )
     .from('matricula')
     .innerJoin('aluno', 'matricula.aluno_id', 'aluno.id')
+    .leftJoin('aluno_turma', 'matricula.id', 'aluno_turma.matricula_id')
+    .leftJoin('turma', 'aluno_turma.turma_id', 'turma.id')
+    .whereNotIn('matricula.status', ['inativa', 'cancelada']);
+
+  if (periodo && periodo.length > 0) {
+    querySelect = querySelect.whereIn('matricula.ano_letivo', periodo);
+  }
+
+  if (turmaId && turmaId !== 'null') {
+    querySelect = querySelect.where('matricula.turma_id', turmaId);
+  }
+
+  if (turmaId === 'null') {
+    querySelect = querySelect.whereNull('matricula.turma_id');
+  }
+
+  const result = await querySelect;
     .leftJoin('turma', 'matricula.turma_id', 'turma.id')
     .leftJoin('aluno_turma', 'matricula.id', 'aluno_turma.matricula_id')
     .whereIn('matricula.ano_letivo', values);

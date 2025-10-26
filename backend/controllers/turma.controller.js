@@ -89,6 +89,90 @@ const listStudents = async (req, res) => {
   }
 };
 
+const findByStatusAndYear = async (req, res) => {
+  try {
+    const { status, anoLetivo } = req.query;
+
+    if (!status || !anoLetivo) {
+      return res.status(400).json({
+        message: 'Status e ano letivo são obrigatórios',
+      });
+    }
+
+    const result = await service.findByStatusAndYear(status, anoLetivo);
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+const transferStudents = async (req, res) => {
+  try {
+    const { sourceTurmaId, targetTurmaId, studentIds } = req.body;
+
+    if (
+      !sourceTurmaId ||
+      !targetTurmaId ||
+      !studentIds ||
+      !Array.isArray(studentIds)
+    ) {
+      return res.status(400).json({
+        message:
+          'sourceTurmaId, targetTurmaId e studentIds (array) são obrigatórios',
+      });
+    }
+
+    if (studentIds.length === 0) {
+      return res.status(400).json({
+        message: 'É necessário selecionar pelo menos um aluno',
+      });
+    }
+
+    if (sourceTurmaId === targetTurmaId) {
+      return res.status(400).json({
+        message: 'A turma de origem e destino não podem ser a mesma',
+      });
+    }
+
+    const sourceTurma = await service.findById(sourceTurmaId);
+    if (!sourceTurma || sourceTurma.status !== 'Concluída') {
+      return res.status(400).json({
+        message: 'A turma de origem deve estar com status "Concluída"',
+      });
+    }
+
+    const targetTurma = await service.findById(targetTurmaId);
+    if (!targetTurma || targetTurma.status !== 'Não iniciada') {
+      return res.status(400).json({
+        message: 'A turma de destino deve estar com status "Não iniciada"',
+      });
+    }
+
+    const sourceYear = parseInt(sourceTurma.ano_letivo);
+    const targetYear = parseInt(targetTurma.ano_letivo);
+
+    if (targetYear !== sourceYear + 1) {
+      return res.status(400).json({
+        message: 'A turma de destino deve ser do ano letivo seguinte',
+      });
+    }
+
+    const result = await service.transferStudents(
+      sourceTurmaId,
+      targetTurmaId,
+      studentIds
+    );
+
+    return res.status(200).json({
+      message: `Transferência realizada com sucesso! ${result.transferredStudents} alunos transferidos.`,
+      data: result,
+    });
+  } catch (error) {
+    console.error('Erro na transferência de alunos:', error);
+    return res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   create,
   findAll,
@@ -96,4 +180,6 @@ module.exports = {
   update,
   deleteById,
   listStudents,
+  findByStatusAndYear,
+  transferStudents,
 };
