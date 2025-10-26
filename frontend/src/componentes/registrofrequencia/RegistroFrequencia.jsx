@@ -11,12 +11,8 @@ export default function TelaRegistroFrequencia() {
   const [turmas, setTurmas] = useState([]);
   const [professores, setProfessores] = useState([]);
   const [disciplinas, setDisciplinas] = useState([]);
-  
-  // --- REMOVIDO: O estado de 'periodos' não é mais necessário.
-
-  // --- ALTERADO: Estado do filtro simplificado, sem 'periodo'.
   const [filtro, setFiltro] = useState({ turma: "", professor: "", disciplina: "" });
-  
+
   const [alunos, setAlunos] = useState([]);
   const [presencas, setPresencas] = useState({});
   const [filtrosConfirmados, setFiltrosConfirmados] = useState(false);
@@ -50,7 +46,6 @@ export default function TelaRegistroFrequencia() {
     fetchDadosIniciais();
   }, []);
 
-  // --- ALTERADO: Validação da busca sem o 'periodo'.
   const buscarAlunos = async () => {
     if (!filtro.turma || !filtro.disciplina || !filtro.professor) {
       toast.warning("Selecione Turma, Disciplina e Professor antes de continuar.");
@@ -84,7 +79,6 @@ export default function TelaRegistroFrequencia() {
     setPresencas((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // --- ALTERADO: Payload de confirmação sem o 'periodo'.
   const confirmarFrequencia = async () => {
     const token = localStorage.getItem("token");
     const payload = alunos.map((aluno) => ({
@@ -105,7 +99,6 @@ export default function TelaRegistroFrequencia() {
         setMenuInicial(true);
         setFiltrosConfirmados(false);
         setAlunos([]);
-        // --- ALTERADO: Reset do filtro sem o 'periodo'.
         setFiltro({ turma: "", professor: "", disciplina: "" });
         setDataAula(new Date().toISOString().split("T")[0]);
       } else {
@@ -147,65 +140,84 @@ export default function TelaRegistroFrequencia() {
       <AnimatePresence mode="wait">
         {menuInicial ? (
           <motion.div key="menu-inicial" variants={fadeVariant} initial="hidden" animate="visible" exit="exit">
-             <Row className="g-4 justify-content-center">
-               <Col md={5}>
-                 <Card className="shadow p-4 text-center h-100" onClick={() => navigate("/pagConsultarFrequencias")} style={{ cursor: "pointer" }}>
-                   <Card.Body>
-                     <i className="bi bi-journal-text display-4 text-primary mb-3"></i>
-                     <h5 className="fw-bold">Consultar Lançamentos Anteriores</h5>
-                     <p className="text-muted">Visualize e edite registros já lançados.</p>
-                   </Card.Body>
-                 </Card>
-               </Col>
-               <Col md={5}>
-                 <Card className="shadow p-4 text-center h-100" onClick={() => setMenuInicial(false)} style={{ cursor: "pointer" }}>
-                   <Card.Body>
-                     <i className="bi bi-plus-circle display-4 text-success mb-3"></i>
-                     <h5 className="fw-bold">Lançar Nova Frequência</h5>
-                     <p className="text-muted">Registre a frequência de uma nova aula.</p>
-                   </Card.Body>
-                 </Card>
-               </Col>
-             </Row>
+            
+            {/* --- MODIFICADO: Layout da Row para 3 colunas --- */}
+            <Row className="g-4 justify-content-center">
+              
+              {/* --- MODIFICADO: Coluna alterada para md={4} --- */}
+              <Col md={4}>
+                <Card className="shadow p-4 text-center h-100" onClick={() => navigate("/pagConsultarFrequencias")} style={{ cursor: "pointer" }}>
+                  <Card.Body>
+                    <i className="bi bi-journal-text display-4 text-primary mb-3"></i>
+                    <h5 className="fw-bold">Consultar Lançamentos</h5>
+                    <p className="text-muted">Visualize e edite registros já lançados.</p>
+                  </Card.Body>
+                </Card>
+              </Col>
+
+              {/* --- MODIFICADO: Coluna alterada para md={4} --- */}
+              <Col md={4}>
+                <Card className="shadow p-4 text-center h-100" onClick={() => setMenuInicial(false)} style={{ cursor: "pointer" }}>
+                  <Card.Body>
+                    <i className="bi bi-plus-circle display-4 text-success mb-3"></i>
+                    <h5 className="fw-bold">Lançar Nova Frequência</h5>
+                    <p className="text-muted">Registre a frequência de uma nova aula.</p>
+                  </Card.Body>
+                </Card>
+              </Col>
+
+              {/* --- NOVO CARD: Link para a Tela de Notificação --- */}
+              <Col md={4}>
+                {/* Ajuste a rota '/pagNotificarFaltas' se necessário */}
+                <Card className="shadow p-4 text-center h-100" onClick={() => navigate("/notifica")} style={{ cursor: "pointer" }}>
+                  <Card.Body>
+                    <i className="bi bi-bell-fill display-4 text-warning mb-3"></i>
+                    <h5 className="fw-bold">Notificar Ausências</h5>
+                    <p className="text-muted">Envie avisos de faltas para os responsáveis.</p>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+            
           </motion.div>
         ) : !filtrosConfirmados ? (
           <motion.div key="filtros" variants={fadeVariant} initial="hidden" animate="visible" exit="exit">
-             <Card className="shadow p-4">
-               <Card.Body>
-                 {/* --- ALTERADO: Layout dos filtros sem o Período --- */}
-                 <Row className="mb-3 g-3 align-items-end">
-                    <Col md={4}><Form.Label>Turma</Form.Label>
-                      <Form.Select value={filtro.turma} onChange={(e) => setFiltro({ ...filtro, turma: e.target.value })} >
-                        <option value="">Selecione a Turma</option>
-                        {turmas.map((t) => (<option key={t.id} value={t.id}>{t.nome}</option>))}
-                      </Form.Select>
-                    </Col>
-                    <Col md={4}><Form.Label>Disciplina</Form.Label>
-                      <Form.Select value={filtro.disciplina} onChange={(e) => setFiltro({ ...filtro, disciplina: e.target.value })} >
-                        <option value="">Selecione a Disciplina</option>
-                        {disciplinas.map((d) => (<option key={d.id} value={d.id}>{d.nome}</option>))}
-                      </Form.Select>
-                    </Col>
-                    <Col md={4}><Form.Label>Professor</Form.Label>
-                      <Form.Select value={filtro.professor} onChange={(e) => setFiltro({ ...filtro, professor: e.target.value })} >
-                        <option value="">Selecione o Professor</option>
-                        {professores.map((p) => (<option key={p.id} value={p.id}>{p.nome}</option>))}
-                      </Form.Select>
-                    </Col>
-                    <Col md={4}><Form.Label>Data da Aula</Form.Label>
-                      <Form.Control type="date" value={dataAula} onChange={(e) => setDataAula(e.target.value)} />
-                    </Col>
-                 </Row>
-                 <div className="d-flex justify-content-center mt-4">
-                   <Button variant="primary" onClick={buscarAlunos}><i className="bi bi-search me-2"></i>Buscar Alunos</Button>
-                 </div>
-               </Card.Body>
-             </Card>
-             <div className="d-flex justify-content-center mt-4">
-               <Button variant="outline-secondary" onClick={() => setMenuInicial(true)}>
-                 <i className="bi bi-arrow-left me-2"></i>Voltar ao Menu Inicial
-               </Button>
-             </div>
+            <Card className="shadow p-4">
+              <Card.Body>
+                {/* --- MODIFICADO: Layout dos filtros para 4 colunas --- */}
+                <Row className="mb-3 g-3 align-items-end">
+                  <Col md={3}><Form.Label>Turma</Form.Label>
+                    <Form.Select value={filtro.turma} onChange={(e) => setFiltro({ ...filtro, turma: e.target.value })} >
+                      <option value="">Selecione a Turma</option>
+                      {turmas.map((t) => (<option key={t.id} value={t.id}>{t.nome}</option>))}
+                    </Form.Select>
+                  </Col>
+                  <Col md={3}><Form.Label>Disciplina</Form.Label>
+                    <Form.Select value={filtro.disciplina} onChange={(e) => setFiltro({ ...filtro, disciplina: e.target.value })} >
+                      <option value="">Selecione a Disciplina</option>
+                      {disciplinas.map((d) => (<option key={d.id} value={d.id}>{d.nome}</option>))}
+                    </Form.Select>
+                  </Col>
+                  <Col md={3}><Form.Label>Professor</Form.Label>
+                    <Form.Select value={filtro.professor} onChange={(e) => setFiltro({ ...filtro, professor: e.target.value })} >
+                      <option value="">Selecione o Professor</option>
+                      {professores.map((p) => (<option key={p.id} value={p.id}>{p.nome}</option>))}
+                    </Form.Select>
+                  </Col>
+                  <Col md={3}><Form.Label>Data da Aula</Form.Label>
+                    <Form.Control type="date" value={dataAula} onChange={(e) => setDataAula(e.target.value)} />
+                  </Col>
+                </Row>
+                <div className="d-flex justify-content-center mt-4">
+                  <Button variant="primary" onClick={buscarAlunos}><i className="bi bi-search me-2"></i>Buscar Alunos</Button>
+                </div>
+              </Card.Body>
+            </Card>
+            <div className="d-flex justify-content-center mt-4">
+              <Button variant="outline-secondary" onClick={() => setMenuInicial(true)}>
+                <i className="bi bi-arrow-left me-2"></i>Voltar ao Menu Inicial
+              </Button>
+            </div>
           </motion.div>
         ) : (
           <motion.div key="lista-alunos" variants={fadeVariant} initial="hidden" animate="visible" exit="exit">

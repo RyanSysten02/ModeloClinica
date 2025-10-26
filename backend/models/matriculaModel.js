@@ -48,6 +48,12 @@ const getMatriculasQuery = async (query) => {
       'aluno_turma.campo_unico as campo_unico',
       'aluno_turma.ano_letivo as ano_letivo',
       'aluno_turma.turma_id as turma_id',
+  const values = query?.periodo?.split(';');
+
+  const result = await knex
+    .select(
+      'matricula.*',
+      'aluno_turma.id as aluno_turma_id',
       'aluno.nome as aluno_nome',
       'turma.nome as turma_nome'
     )
@@ -70,6 +76,9 @@ const getMatriculasQuery = async (query) => {
   }
 
   const result = await querySelect;
+    .leftJoin('turma', 'matricula.turma_id', 'turma.id')
+    .leftJoin('aluno_turma', 'matricula.id', 'aluno_turma.matricula_id')
+    .whereIn('matricula.ano_letivo', values);
 
   return result;
 };

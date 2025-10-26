@@ -133,6 +133,85 @@ const deleteBulkFrequencia = async (turma_id, professor_id, disciplina_id, data_
     return result;
 };
 
+const getAlunosAusentes = async (turmaId, dataAula, disciplinaId) => {
+    
+    // Inicia a query base
+    let query = `
+        SELECT
+            f.id AS frequencia_id,
+            a.id AS aluno_id,
+            a.nome AS aluno_nome,
+            r.nome AS responsavel_nome,
+            r.celular AS responsavel_celular,
+            r.email AS responsavel_email,
+            f.notificacao_status,
+            d.nome AS disciplina_nome -- <<< CORREÇÃO: Adicionado nome da disciplina
+        FROM frequencia AS f
+        INNER JOIN matricula AS m ON f.matricula_id = m.id
+        INNER JOIN aluno AS a ON m.aluno_id = a.id
+        INNER JOIN disciplina AS d ON f.disciplina_id = d.id -- <<< CORREÇÃO: Adicionado JOIN
+        LEFT JOIN responsavel AS r ON m.responsavel_id = r.id
+        WHERE
+            f.presente = 0
+            AND m.turma_id = ?
+            AND f.data_aula = ?
+    `;
+
+    const params = [turmaId, dataAula];
+
+    // --- CORREÇÃO: Adiciona o filtro de disciplina dinamicamente ---
+    if (disciplinaId) {
+        query += ` AND f.disciplina_id = ?`;
+        params.push(disciplinaId);
+    }
+
+    // Adiciona o final da query
+    query += `
+        GROUP BY f.id, d.nome -- <<< CORREÇÃO: Adicionado d.nome ao GROUP BY
+        ORDER BY
+            a.nome ASC;
+    `;
+
+    // Executa a query
+    const [rows] = await pool.query(query, params);
+    return rows;
+};
+
+const updateStatusNotificacao = async (frequenciaIds, status) => {
+    // A interrogação (?) em "IN (?)" será substituída por uma lista de IDs (ex: 1, 2, 3)
+    const [result] = await pool.query(
+        'UPDATE frequencia SET notificacao_status = ? WHERE id IN (?)',
+        [status, frequenciaIds]
+    );
+    return result;
+};
+
+
+const getDetalhesFaltasParaEmail = async (frequenciaIds) => {
+  if (!frequenciaIds || frequenciaIds.length === 0) {
+    return [];
+  }
+  const query = `
+    SELECT
+        f.id AS frequencia_id,
+        a.id AS aluno_id,       -- <<< GARANTA QUE ESTA LINHA EXISTE
+        a.nome AS aluno_nome,
+        r.nome AS responsavel_nome,
+        r.email AS responsavel_email,
+        d.nome AS disciplina_nome,
+        f.data_aula
+    FROM frequencia AS f
+    INNER JOIN matricula AS m ON f.matricula_id = m.id
+    INNER JOIN aluno AS a ON m.aluno_id = a.id          -- Join com Aluno
+    INNER JOIN disciplina AS d ON f.disciplina_id = d.id -- Join com Disciplina
+    LEFT JOIN responsavel AS r ON m.responsavel_id = r.id -- Join com Responsavel
+    WHERE f.id IN (?)`; // O driver lida com o array
+
+  const [rows] = await pool.query(query, [frequenciaIds]);
+  return rows;
+};
+
+
 module.exports = {
   createFrequencia,
   getFrequencias,
@@ -144,4 +223,7 @@ module.exports = {
   getFrequenciaDetalhadaPorAula,
   upsertFrequencia,
   deleteBulkFrequencia,
+  getAlunosAusentes,
+  updateStatusNotificacao,
+  getDetalhesFaltasParaEmail,
 };

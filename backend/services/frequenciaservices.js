@@ -82,6 +82,13 @@ const getFrequenciaDetalhadaPorAula = async (turmaId, professorId, disciplinaId,
     return await frequenciaModel.getFrequenciaDetalhadaPorAula(turmaId, professorId, disciplinaId, dataAula); // Período removido
 };
 
+const getAlunosAusentes = async (turmaId, dataAula, disciplinaId) => { // <-- Agora recebe 3
+     return await frequenciaModel.getAlunosAusentes(turmaId, dataAula, disciplinaId); // <-- Agora passa 3
+};
+const updateStatusNotificacao = async (frequenciaIds, status) => {
+    return await frequenciaModel.updateStatusNotificacao(frequenciaIds, status);
+};
+
 module.exports = {
   createFrequencia,
   createBulkFrequencia,
@@ -94,4 +101,8 @@ module.exports = {
   getFrequenciasAgrupadas,
   getFrequenciaDetalhadaPorAula,
   deleteBulkFrequencia,
+  getAlunosAusentes,
+  updateStatusNotificacao, 
+
+
 };

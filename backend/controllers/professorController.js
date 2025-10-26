@@ -166,10 +166,21 @@ const deleteProfessor = async (req, res) => {
   }
 };
 
+const getAllProfessores = async (req, res) => {
+  try {
+    const professores = await professorservices.getAll();
+    res.status(200).json(professores);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 module.exports = {
   createProfessor,
   getProfessor,
   getProfessorById,
   updateProfessor,
   deleteProfessor,
+  getAllProfessores,
 };

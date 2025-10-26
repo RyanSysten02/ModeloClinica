@@ -26,4 +26,9 @@ router.get('/detalhada', frequenciaController.getFrequenciaDetalhadaPorAula);
 
 router.put('/atualizar', frequenciaController.updateBulkFrequencia);
 
+router.get('/ausentes', frequenciaController.getAlunosAusentes);
+
+router.put('/notificacao', frequenciaController.updateStatusNotificacao);
+
+
 module.exports = router;

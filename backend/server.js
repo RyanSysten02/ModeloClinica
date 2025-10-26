@@ -12,7 +12,10 @@ const matriculaRoutes = require('./routes/matricularoutes');
 const aulasRoutes = require('./routes/aularoutes');
 const permissaoRoutes = require('./routes/permissaoroutes');
 const frequenciaRoutes = require('./routes/frequenciaroutes');
+const substituicaoRoutes = require('./routes/substituicaoRoutes');
 const alunoTurmaRoutes = require('./routes/alunoTurma.routes');
+const configuracaoEmailRoutes = require('./routes/configuracaoEmailRoutes');
+const notificacaoRoutes = require('./routes/notificacaoRoutes');
 
 const app = express();
 
@@ -29,7 +32,10 @@ app.use('/api/turma', turmaRoutes);
 app.use('/api/matricula', matriculaRoutes);
 app.use('/api/permissoes', permissaoRoutes);
 app.use('/api/frequencia', frequenciaRoutes);
+app.use('/api/substituicoes', substituicaoRoutes);
 app.use('/api/aluno-turma', alunoTurmaRoutes);
+app.use('/api/configuracao-email', configuracaoEmailRoutes);
+app.use('/api/notificacao', notificacaoRoutes);
 
 const PORT = 5001;
 app.listen(PORT, () => console.log('Servidor rodando na porta ' + PORT));
