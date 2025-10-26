@@ -186,6 +186,31 @@ const updateStatusNotificacao = async (frequenciaIds, status) => {
     return result;
 };
 
+
+const getDetalhesFaltasParaEmail = async (frequenciaIds) => {
+  if (!frequenciaIds || frequenciaIds.length === 0) {
+    return [];
+  }
+  const query = `
+    SELECT
+        f.id AS frequencia_id,
+        a.nome AS aluno_nome,
+        r.nome AS responsavel_nome,
+        r.email AS responsavel_email,
+        d.nome AS disciplina_nome,
+        f.data_aula
+    FROM frequencia AS f
+    INNER JOIN matricula AS m ON f.matricula_id = m.id
+    INNER JOIN aluno AS a ON m.aluno_id = a.id
+    INNER JOIN disciplina AS d ON f.disciplina_id = d.id
+    LEFT JOIN responsavel AS r ON m.responsavel_id = r.id
+    WHERE f.id IN (?)`; // O driver mysql2/promise lida com arrays aqui
+
+  const [rows] = await pool.query(query, [frequenciaIds]);
+  return rows;
+};
+
+
 module.exports = {
   createFrequencia,
   getFrequencias,
@@ -199,4 +224,5 @@ module.exports = {
   deleteBulkFrequencia,
   getAlunosAusentes,
   updateStatusNotificacao,
+  getDetalhesFaltasParaEmail,
 };

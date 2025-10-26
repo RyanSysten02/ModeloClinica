@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Container, Row, Col, Card, Button, Table, Form, Spinner, Collapse, Dropdown, Badge,
   Modal,
-  Alert
+  Alert, 
+  OverlayTrigger, 
+  Tooltip,
+  ListGroup,
 } from "react-bootstrap";
 // Import AnimatePresence e motion
 import { motion, AnimatePresence } from "framer-motion"; 
@@ -104,6 +107,16 @@ export default function TelaNotificacaoFaltas() {
     exit: { opacity: 0, x: -20 }
   };
 
+   // --- NOVOS ESTADOS PARA O MODAL DE RESULTADOS DE EMAIL ---
+const [showEmailStatusModal, setShowEmailStatusModal] = useState(false);
+  const [emailStatusList, setEmailStatusList] = useState([]); 
+  const [isSendingEmail, setIsSendingEmail] = useState(false); 
+
+  // --- NOVOS ESTADOS PARA O COUNTDOWN ---
+  const [countdown, setCountdown] = useState(5);
+  const [showCancelCountdown, setShowCancelCountdown] = useState(false);
+  const cancelTimerRef = useRef(null); // Para guardar a referência do timer
+ 
   // --- Efeito: Carregar dados iniciais ---
   useEffect(() => {
     const fetchDadosIniciais = async () => {
@@ -365,20 +378,151 @@ export default function TelaNotificacaoFaltas() {
     toast.info("Fila de notificação cancelada.");
   };
 
-  // --- Ação: Notificar por E-mail ---
-  const handleNotificarEmail = async () => { 
+ // --- Ação: Notificar por E-mail (MODIFICADA COM COUNTDOWN) ---
+  const handleNotificarEmail = async () => {
     const paraNotificar = getSelecionados();
     if (paraNotificar.length === 0) {
-      toast.info("Selecione ao menos uma falta para notificar.");
+      toast.info("Selecione ao menos uma falta para notificar por e-mail.");
       return;
     }
-    toast.info("Enviando e-mails...");
-    await alterarStatusEmMassa("notificado_email");
+
+    // 1. Preparar o estado inicial para o modal
+    const initialStatusList = paraNotificar.map(aluno => ({
+      frequencia_id: aluno.frequencia_id,
+      aluno_nome: aluno.aluno_nome,
+      responsavel_nome: aluno.responsavel_nome, // <-- Adicionado Responsável
+      responsavel_email: aluno.responsavel_email,
+      status: 'pending', // Status inicial antes do countdown
+      erro: null
+    }));
+    setEmailStatusList(initialStatusList);
+    setShowEmailStatusModal(true); // Abre o modal
+    setCountdown(5); // Inicia contador
+    setShowCancelCountdown(true); // Mostra seção de cancelamento
+    setIsSendingEmail(false); // Garante que não está no modo "enviando" ainda
+
+    // 2. Limpa qualquer timer anterior (segurança)
+    if (cancelTimerRef.current) {
+      clearInterval(cancelTimerRef.current);
+    }
+
+    // 3. Inicia o contador regressivo
+    cancelTimerRef.current = setInterval(() => {
+      setCountdown(prevCountdown => {
+        if (prevCountdown <= 1) {
+          clearInterval(cancelTimerRef.current); // Para o timer
+          cancelTimerRef.current = null;
+          setShowCancelCountdown(false); // Esconde botão cancelar
+          startEmailSendingProcess(paraNotificar); // Inicia o envio REAL
+          return 0;
+        }
+        return prevCountdown - 1;
+      });
+    }, 1000); // Executa a cada 1 segundo
+  };
+
+  // --- NOVA FUNÇÃO: Inicia o envio real após o countdown ---
+  const startEmailSendingProcess = async (paraNotificar) => {
+    setIsSendingEmail(true); // Agora sim, está enviando
+    toast.info(`Iniciando envio de ${paraNotificar.length} e-mail(s)...`);
+    
+    // Marca todos como 'sending' visualmente no modal
+    setEmailStatusList(prevList => prevList.map(item => ({ ...item, status: 'sending' }))); 
+
+    try {
+      const token = localStorage.getItem("token");
+      const frequencia_ids = paraNotificar.map(a => a.frequencia_id);
+
+      const res = await fetch('http://localhost:5001/api/notificacao/email-em-massa', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ frequencia_ids })
+      });
+
+      const data = await res.json();
+
+      // Processa a resposta e atualiza o modal (lógica movida para cá)
+      if (res.ok) {
+        toast.success(data.message || "Processamento de e-mails concluído!");
+
+        const idsSucesso = data.sucesso?.map(item => item.id) || [];
+        const falhasMap = new Map(data.falha?.map(item => [item.id, item.erro]));
+
+        setEmailStatusList(prevList => prevList.map(item => {
+          if (idsSucesso.includes(item.frequencia_id)) {
+            return { ...item, status: 'success' };
+          } else {
+            const erro = falhasMap.get(item.frequencia_id);
+            // Se não estava na lista de sucesso nem falha (improvável), marca como falha
+            return { ...item, status: 'failure', erro: erro || 'Status não retornado pelo servidor' };
+          }
+        }));
+
+        // Atualiza a tabela principal
+        if (idsSucesso.length > 0) {
+            setAlunosAusentes(prev =>
+                prev.map(a =>
+                    idsSucesso.includes(a.frequencia_id)
+                    ? { ...a, notificacao_status: 'notificado_email' }
+                    : a
+                )
+            );
+            setSelecionados(prev => {
+                const newSelection = {...prev};
+                idsSucesso.forEach(id => delete newSelection[id]);
+                return newSelection;
+            });
+        }
+
+      } else {
+        toast.error(data.message || "Falha grave ao processar envio de e-mails.");
+        setEmailStatusList(prevList => prevList.map(item => ({
+             ...item, status: 'failure', erro: data.message || "Erro na comunicação com o servidor"
+        })));
+      }
+
+    } catch (error) {
+      toast.error("Erro de conexão ao enviar e-mails.");
+       setEmailStatusList(prevList => prevList.map(item => ({
+             ...item, status: 'failure', erro: "Erro de conexão"
+        })));
+    } finally {
+      setIsSendingEmail(false); // Envio terminou (ou falhou)
+    }
+  };
+
+  // --- NOVA FUNÇÃO: Cancela o envio durante o countdown ---
+  const handleCancelSending = () => {
+    if (cancelTimerRef.current) {
+      clearInterval(cancelTimerRef.current);
+      cancelTimerRef.current = null; // <-- Adicione esta linha
+    }
+    setShowEmailStatusModal(false); // Fecha o modal
+    // Reseta os estados
+    setEmailStatusList([]);
+    setCountdown(5);
+    setShowCancelCountdown(false);
+    setIsSendingEmail(false);
+    // cancelTimerRef.current = null; // Já limpamos acima
+    toast.warn("Envio de e-mails cancelado pelo usuário.");
   };
 
   
   const numSelecionados = Object.values(selecionados).filter(Boolean).length;
 
+  // --- Efeito para limpar o timer ---
+  useEffect(() => {
+    // Esta função será executada quando o componente for desmontado
+    return () => {
+      if (cancelTimerRef.current) {
+        clearInterval(cancelTimerRef.current);
+        cancelTimerRef.current = null; // Limpa a referência também
+      }
+    };
+  }, []); // O array vazio [] garante que isso só rode na montagem e desmontagem
 
   // --- Renderização ---
   return (
@@ -657,6 +801,97 @@ export default function TelaNotificacaoFaltas() {
             <Spinner animation="border" size="sm" /> Carregando fila...
           </Modal.Body>
         )}
+      </Modal>
+      {/* --- MODAL DE STATUS DE ENVIO (COM COUNTDOWN E CANCELAMENTO) --- */}
+      <Modal 
+        show={showEmailStatusModal} 
+        // Impede fechar enquanto conta ou envia
+        onHide={() => !isSendingEmail && !showCancelCountdown && setShowEmailStatusModal(false)} 
+        backdrop={(isSendingEmail || showCancelCountdown) ? 'static' : true} 
+        keyboard={!(isSendingEmail || showCancelCountdown)}
+        centered 
+        size="lg" 
+      >
+        <Modal.Header closeButton={!(isSendingEmail || showCancelCountdown)}>
+          <Modal.Title>
+            {showCancelCountdown
+              ? `Iniciando Envio em ${countdown}s...`
+              : isSendingEmail
+              ? "Enviando E-mails..." 
+              : "Resultado do Envio de E-mails"}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+
+          {/* --- SEÇÃO DE CANCELAMENTO (Visível durante countdown) --- */}
+          {showCancelCountdown && (
+            <div className="text-center mb-3 p-3 bg-light border rounded">
+              <p className="mb-2">O envio começará automaticamente em:</p>
+              <h3 className="display-6 mb-3">{countdown}</h3>
+              <Button variant="danger" onClick={handleCancelSending}>
+                <i className="bi bi-x-circle me-2"></i>
+                Cancelar Envio
+              </Button>
+            </div>
+          )}
+
+          {/* --- LISTA DE STATUS --- */}
+          {emailStatusList.length === 0 && !showCancelCountdown ? ( // Adicionado !showCancelCountdown
+            <div className="text-center"><Spinner animation="border" /> Preparando envio...</div>
+          ) : (
+            <ListGroup variant="flush">
+              {emailStatusList.map((item) => (
+                <ListGroup.Item key={item.frequencia_id} className="d-flex justify-content-between align-items-center flex-wrap">
+                  {/* Informações do Aluno/Responsável */}
+                  <div className="me-3 mb-2 mb-md-0" style={{ flexBasis: '60%'}}> 
+                    <span className="fw-bold">{item.aluno_nome}</span>
+                    <br />
+                    <small className="text-muted">
+                      Resp.: {item.responsavel_nome || 'N/I'} | Email: {item.responsavel_email || 'Não Cadastrado'}
+                    </small>
+                  </div>
+                  {/* Status do Envio */}
+                  <div style={{ flexBasis: '30%', textAlign: 'right' }}>
+                    {item.status === 'pending' && !showCancelCountdown && ( // Mostra 'Pendente' se o countdown acabou e ainda não enviou
+                       <Badge bg="secondary" pill>Pendente</Badge>
+                    )}
+                     {item.status === 'sending' && ( // Status visual enquanto chama API
+                      <>
+                        <Spinner animation="border" size="sm" variant="primary" className="me-2" />
+                        <small>Enviando...</small>
+                      </>
+                    )}
+                    {item.status === 'success' && (
+                      <Badge bg="success" pill>Enviado</Badge>
+                    )}
+                    {item.status === 'failure' && (
+                      <OverlayTrigger
+                        placement="left"
+                        overlay={
+                          <Tooltip id={`tooltip-error-${item.frequencia_id}`}>
+                            <strong>Motivo:</strong> {item.erro}
+                          </Tooltip>
+                        }
+                      >
+                        <Badge bg="danger" pill style={{ cursor: 'help' }}>
+                          Falha <i className="bi bi-exclamation-circle ms-1"></i>
+                        </Badge>
+                      </OverlayTrigger>
+                    )}
+                  </div>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          {/* Mostra botão Fechar apenas quando tudo termina */}
+          {!isSendingEmail && !showCancelCountdown && (
+             <Button variant="secondary" onClick={() => setShowEmailStatusModal(false)}>
+              Fechar
+            </Button>
+          )}
+        </Modal.Footer>
       </Modal>
 
     </Container>
