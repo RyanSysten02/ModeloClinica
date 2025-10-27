@@ -37,15 +37,10 @@ const getMatriculas = async () => {
   return rows;
 };
 
-// =================================================================
-// FUNÇÃO CORRIGIDA
-// =================================================================
 const getMatriculasQuery = async (query) => {
-  // 1. Define os parâmetros a partir da query da requisição
   const periodo = query?.periodo?.split(';');
   const turmaId = query?.turma_id;
 
-  // 2. Inicia a construção da query base com Knex
   let querySelect = knex
     .select(
       'matricula.*',
@@ -53,39 +48,30 @@ const getMatriculasQuery = async (query) => {
       'turma.nome as turma_nome',
       'aluno_turma.id as aluno_turma_id',
       'aluno_turma.campo_unico as campo_unico'
-      // Obs: Removi 'aluno_turma.ano_letivo' e 'aluno_turma.turma_id' do SELECT
-      // para evitar ambiguidade com 'matricula.ano_letivo' e 'matricula.turma_id'
     )
     .from('matricula')
     .innerJoin('aluno', 'matricula.aluno_id', 'aluno.id')
-    .leftJoin('aluno_turma', 'matricula.id', 'aluno_turma.matricula_id')
-    // Faz o LEFT JOIN com 'turma' usando 'matricula.turma_id',
-    // o que é consistente com os filtros e as outras funções.
-    .leftJoin('turma', 'matricula.turma_id', 'turma.id')
+    .leftJoin('aluno_turma', function() {
+      this.on('matricula.id', '=', 'aluno_turma.matricula_id')
+          .andOn('matricula.turma_id', '=', 'aluno_turma.turma_id'); // Esta é a lógica chave
+    })
+    .leftJoin('turma', 'matricula.turma_id', 'turma.id') 
     .whereNotIn('matricula.status', ['inativa', 'cancelada']);
 
-  // 3. Adiciona filtros condicionais à query
   if (periodo && periodo.length > 0) {
     querySelect = querySelect.whereIn('matricula.ano_letivo', periodo);
   }
-
   if (turmaId && turmaId !== 'null') {
     querySelect = querySelect.where('matricula.turma_id', turmaId);
   }
-
   if (turmaId === 'null') {
     querySelect = querySelect.whereNull('matricula.turma_id');
   }
 
-  // 4. Executa a query construída
+  querySelect = querySelect.orderBy('aluno.nome', 'asc');
   const result = await querySelect;
-
-  // 5. Retorna o resultado
   return result;
 };
-// =================================================================
-// FIM DA FUNÇÃO CORRIGIDA
-// =================================================================
 
 const getMatriculaById = async (id) => {
   const [rows] = await pool.query(
