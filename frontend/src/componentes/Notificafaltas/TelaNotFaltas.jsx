@@ -96,6 +96,7 @@ export default function TelaNotificacaoFaltas() {
   const [countdown, setCountdown] = useState(5);
   const [showCancelCountdown, setShowCancelCountdown] = useState(false);
   const cancelTimerRef = useRef(null);
+  const emailJobRef = useRef(null);
 
   // --- Estados Modal Detalhes ---
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -377,34 +378,32 @@ export default function TelaNotificacaoFaltas() {
     toast.info("Fila WhatsApp cancelada.");
   };
 
+// --- Ação: Notificar por E-mail ---
+  const handleNotificarEmail = async () => {
+    const gruposParaNotificar = getGruposSelecionados();
+    if (gruposParaNotificar.length === 0) { toast.info("Selecione aluno/dia."); return; }
+    const idsParaEnviar = getFrequenciaIdsSelecionados(gruposParaNotificar);
 
-  // --- Ação: Notificar por E-mail ---
-  const handleNotificarEmail = async () => {
-    const gruposParaNotificar = getGruposSelecionados();
-    if (gruposParaNotificar.length === 0) { toast.info("Selecione aluno/dia."); return; }
-    const idsParaEnviar = getFrequenciaIdsSelecionados(gruposParaNotificar);
+    // Guarda os dados para o useEffect usar
+    emailJobRef.current = { ids: idsParaEnviar, grupos: gruposParaNotificar };
 
-    const initialStatusList = gruposParaNotificar.map(grupo => ({
-        chaveUnica: grupo.chaveUnica, frequencia_ids: grupo.faltas.map(f => f.frequencia_id),
-        aluno_nome: grupo.aluno_nome, responsavel_nome: grupo.responsavel_nome,
-        responsavel_email: grupo.responsavel_email, status: 'pending', erro: null
-    }));
-    setEmailStatusList(initialStatusList);
-    setShowEmailStatusModal(true); setCountdown(5); setShowCancelCountdown(true); setIsSendingEmail(false);
+    const initialStatusList = gruposParaNotificar.map(grupo => ({
+        chaveUnica: grupo.chaveUnica, frequencia_ids: grupo.faltas.map(f => f.frequencia_id),
+        aluno_nome: grupo.aluno_nome, responsavel_nome: grupo.responsavel_nome,
+        responsavel_email: grupo.responsavel_email, status: 'pending', erro: null
+    }));
+    setEmailStatusList(initialStatusList);
+    setShowEmailStatusModal(true); setIsSendingEmail(false);
+    setShowCancelCountdown(true);
+    setCountdown(5); // Inicia a contagem
 
-    if (cancelTimerRef.current) { clearInterval(cancelTimerRef.current); }
-    cancelTimerRef.current = setInterval(() => {
-      setCountdown(prevCountdown => {
-        if (prevCountdown <= 1) {
-          clearInterval(cancelTimerRef.current); cancelTimerRef.current = null;
-          setShowCancelCountdown(false);
-          startEmailSendingProcess(idsParaEnviar, gruposParaNotificar);
-          return 0;
-        }
-        return prevCountdown - 1;
-      });
-    }, 1000);
-  };
+    // Limpa timer antigo e inicia um novo
+    if (cancelTimerRef.current) { clearInterval(cancelTimerRef.current); }
+    cancelTimerRef.current = setInterval(() => {
+        // O timer AGORA SÓ FAZ ISSO:
+        setCountdown(prevCountdown => prevCountdown - 1);
+    }, 1000);
+  };
 
 // --- Função: Inicia envio de Email (CORRIGIDA - Toast Único) ---
  // --- Função: Inicia envio de Email (CORRIGIDA - Lógica de Contagem) ---
@@ -494,13 +493,16 @@ export default function TelaNotificacaoFaltas() {
   };
 
 
-  // --- Função: Cancelar Envio de Email ---
-   const handleCancelSending = () => {
-    if (cancelTimerRef.current) { clearInterval(cancelTimerRef.current); cancelTimerRef.current = null; }
-    setShowEmailStatusModal(false); setEmailStatusList([]); setCountdown(5);
-    setShowCancelCountdown(false); setIsSendingEmail(false);
-    toast.warn("Envio cancelado.");
-  };
+// --- Função: Cancelar Envio de Email ---
+   const handleCancelSending = () => {
+    if (cancelTimerRef.current) { clearInterval(cancelTimerRef.current); cancelTimerRef.current = null; }
+    
+    emailJobRef.current = null; // <--- ADICIONE ISSO (Limpa o job pendente)
+
+    setShowEmailStatusModal(false); setEmailStatusList([]); setCountdown(5);
+    setShowCancelCountdown(false); setIsSendingEmail(false);
+    toast.warn("Envio cancelado.");
+  };
 
   // --- Ação: Abrir Modal de Detalhes ---
   const handleShowDetails = (grupo) => {
@@ -511,6 +513,38 @@ export default function TelaNotificacaoFaltas() {
   // Efeito para limpar o timer
   useEffect(() => { return () => { if (cancelTimerRef.current) { clearInterval(cancelTimerRef.current); cancelTimerRef.current = null; } }; }, []);
 
+  // ... adicione junto com seus outros useEffects
+
+  // --- Efeito: Observa o countdown para disparar o envio de email ---
+  useEffect(() => {
+    // Se o countdown não chegou a 0, ou se o modal não está visível, não faz nada
+    if (countdown > 0 || !showCancelCountdown) {
+      return;
+    }
+
+    // --- CHEGOU A 0 ---
+    
+    // 1. Para o timer
+    if (cancelTimerRef.current) {
+      clearInterval(cancelTimerRef.current);
+      cancelTimerRef.current = null;
+    }
+
+    // 2. Esconde a UI de countdown
+    setShowCancelCountdown(false);
+
+    // 3. Verifica se há um "trabalho" (job) esperando no Ref
+    if (emailJobRef.current) {
+      const { ids, grupos } = emailJobRef.current;
+      
+      // 4. Inicia o envio (UMA ÚNICA VEZ)
+      startEmailSendingProcess(ids, grupos);
+      
+      // 5. Limpa o ref para não reenviar
+      emailJobRef.current = null; 
+    }
+
+  }, [countdown, showCancelCountdown]); // Dependências do Effect
   // Contagem de grupos selecionados
   const numSelecionados = Object.values(selecionados).filter(Boolean).length;
 
