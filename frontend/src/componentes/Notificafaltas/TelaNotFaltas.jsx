@@ -12,8 +12,12 @@ import { toast } from "react-toastify";
 import TurmaService from "../../services/Turma";
 import DisciplinaService from "../../services/Disciplina";
 
+// --- NOVO --- Importe o seu Modal de Confirmação
+// (Ajuste o caminho se necessário)
+import ModalConfirmacao from "../ModaisUteis/ModalConfirmação"; // Assumindo que está em components
+
 // --- Função auxiliar: salvarStatusNotificacao (MODIFICADA) ---
-// Agora espera um array de frequencia_ids diretamente
+// (Sem alterações nesta função)
 const salvarStatusNotificacao = async (frequencia_ids, novoStatus) => {
   if (!Array.isArray(frequencia_ids) || frequencia_ids.length === 0) {
     console.warn("salvarStatusNotificacao chamado sem IDs válidos.");
@@ -31,23 +35,30 @@ const salvarStatusNotificacao = async (frequencia_ids, novoStatus) => {
     });
     if (!response.ok) {
        const errorData = await response.json().catch(() => ({})); // Tenta pegar erro do corpo
-      toast.error(`Erro ${response.status} ao salvar status: ${errorData.message || response.statusText}`);
+       toast.error(`Erro ${response.status} ao salvar status: ${errorData.message || response.statusText}`);
     }
   } catch (error) {
     toast.error(`Falha de conexão ao salvar status: ${error.message}`);
   }
 };
 
-// --- Função auxiliar: getStatusVariant ---
+// --- MODIFICADO --- Função auxiliar: getStatusVariant (mais inteligente)
 const getStatusVariant = (status) => {
-  if (!status) return 'warning'; // Default
-  if (status.includes('whatsapp')) return 'success';
-  if (status.includes('email')) return 'info';
+  if (!status || status === 'pendente') return 'warning'; // Pendente
+  
+  const hasWhats = status.includes('whatsapp');
+  const hasEmail = status.includes('email');
+  
+  if (hasWhats && hasEmail) return 'primary'; // Misto (Wpp/Email)
+  if (hasWhats) return 'success'; // Só WhatsApp
+  if (hasEmail) return 'info'; // Só Email
   if (status === 'ignorado') return 'secondary';
-  return 'warning'; // pendente ou misto
+  
+  return 'secondary'; // Outro
 };
 
 // --- Componente: CustomToggle (Ícone de Engrenagem) ---
+// (Sem alterações)
 const CustomToggle = React.forwardRef(({ children, onClick, disabled }, ref) => (
   <Button variant="outline-secondary" href="" ref={ref} disabled={disabled}
     onClick={(e) => { e.preventDefault(); onClick(e); }}
@@ -61,10 +72,8 @@ export default function TelaNotificacaoFaltas() {
   const [turmas, setTurmas] = useState([]);
   const [disciplinas, setDisciplinas] = useState([]);
   const [alunosAusentes, setAlunosAusentes] = useState([]); // Dados brutos da API
-
   const [filtroTurma, setFiltroTurma] = useState("");
   const [filtroDisciplina, setFiltroDisciplina] = useState("");
-  // Correção fuso horário na inicialização
   const getLocalDate = () => {
     const hoje = new Date();
     const ano = hoje.getFullYear();
@@ -102,6 +111,11 @@ export default function TelaNotificacaoFaltas() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [detailsData, setDetailsData] = useState(null); // Guarda o GRUPO para detalhes
 
+  // --- NOVO: Estados para o Modal de Confirmação ---
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // Armazena a função a ser executada
+  const [confirmMessage, setConfirmMessage] = useState("");
+
 
   // --- Configuração das Animações ---
   const animationVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 }};
@@ -109,6 +123,7 @@ export default function TelaNotificacaoFaltas() {
 
   // --- Efeito: Carregar dados iniciais ---
   useEffect(() => {
+    // (Sem alterações)
     const fetchDadosIniciais = async () => {
       try {
         const turmasData = await TurmaService.findAll();
@@ -123,6 +138,7 @@ export default function TelaNotificacaoFaltas() {
 
   // --- Memo para Agrupar as Faltas ---
   const faltasAgrupadas = useMemo(() => {
+    // (Sem alterações)
     const grupos = {};
     alunosAusentes.forEach(falta => {
       const key = `${falta.aluno_id}-${falta.data_aula}`;
@@ -151,6 +167,7 @@ export default function TelaNotificacaoFaltas() {
 
   // --- Memo: Filtra os grupos pelo nome do aluno ---
   const faltasAgrupadasFiltradas = useMemo(() => {
+    // (Sem alterações)
     if (!filtroNome) return faltasAgrupadas;
     return faltasAgrupadas.filter(grupo =>
       grupo.aluno_nome.toLowerCase().includes(filtroNome.toLowerCase())
@@ -159,7 +176,8 @@ export default function TelaNotificacaoFaltas() {
 
 
   // --- Efeito: Lógica do "Selecionar Todos" ---
-   useEffect(() => {
+    useEffect(() => {
+    // (Sem alterações)
     if (faltasAgrupadasFiltradas.length > 0) {
       const allVisibleSelected = faltasAgrupadasFiltradas.every(
         grupo => selecionados[grupo.chaveUnica]
@@ -173,6 +191,7 @@ export default function TelaNotificacaoFaltas() {
 
   // --- Helper: Copiar texto ---
   const copyToClipboard = async (text, successMessage) => {
+    // (Sem alterações)
     if (!text) { toast.warn("Nada para copiar."); return; }
     try { await navigator.clipboard.writeText(text); toast.success(successMessage || "Copiado!"); }
     catch (err) { toast.error("Falha ao copiar."); }
@@ -181,6 +200,7 @@ export default function TelaNotificacaoFaltas() {
 
   // --- Helper: Gerar a Mensagem WhatsApp (MODIFICADO - NOVO TEXTO) ---
   const gerarMensagemWhatsApp = (grupo) => {
+    // (Sem alterações)
     if (!grupo) return { url: null, text: "" };
     const telefone = grupo.responsavel_celular?.replace(/\D/g, '');
     const disciplinasFaltantes = [...new Set(grupo.faltas
@@ -197,6 +217,7 @@ export default function TelaNotificacaoFaltas() {
 
   // --- Ação: "Selecionar Todos" Checkbox ---
   const handleSelectAll = (e) => {
+    // (Sem alterações)
     const isChecked = e.target.checked;
     setSelectAll(isChecked);
     setSelecionados(prev => {
@@ -209,6 +230,7 @@ export default function TelaNotificacaoFaltas() {
 
   // --- Ação: Checkbox individual ---
   const toggleSelecionado = (chaveUnica) => {
+    // (Sem alterações)
     setSelecionados(prev => {
       const newSelection = { ...prev };
       if (newSelection[chaveUnica]) { delete newSelection[chaveUnica]; }
@@ -219,7 +241,8 @@ export default function TelaNotificacaoFaltas() {
   };
 
   // --- Ação: Buscar Ausentes ---
-   const handleBuscarAusentes = async () => {
+    const handleBuscarAusentes = async () => {
+    // (Sem alterações)
     if (!filtroTurma || !filtroDataInicio || !filtroDataFim) { toast.warn("Selecione Turma e Período."); return; }
     setLoading(true); setBuscaRealizada(false); setAlunosAusentes([]); setFiltroNome("");
     try {
@@ -263,8 +286,22 @@ export default function TelaNotificacaoFaltas() {
       return grupos.reduce((acc, grupo) => { grupo.faltas.forEach(falta => acc.push(falta.frequencia_id)); return acc; }, []);
   };
 
+  // --- NOVO: Helper para checar notificações existentes ---
+  const checkForExistingNotifications = (grupos) => {
+    for (const grupo of grupos) {
+      for (const falta of grupo.faltas) {
+        // Se o status existir E não for 'pendente', consideramos como já notificado
+        if (falta.notificacao_status && falta.notificacao_status !== 'pendente') {
+          return true; // Encontrou um
+        }
+      }
+    }
+    return false; // Nenhum encontrado
+  };
+
   // --- Ação: Alterar Status Manualmente ---
   const alterarStatusEmMassa = async (novoStatus) => {
+    // (Sem alterações)
     const gruposSelecionados = getGruposSelecionados();
     if (gruposSelecionados.length === 0) { toast.info("Selecione aluno/dia."); return; }
     const idsParaAtualizar = getFrequenciaIdsSelecionados(gruposSelecionados);
@@ -277,20 +314,39 @@ export default function TelaNotificacaoFaltas() {
     }
   };
 
+  // --- MODIFICADO: Lógica do WhatsApp dividida ---
 
-  // --- Ação: Iniciar Fila WhatsApp ---
-  const handleNotificarWhatsApp = () => {
-    const gruposParaNotificar = getGruposSelecionados();
-    if (gruposParaNotificar.length === 0) { toast.info("Selecione aluno/dia."); return; }
-    setFilaNotificacaoWhats(gruposParaNotificar); // Usa fila específica
+  // --- Etapa 2: Ação real de iniciar a fila do WhatsApp ---
+  const proceedWithWhatsApp = (gruposParaNotificar) => {
+    setFilaNotificacaoWhats(gruposParaNotificar);
     setIndiceFilaWhats(0);
     setShowFilaModalWhats(true); // Abre modal específico
     const { text } = gerarMensagemWhatsApp(gruposParaNotificar[0]);
     setMensagemAtualWhats(text); // Usa estado específico
   };
 
+  // --- Etapa 1: Interceptador do clique no botão WhatsApp ---
+  const handleNotificarWhatsApp = () => {
+    const gruposParaNotificar = getGruposSelecionados();
+    if (gruposParaNotificar.length === 0) { toast.info("Selecione aluno/dia."); return; }
+
+    // --- NOVO: Verificação ---
+    const hasNotified = checkForExistingNotifications(gruposParaNotificar);
+
+    if (hasNotified) {
+      setConfirmMessage("Alguns dos alunos/dias selecionados já foram notificados. Deseja reenviar a notificação via WhatsApp?");
+      // Armazena a ação que deve ser executada se o usuário confirmar
+      setConfirmAction(() => () => proceedWithWhatsApp(gruposParaNotificar)); 
+      setShowConfirmModal(true);
+    } else {
+      // Se ninguém foi notificado, prossegue direto
+      proceedWithWhatsApp(gruposParaNotificar);
+    }
+  };
+
   // --- Ação: Enviar Notificação Atual (Modal WhatsApp) ---
   const handleEnviarNotificacaoAtualWhats = () => {
+    // (Sem alterações)
     const grupoAtual = filaNotificacaoWhats[indiceFilaWhats];
     if (grupoAtual) {
       const { url } = gerarMensagemWhatsApp(grupoAtual);
@@ -299,7 +355,7 @@ export default function TelaNotificacaoFaltas() {
     }
   };
 
-  // --- Ação: Próximo da Fila (Modal WhatsApp) ---
+// --- Ação: Próximo da Fila (Modal WhatsApp) ---
   const handleProximoDaFilaWhats = async () => {
     if (isSavingWhats) return;
     setIsSavingWhats(true);
@@ -307,10 +363,29 @@ export default function TelaNotificacaoFaltas() {
     if (!grupoProcessado) { setIsSavingWhats(false); return; }
 
     const idsParaAtualizar = grupoProcessado.faltas.map(f => f.frequencia_id);
+    
     if(idsParaAtualizar.length > 0) {
-      await salvarStatusNotificacao(idsParaAtualizar, 'notificado_whatsapp');
+      
+      // --- MODIFICADO: Chama ANEXAR em vez de salvar/sobrescrever ---
+      await appendarStatusNotificacao(idsParaAtualizar, 'notificado_whatsapp');
+
+      // --- MODIFICADO: Lógica de atualização do estado local ---
       setAlunosAusentes(prevAusentes =>
-        prevAusentes.map(falta => idsParaAtualizar.includes(falta.frequencia_id) ? { ...falta, notificacao_status: 'notificado_whatsapp' } : falta )
+        prevAusentes.map(falta => {
+          if (!idsParaAtualizar.includes(falta.frequencia_id)) return falta;
+
+          // Replica a lógica do backend no estado local
+          const statusAntigo = falta.notificacao_status;
+          let statusNovo;
+          if (statusAntigo === 'pendente') {
+            statusNovo = 'notificado_whatsapp';
+          } else if (!statusAntigo.includes('notificado_whatsapp')) {
+            statusNovo = `${statusAntigo},notificado_whatsapp`;
+          } else {
+            statusNovo = statusAntigo; // Já estava lá
+          }
+          return { ...falta, notificacao_status: statusNovo };
+        })
       );
     }
     toggleSelecionado(grupoProcessado.chaveUnica); // Desmarca na tabela principal
@@ -331,6 +406,7 @@ export default function TelaNotificacaoFaltas() {
 
   // --- Ação: Voltar ao Anterior (Modal WhatsApp) ---
   const handleVoltarAoAnteriorWhats = () => {
+    // (Sem alterações)
     if (isSavingWhats) return;
     const novoIndice = indiceFilaWhats - 1;
     if (novoIndice >= 0) {
@@ -343,70 +419,76 @@ export default function TelaNotificacaoFaltas() {
 
   // --- NOVA AÇÃO: Ignorar o Aluno/Dia Atual (Modal WhatsApp) ---
   const handleIgnorarAtualWhats = () => {
-    // Não faz nada se já estiver salvando o próximo
+    // (Sem alterações)
     if (isSavingWhats) return;
-
-    // Apenas avança o índice
     const novoIndice = indiceFilaWhats + 1;
-
-    // Verifica se ainda há alunos na fila
     if (novoIndice < filaNotificacaoWhats.length) {
-      // Prepara o próximo grupo
       const proximoGrupo = filaNotificacaoWhats[novoIndice];
       const { text } = gerarMensagemWhatsApp(proximoGrupo);
-      setMensagemAtualWhats(text); // Atualiza a mensagem a ser exibida
-      setIndiceFilaWhats(novoIndice); // Avança o índice
+      setMensagemAtualWhats(text); 
+      setIndiceFilaWhats(novoIndice); 
     } else {
-      // A fila acabou após ignorar o último
-      setShowFilaModalWhats(false); // Fecha o modal
+      setShowFilaModalWhats(false); 
       toast.info("Fila WhatsApp concluída (último item ignorado).");
-      // Reseta estados da fila se necessário (já feito no handleCancelarFilaWhats que pode ser chamado implicitamente pelo onHide)
-      // Se onHide não for chamado automaticamente, adicione os resets aqui:
-      // setFilaNotificacaoWhats([]);
-      // setIndiceFilaWhats(0);
-      // setMensagemAtualWhats("");
-      // setIsSavingWhats(false);
     }
-     // NÃO chama salvarStatusNotificacao
-     // NÃO chama toggleSelecionado
   };
 
   // --- Ação: Cancelar Fila (Modal WhatsApp) ---
-   const handleCancelarFilaWhats = () => {
+    const handleCancelarFilaWhats = () => {
+    // (Sem alterações)
     setShowFilaModalWhats(false); setFilaNotificacaoWhats([]); setIndiceFilaWhats(0);
     setMensagemAtualWhats(""); setIsSavingWhats(false);
     toast.info("Fila WhatsApp cancelada.");
   };
 
-// --- Ação: Notificar por E-mail ---
-  const handleNotificarEmail = async () => {
-    const gruposParaNotificar = getGruposSelecionados();
-    if (gruposParaNotificar.length === 0) { toast.info("Selecione aluno/dia."); return; }
-    const idsParaEnviar = getFrequenciaIdsSelecionados(gruposParaNotificar);
+// --- MODIFICADO: Lógica do E-mail dividida ---
 
-    // Guarda os dados para o useEffect usar
-    emailJobRef.current = { ids: idsParaEnviar, grupos: gruposParaNotificar };
+// --- Etapa 2: Ação real de iniciar o envio de E-mail ---
+const proceedWithEmail = (gruposParaNotificar) => {
+  const idsParaEnviar = getFrequenciaIdsSelecionados(gruposParaNotificar);
 
-    const initialStatusList = gruposParaNotificar.map(grupo => ({
-        chaveUnica: grupo.chaveUnica, frequencia_ids: grupo.faltas.map(f => f.frequencia_id),
-        aluno_nome: grupo.aluno_nome, responsavel_nome: grupo.responsavel_nome,
-        responsavel_email: grupo.responsavel_email, status: 'pending', erro: null
-    }));
-    setEmailStatusList(initialStatusList);
-    setShowEmailStatusModal(true); setIsSendingEmail(false);
-    setShowCancelCountdown(true);
-    setCountdown(5); // Inicia a contagem
+  // Guarda os dados para o useEffect usar
+  emailJobRef.current = { ids: idsParaEnviar, grupos: gruposParaNotificar };
 
-    // Limpa timer antigo e inicia um novo
-    if (cancelTimerRef.current) { clearInterval(cancelTimerRef.current); }
-    cancelTimerRef.current = setInterval(() => {
-        // O timer AGORA SÓ FAZ ISSO:
-        setCountdown(prevCountdown => prevCountdown - 1);
-    }, 1000);
-  };
+  const initialStatusList = gruposParaNotificar.map(grupo => ({
+    chaveUnica: grupo.chaveUnica, frequencia_ids: grupo.faltas.map(f => f.frequencia_id),
+    aluno_nome: grupo.aluno_nome, responsavel_nome: grupo.responsavel_nome,
+    responsavel_email: grupo.responsavel_email, status: 'pending', erro: null
+  }));
+  setEmailStatusList(initialStatusList);
+  setShowEmailStatusModal(true); setIsSendingEmail(false);
+  setShowCancelCountdown(true);
+  setCountdown(5); // Inicia a contagem
+
+  // Limpa timer antigo e inicia um novo
+  if (cancelTimerRef.current) { clearInterval(cancelTimerRef.current); }
+  cancelTimerRef.current = setInterval(() => {
+    setCountdown(prevCountdown => prevCountdown - 1);
+  }, 1000);
+};
+
+// --- Etapa 1: Interceptador do clique no botão E-mail ---
+  const handleNotificarEmail = async () => {
+    const gruposParaNotificar = getGruposSelecionados();
+    if (gruposParaNotificar.length === 0) { toast.info("Selecione aluno/dia."); return; }
+
+    // --- NOVO: Verificação ---
+    const hasNotified = checkForExistingNotifications(gruposParaNotificar);
+
+    if (hasNotified) {
+       setConfirmMessage("Alguns dos alunos/dias selecionados já foram notificados. Deseja reenviar a notificação por e-mail?");
+      // Armazena a ação que deve ser executada se o usuário confirmar
+      setConfirmAction(() => () => proceedWithEmail(gruposParaNotificar));
+      setShowConfirmModal(true);
+    } else {
+      // Se ninguém foi notificado, prossegue direto
+      proceedWithEmail(gruposParaNotificar);
+    }
+  };
 
 // --- Função: Inicia envio de Email (CORRIGIDA - Toast Único) ---
- // --- Função: Inicia envio de Email (CORRIGIDA - Lógica de Contagem) ---
+  // (Sem alterações nesta função)
+// --- Função: Inicia envio de Email (CORRIGIDA - Lógica de Contagem) ---
   const startEmailSendingProcess = async (frequencia_ids, gruposOriginais) => {
     setIsSendingEmail(true);
     toast.info(`Processando envio para ${gruposOriginais.length} responsável(eis)...`);
@@ -446,11 +528,9 @@ export default function TelaNotificacaoFaltas() {
             toastMessage += ` ${numEmailsFalha} falha(s).`;
             toast.warn(toastMessage); // Usa warn se houve falhas
         } else if (numEmailsSucesso > 0) { // Mostra sucesso apenas se houve algum
-             toast.success(toastMessage); // Usa success se tudo OK
+            toast.success(toastMessage); // Usa success se tudo OK
         } else {
-             // Caso nenhum email tenha sido enviado com sucesso e nenhuma falha reportada explicitamente
-             // Isso pode acontecer se, por exemplo, todos os responsáveis não tinham email
-             toast.info("Nenhum e-mail enviado (verifique cadastros).");
+            toast.info("Nenhum e-mail enviado (verifique cadastros).");
         }
         // --- FIM DA LÓGICA DE CONTAGEM CORRIGIDA ---
 
@@ -463,16 +543,33 @@ export default function TelaNotificacaoFaltas() {
             } else {
                 let erroGrupo = 'Falha no envio.';
                 for(const id of itemGrupo.frequencia_ids) { if(falhasMap.has(id)) { erroGrupo = falhasMap.get(id); break; } }
-                 const algumStatusRetornado = itemGrupo.frequencia_ids.some(id => idsSucesso.includes(id) || falhasMap.has(id));
-                 if (!algumStatusRetornado && !todosSucesso) { erroGrupo = 'Status não retornado.'; }
+                const algumStatusRetornado = itemGrupo.frequencia_ids.some(id => idsSucesso.includes(id) || falhasMap.has(id));
+                if (!algumStatusRetornado && !todosSucesso) { erroGrupo = 'Status não retornado.'; }
                 return { ...itemGrupo, status: 'failure', erro: erroGrupo };
             }
         }));
 
-        // Atualiza a tabela principal (lógica inalterada, usa idsSucesso individuais)
+        // Atualiza a tabela principal
         if (idsSucesso.length > 0) {
-            setAlunosAusentes(prev => prev.map(a => idsSucesso.includes(a.frequencia_id) ? { ...a, notificacao_status: 'notificado_email' } : a ));
-            setSelecionados(prev => {
+            
+          // --- MODIFICADO: Lógica de atualização do estado local ---
+          setAlunosAusentes(prev => prev.map(a => {
+            if (!idsSucesso.includes(a.frequencia_id)) return a;
+
+            // Replica a lógica do backend no estado local
+            const statusAntigo = a.notificacao_status;
+            let statusNovo;
+            if (statusAntigo === 'pendente') {
+              statusNovo = 'notificado_email';
+            } else if (!statusAntigo.includes('notificado_email')) {
+              statusNovo = `${statusAntigo},notificado_email`;
+            } else {
+              statusNovo = statusAntigo; // Já estava lá
+            }
+            return { ...a, notificacao_status: statusNovo };
+          }));
+          
+          setSelecionados(prev => {
                 const newSelection = {...prev};
                 gruposOriginais.forEach(grupo => {
                     if (grupo.faltas.every(f => idsSucesso.includes(f.frequencia_id))) { delete newSelection[grupo.chaveUnica]; }
@@ -486,7 +583,7 @@ export default function TelaNotificacaoFaltas() {
       }
     } catch (error) { // Erro de conexão
       toast.error("Erro de conexão.");
-       setEmailStatusList(prevList => prevList.map(item => ({ ...item, status: 'failure', erro: "Erro conexão" })));
+        setEmailStatusList(prevList => prevList.map(item => ({ ...item, status: 'failure', erro: "Erro conexão" })));
     } finally {
       setIsSendingEmail(false);
     }
@@ -494,18 +591,20 @@ export default function TelaNotificacaoFaltas() {
 
 
 // --- Função: Cancelar Envio de Email ---
-   const handleCancelSending = () => {
-    if (cancelTimerRef.current) { clearInterval(cancelTimerRef.current); cancelTimerRef.current = null; }
+    const handleCancelSending = () => {
+    // (Sem alterações)
+    if (cancelTimerRef.current) { clearInterval(cancelTimerRef.current); cancelTimerRef.current = null; }
     
     emailJobRef.current = null; // <--- ADICIONE ISSO (Limpa o job pendente)
 
-    setShowEmailStatusModal(false); setEmailStatusList([]); setCountdown(5);
-    setShowCancelCountdown(false); setIsSendingEmail(false);
-    toast.warn("Envio cancelado.");
-  };
+    setShowEmailStatusModal(false); setEmailStatusList([]); setCountdown(5);
+    setShowCancelCountdown(false); setIsSendingEmail(false);
+    toast.warn("Envio cancelado.");
+  };
 
   // --- Ação: Abrir Modal de Detalhes ---
   const handleShowDetails = (grupo) => {
+    // (Sem alterações)
     setDetailsData(grupo); // Guarda o grupo clicado
     setShowDetailsModal(true); // Abre o modal
   };
@@ -513,40 +612,55 @@ export default function TelaNotificacaoFaltas() {
   // Efeito para limpar o timer
   useEffect(() => { return () => { if (cancelTimerRef.current) { clearInterval(cancelTimerRef.current); cancelTimerRef.current = null; } }; }, []);
 
-  // ... adicione junto com seus outros useEffects
+  // --- Efeito: Observa o countdown para disparar o envio de email ---
+  useEffect(() => {
+    // (Sem alterações)
+    if (countdown > 0 || !showCancelCountdown) {
+      return;
+    }
+    if (cancelTimerRef.current) {
+      clearInterval(cancelTimerRef.current);
+      cancelTimerRef.current = null;
+    }
+    setShowCancelCountdown(false);
+    if (emailJobRef.current) {
+      const { ids, grupos } = emailJobRef.current;
+      startEmailSendingProcess(ids, grupos);
+      emailJobRef.current = null; 
+    }
+  }, [countdown, showCancelCountdown]); 
 
-  // --- Efeito: Observa o countdown para disparar o envio de email ---
-  useEffect(() => {
-    // Se o countdown não chegou a 0, ou se o modal não está visível, não faz nada
-    if (countdown > 0 || !showCancelCountdown) {
-      return;
-    }
-
-    // --- CHEGOU A 0 ---
-    
-    // 1. Para o timer
-    if (cancelTimerRef.current) {
-      clearInterval(cancelTimerRef.current);
-      cancelTimerRef.current = null;
-    }
-
-    // 2. Esconde a UI de countdown
-    setShowCancelCountdown(false);
-
-    // 3. Verifica se há um "trabalho" (job) esperando no Ref
-    if (emailJobRef.current) {
-      const { ids, grupos } = emailJobRef.current;
-      
-      // 4. Inicia o envio (UMA ÚNICA VEZ)
-      startEmailSendingProcess(ids, grupos);
-      
-      // 5. Limpa o ref para não reenviar
-      emailJobRef.current = null; 
-    }
-
-  }, [countdown, showCancelCountdown]); // Dependências do Effect
   // Contagem de grupos selecionados
   const numSelecionados = Object.values(selecionados).filter(Boolean).length;
+
+// --- NOVA FUNÇÃO ---
+// Função auxiliar para ANEXAR (Fluxos de WhatsApp/Email)
+const appendarStatusNotificacao = async (frequencia_ids, statusParaAdicionar) => {
+  if (!Array.isArray(frequencia_ids) || frequencia_ids.length === 0) {
+    console.warn("appendarStatusNotificacao chamado sem IDs válidos.");
+    return;
+  }
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch('http://localhost:5001/api/frequencia/notificacao/append', { // <-- Novo Endpoint de ANEXAR
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ frequencia_ids, status: statusParaAdicionar })
+    });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+      toast.error(`Erro ${response.status} ao anexar status: ${errorData.message || response.statusText}`);
+    }
+  } catch (error) {
+    toast.error(`Falha de conexão ao anexar status: ${error.message}`);
+  }
+};
+
+
+
 
   // --- Renderização ---
   return (
@@ -555,6 +669,7 @@ export default function TelaNotificacaoFaltas() {
         <h2 className="text-center mb-4">Notificar Ausências de Alunos</h2>
 
         {/* --- Card de Filtros --- */}
+        {/* (Sem alterações no JSX do card de filtros) */}
         <Card className="shadow-sm p-4 mb-4">
             <Row className="g-3 align-items-end">
                 <Col md={3}><Form.Label>Turma (*)</Form.Label><Form.Select value={filtroTurma} onChange={(e) => setFiltroTurma(e.target.value)}><option value="">Selecione...</option>{turmas.map(t => (<option key={t.id} value={t.id}>{t.nome}</option>))}</Form.Select></Col>
@@ -566,30 +681,31 @@ export default function TelaNotificacaoFaltas() {
              <Collapse in={buscaRealizada && faltasAgrupadas.length > 0}>
                  <div className="mt-4 pt-3 border-top">
                      <Row className="align-items-center">
-                        <Col md={5} lg={6}>
-                          <strong>{numSelecionados} dia(s) de falta selecionado(s)</strong>
-                        </Col>
-                        <Col md={7} lg={6} className="d-flex gap-2 justify-content-md-end">
+                         <Col md={5} lg={6}>
+                           <strong>{numSelecionados} dia(s) de falta selecionado(s)</strong>
+                         </Col>
+                         <Col md={7} lg={6} className="d-flex gap-2 justify-content-md-end">
                              <Button variant="success" onClick={handleNotificarWhatsApp} disabled={numSelecionados === 0}> <i className="bi bi-whatsapp me-2"></i>WhatsApp </Button>
                              <Button variant="info" onClick={handleNotificarEmail} disabled={numSelecionados === 0 || isSendingEmail || showCancelCountdown}>
-                                {(isSendingEmail || showCancelCountdown) ? <Spinner as="span" animation="border" size="sm" /> : <i className="bi bi-envelope me-2"></i>} E-mail
+                                 {(isSendingEmail || showCancelCountdown) ? <Spinner as="span" animation="border" size="sm" /> : <i className="bi bi-envelope me-2"></i>} E-mail
                             </Button>
-                            <Dropdown onSelect={(status) => alterarStatusEmMassa(status)}>
-                                <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-options" disabled={numSelecionados === 0}/>
-                                 <Dropdown.Menu>
-                                    <Dropdown.Header>Alterar status</Dropdown.Header>
-                                    <Dropdown.Item eventKey="pendente">Pendente</Dropdown.Item>
-                                    <Dropdown.Item eventKey="notificado_whatsapp">Notif. WhatsApp</Dropdown.Item>
-                                    <Dropdown.Item eventKey="notificado_email">Notif. E-mail</Dropdown.Item>
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        </Col>
+                           <Dropdown onSelect={(status) => alterarStatusEmMassa(status)}>
+                   <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-options" disabled={numSelecionados === 0}/>
+                               <Dropdown.Menu>
+                                 <Dropdown.Header>Alterar status</Dropdown.Header>
+                                 <Dropdown.Item eventKey="pendente">Pendente</Dropdown.Item>
+                                 <Dropdown.Item eventKey="notificado_whatsapp">Notif. WhatsApp</Dropdown.Item>
+                                 <Dropdown.Item eventKey="notificado_email">Notif. E-mail</Dropdown.Item>
+                               </Dropdown.Menu>
+                           </Dropdown>
+                         </Col>
                      </Row>
                  </div>
              </Collapse>
         </Card>
 
         {/* --- Card de Resultados e Tabela (MODIFICADO) --- */}
+        {/* (Sem alterações no JSX da tabela) */}
         <AnimatePresence>
           {buscaRealizada && (
             <motion.div key="resultados" variants={animationVariants} initial="hidden" animate="visible" exit="exit">
@@ -620,38 +736,63 @@ export default function TelaNotificacaoFaltas() {
                         </tr>
                       </thead>
                       <tbody>
-                        {faltasAgrupadasFiltradas.map(grupo => {
-                          // Determina o status consolidado
-                          const statusUnicos = new Set(grupo.faltas.map(f => f.notificacao_status));
-                          let statusConsolidado = 'Pendente'; let statusVariant = 'warning';
-                           if (statusUnicos.size === 1 && !statusUnicos.has('pendente')) {
-                               const unicoStatus = statusUnicos.values().next().value;
-                               // Simplifica texto do status
-                               statusConsolidado = unicoStatus.includes('whatsapp') ? 'WhatsApp' : (unicoStatus.includes('email') ? 'Email' : 'Outro');
-                               statusVariant = getStatusVariant(unicoStatus);
-                           } else if (statusUnicos.size > 1 && !statusUnicos.has('pendente')) {
-                               statusConsolidado = 'Misto'; statusVariant = 'secondary';
-                           } // Se tiver 'pendente', mantém 'Pendente' / 'warning'
-
-                          return (
-                            <tr key={grupo.chaveUnica}>
-                              <td><Form.Check type="checkbox" checked={!!selecionados[grupo.chaveUnica]} onChange={() => toggleSelecionado(grupo.chaveUnica)}/></td>
-                              <td>{grupo.aluno_nome}</td>
-                              <td>{grupo.responsavel_nome || <span className="text-muted">N/I</span>}</td>
-                              {/* Usa data_aula do grupo com UTC */}
-                              <td>{new Date(grupo.data_aula + 'T00:00:00Z').toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
-                              <td>{grupo.responsavel_celular || grupo.responsavel_email || <span className="text-muted">N/I</span>}</td>
-                              <td className="text-center"> <Badge bg={statusVariant}>{statusConsolidado}</Badge> </td>
-                              {/* --- Botão Detalhes --- */}
-                              <td className="text-center">
-                                <Button variant="outline-secondary" size="sm" onClick={() => handleShowDetails(grupo)} title="Ver detalhes">
-                                  <i className="bi bi-list-ul"></i>
-                                </Button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
+                            {faltasAgrupadasFiltradas.map(grupo => {
+                              
+                              // --- MODIFICADO: Lógica de Status Consolidado ---
+                              const statusUnicos = new Set(grupo.faltas.map(f => f.notificacao_status));
+                              
+                              let statusConsolidado = 'Pendente'; 
+                              let statusVariant = 'warning';
+                              
+                              if (statusUnicos.size === 1) {
+                                  const unicoStatus = statusUnicos.values().next().value;
+                                  
+                                  if (unicoStatus === 'pendente') {
+                                    // Mantém o default 'Pendente' / 'warning'
+                                  } else {
+                                      const hasWhats = unicoStatus.includes('whatsapp');
+                                      const hasEmail = unicoStatus.includes('email');
+                                      
+                                      if (hasWhats && hasEmail) {
+                                          statusConsolidado = 'Wpp/Email';
+                                          statusVariant = 'primary';
+                                      } else if (hasWhats) {
+                                          statusConsolidado = 'WhatsApp';
+                                          statusVariant = 'success';
+                                      } else if (hasEmail) {
+                                          statusConsolidado = 'Email';
+                                          statusVariant = 'info';
+                                      } else {
+                                          statusConsolidado = unicoStatus; // ex: 'ignorado'
+                                          statusVariant = 'secondary';
+                                      }
+                                  }
+                              } else if (statusUnicos.size > 1) {
+                                  // Múltiplas faltas (disciplinas) com status diferentes (ex: uma 'pendente', uma 'email')
+                                  statusConsolidado = 'Misto';
+                                  statusVariant = 'secondary';
+                              }
+                              // --- FIM DA MODIFICAÇÃO ---
+                              
+                              return (
+                                <tr key={grupo.chaveUnica}>
+                                  <td><Form.Check type="checkbox" checked={!!selecionados[grupo.chaveUnica]} onChange={() => toggleSelecionado(grupo.chaveUnica)}/></td>
+                                  <td>{grupo.aluno_nome}</td>
+                                  <td>{grupo.responsavel_nome || <span className="text-muted">N/I</span>}</td>
+                                  {/* Usa data_aula do grupo com UTC */}
+                                  <td>{new Date(grupo.data_aula + 'T00:00:00Z').toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
+                                  <td>{grupo.responsavel_celular || grupo.responsavel_email || <span className="text-muted">N/I</span>}</td>
+                                  <td className="text-center"> <Badge bg={statusVariant}>{statusConsolidado}</Badge> </td>
+                                  {/* --- Botão Detalhes --- */}
+                                  <td className="text-center">
+                                    <Button variant="outline-secondary" size="sm" onClick={() => handleShowDetails(grupo)} title="Ver detalhes">
+                                      <i className="bi bi-list-ul"></i>
+                                    </Button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
                     </Table>
                   )}
                 </Card.Body>
@@ -662,6 +803,7 @@ export default function TelaNotificacaoFaltas() {
       </motion.div>
 
       {/* --- MODAL DA FILA WHATSAPP (Estrutura Mantida) --- */}
+      {/* (Sem alterações no JSX do modal WhatsApp) */}
       <Modal show={showFilaModalWhats} onHide={handleCancelarFilaWhats} backdrop="static" keyboard={false} centered size="lg" >
         <Modal.Header closeButton><Modal.Title>Fila de Notificação - WhatsApp</Modal.Title></Modal.Header>
         {filaNotificacaoWhats.length > 0 && filaNotificacaoWhats[indiceFilaWhats] ? (
@@ -696,7 +838,7 @@ export default function TelaNotificacaoFaltas() {
                     <Form.Label className="fw-bold">Mensagem:</Form.Label>
                     <Form.Control as="textarea" rows={5} value={mensagemAtualWhats} readOnly style={{ backgroundColor: '#f8f9fa', fontSize: '0.9rem' }} />
                     <Button variant="outline-secondary" size="sm" className="mt-2" onClick={() => copyToClipboard(mensagemAtualWhats, "Mensagem copiada!")} > <i className="bi bi-clipboard me-2"></i> Copiar </Button>
-                   </Form.Group>
+                  </Form.Group>
                 </motion.div>
               </AnimatePresence>
             </Modal.Body>
@@ -720,50 +862,52 @@ export default function TelaNotificacaoFaltas() {
       </Modal>
 
       {/* --- MODAL DE STATUS DE EMAIL --- */}
+      {/* (Sem alterações no JSX do modal de Email) */}
        <Modal
         show={showEmailStatusModal}
         onHide={() => !isSendingEmail && !showCancelCountdown && setShowEmailStatusModal(false)}
         backdrop={(isSendingEmail || showCancelCountdown) ? 'static' : true}
         keyboard={!(isSendingEmail || showCancelCountdown)}
         centered size="lg" >
-         <Modal.Header closeButton={!(isSendingEmail || showCancelCountdown)}>
-        <Modal.Title>
+        <Modal.Header closeButton={!(isSendingEmail || showCancelCountdown)}>
+         <Modal.Title>
           {showCancelCountdown
             ? "Confirmar Envio de E-mail" // <--- Texto Fixo durante countdown
             : isSendingEmail
             ? "Enviando E-mails..."
             : "Resultado do Envio de E-mails"}
-        </Modal.Title>
-      </Modal.Header>
-         <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-            {showCancelCountdown && ( <div className="text-center mb-3 p-3 bg-light border rounded"> <p className="mb-2">Envio automático em:</p> <h3 className="display-6 mb-3">{countdown}</h3> <Button variant="danger" onClick={handleCancelSending}> <i className="bi bi-x-circle me-2"></i> Cancelar </Button> </div> )}
-            {emailStatusList.length === 0 && !showCancelCountdown ? ( <div className="text-center"><Spinner /> Preparando...</div> ) : (
-            <ListGroup variant="flush">
-              {emailStatusList.map((itemGrupo) => (
-                <ListGroup.Item key={itemGrupo.chaveUnica} className="d-flex justify-content-between align-items-center flex-wrap">
-                  <div className="me-3 mb-2 mb-md-0" style={{ flexBasis: '60%'}}>
-                    <span className="fw-bold">{itemGrupo.aluno_nome}</span> <br />
-                    <small className="text-muted"> Resp.: {itemGrupo.responsavel_nome || 'N/I'} | Email: {itemGrupo.responsavel_email || 'Não Cad.'} </small>
-                  </div>
-                  <div style={{ flexBasis: '30%', textAlign: 'right' }}>
-                    {itemGrupo.status === 'pending' && !showCancelCountdown && ( <Badge bg="secondary" pill>Pendente</Badge> )}
-                    {itemGrupo.status === 'sending' && ( <> <Spinner size="sm" className="me-2" /> <small>Enviando...</small> </> )}
-                    {itemGrupo.status === 'success' && ( <Badge bg="success" pill>Enviado</Badge> )}
-                    {itemGrupo.status === 'failure' && (
-                       <OverlayTrigger overlay={<Tooltip><strong>Motivo:</strong> {itemGrupo.erro}</Tooltip>} >
-                           <Badge bg="danger" pill style={{ cursor: 'help' }}> Falha <i className="bi bi-info-circle ms-1"></i> </Badge>
-                       </OverlayTrigger>
-                    )}
-                  </div>
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-          )}
-         </Modal.Body>
-         <Modal.Footer> {!isSendingEmail && !showCancelCountdown && ( <Button variant="secondary" onClick={() => setShowEmailStatusModal(false)}> Fechar </Button> )} </Modal.Footer>
+         </Modal.Title>
+       </Modal.Header>
+        <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+         {showCancelCountdown && ( <div className="text-center mb-3 p-3 bg-light border rounded"> <p className="mb-2">Envio automático em:</p> <h3 className="display-6 mb-3">{countdown}</h3> <Button variant="danger" onClick={handleCancelSending}> <i className="bi bi-x-circle me-2"></i> Cancelar </Button> </div> )}
+          {emailStatusList.length === 0 && !showCancelCountdown ? ( <div className="text-center"><Spinner /> Preparando...</div> ) : (
+          <ListGroup variant="flush">
+            {emailStatusList.map((itemGrupo) => (
+              <ListGroup.Item key={itemGrupo.chaveUnica} className="d-flex justify-content-between align-items-center flex-wrap">
+                <div className="me-3 mb-2 mb-md-0" style={{ flexBasis: '60%'}}>
+                  <span className="fw-bold">{itemGrupo.aluno_nome}</span> <br />
+                  <small className="text-muted"> Resp.: {itemGrupo.responsavel_nome || 'N/I'} | Email: {itemGrupo.responsavel_email || 'Não Cad.'} </small>
+                </div>
+                <div style={{ flexBasis: '30%', textAlign: 'right' }}>
+                  {itemGrupo.status === 'pending' && !showCancelCountdown && ( <Badge bg="secondary" pill>Pendente</Badge> )}
+                  {itemGrupo.status === 'sending' && ( <> <Spinner size="sm" className="me-2" /> <small>Enviando...</small> </> )}
+                  {itemGrupo.status === 'success' && ( <Badge bg="success" pill>Enviado</Badge> )}
+                  {itemGrupo.status === 'failure' && (
+                      <OverlayTrigger overlay={<Tooltip><strong>Motivo:</strong> {itemGrupo.erro}</Tooltip>} >
+                          <Badge bg="danger" pill style={{ cursor: 'help' }}> Falha <i className="bi bi-info-circle ms-1"></i> </Badge>
+                      </OverlayTrigger>
+                  )}
+                </div>
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+        )}
+        </Modal.Body>
+        <Modal.Footer> {!isSendingEmail && !showCancelCountdown && ( <Button variant="secondary" onClick={() => setShowEmailStatusModal(false)}> Fechar </Button> )} </Modal.Footer>
       </Modal>
 
        {/* --- NOVO: MODAL DE DETALHES DAS DISCIPLINAS --- */}
+      {/* (Sem alterações no JSX do modal de Detalhes) */}
       <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Detalhes das Ausências</Modal.Title>
@@ -778,18 +922,25 @@ export default function TelaNotificacaoFaltas() {
               <h6>Disciplinas Ausentes:</h6>
               {detailsData.faltas && detailsData.faltas.length > 0 ? (
                 <ListGroup variant="flush">
-                  {detailsData.faltas.map(falta => (
-                    <ListGroup.Item key={falta.frequencia_id} className="d-flex justify-content-between align-items-center ps-0">
-                      <span> <i className="bi bi-dot"></i> {falta.disciplina_nome || 'N/A'}</span>
-                      <Badge bg={getStatusVariant(falta.notificacao_status)} pill>
-                        {falta.notificacao_status === 'pendente' ? 'Pendente' :
-                         falta.notificacao_status === 'notificado_whatsapp' ? 'WhatsApp' :
-                         falta.notificacao_status === 'notificado_email' ? 'Email' :
-                         falta.notificacao_status}
-                      </Badge>
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
+                            {detailsData.faltas.map(falta => (
+                              <ListGroup.Item key={falta.frequencia_id} className="d-flex justify-content-between align-items-center ps-0">
+                                <span> <i className="bi bi-dot"></i> {falta.disciplina_nome || 'N/A'}</span>
+                                
+                                {/* --- MODIFICADO: Lógica de Badge Individual --- */}
+                                <Badge bg={getStatusVariant(falta.notificacao_status)} pill>
+                                  {
+                                    (falta.notificacao_status.includes('whatsapp') && falta.notificacao_status.includes('email')) ? 'Wpp/Email' :
+                                    (falta.notificacao_status.includes('whatsapp')) ? 'WhatsApp' :
+                                    (falta.notificacao_status.includes('email')) ? 'Email' :
+                                    (falta.notificacao_status === 'pendente') ? 'Pendente' :
+                                    falta.notificacao_status
+                                  }
+                                </Badge>
+                                {/* --- FIM DA MODIFICAÇÃO --- */}
+                                
+                              </ListGroup.Item>
+                            ))}
+                          </ListGroup>
               ) : (
                  <p className="text-muted">Nenhuma disciplina registrada.</p>
               )}
@@ -804,6 +955,27 @@ export default function TelaNotificacaoFaltas() {
           </Button>
         </Modal.Footer>
       </Modal>
+
+     {/* --- NOVO: MODAL DE CONFIRMAÇÃO DE REENVIO --- */}
+     <ModalConfirmacao
+       show={showConfirmModal}
+       onHide={() => {
+         setShowConfirmModal(false);
+         setConfirmAction(null); // Limpa a ação
+       }}
+       onConfirm={() => {
+         if (typeof confirmAction === 'function') {
+           confirmAction(); // Executa a ação armazenada (WhatsApp ou Email)
+         }
+         setShowConfirmModal(false);
+         setConfirmAction(null); // Limpa a ação
+       }}
+       title="Confirmação de Reenvio"
+       message={confirmMessage}
+       confirmText="Sim, Reenviar"
+       cancelText="Não, Cancelar"
+       confirmVariant="warning" // Um aviso é bom para reenvio
+     />
 
     </Container>
   );

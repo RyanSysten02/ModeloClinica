@@ -30,5 +30,6 @@ router.get('/ausentes', frequenciaController.getAlunosAusentes);
 
 router.put('/notificacao', frequenciaController.updateStatusNotificacao);
 
+router.put('/notificacao/append', frequenciaController.appendStatusNotificacao);
 
 module.exports = router;

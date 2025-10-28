@@ -15,8 +15,7 @@ const enviarEmailsEmMassa = async (req, res) => {
     // Atualiza o status no banco APENAS para os que tiveram sucesso
     const idsSucesso = resultados.sucesso.map(item => item.id);
     if (idsSucesso.length > 0) {
-      // Você precisa ter uma função no frequenciaService/Model para isso
-      await frequenciaService.updateStatusNotificacao(idsSucesso, 'notificado_email'); 
+      await frequenciaService.appendStatusNotificacao(idsSucesso, 'notificado_email');
     }
 
     // Monta uma mensagem de resposta

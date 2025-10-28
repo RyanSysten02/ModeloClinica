@@ -244,6 +244,26 @@ const updateStatusNotificacao = async (req, res) => {
     }
 };
 
+// ... (mantenha o controller updateStatusNotificacao)
+
+// --- NOVO CONTROLLER ---
+const appendStatusNotificacao = async (req, res) => {
+  try {
+    const { frequencia_ids, status } = req.body;
+    
+    if (!frequencia_ids || !Array.isArray(frequencia_ids) || frequencia_ids.length === 0 || !status) {
+      return res.status(400).json({ message: "Payload inválido. 'frequencia_ids' (array) e 'status' (string) são obrigatórios." });
+    }
+
+    await frequenciaServices.appendStatusNotificacao(frequencia_ids, status);
+    res.status(200).json({ message: "Status de notificação anexado com sucesso." });
+
+  } catch (error) {
+    console.error("Erro ao anexar status de notificação:", error);
+    res.status(500).json({ message: "Erro interno ao processar a solicitação." });
+  }
+};
+
 module.exports = {
   createFrequencia,
   createBulkFrequencia,
@@ -258,4 +278,5 @@ module.exports = {
   deleteBulkFrequencia,
   getAlunosAusentes,
   updateStatusNotificacao,
+  appendStatusNotificacao,
 };

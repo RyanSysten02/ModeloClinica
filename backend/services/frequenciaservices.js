@@ -89,6 +89,10 @@ const updateStatusNotificacao = async (frequenciaIds, status) => {
     return await frequenciaModel.updateStatusNotificacao(frequenciaIds, status);
 };
 
+const appendStatusNotificacao = async (frequenciaIds, status) => {
+  return await frequenciaModel.appendStatusNotificacao(frequenciaIds, status);
+};
+
 module.exports = {
   createFrequencia,
   createBulkFrequencia,
@@ -102,7 +106,8 @@ module.exports = {
   getFrequenciaDetalhadaPorAula,
   deleteBulkFrequencia,
   getAlunosAusentes,
-  updateStatusNotificacao, 
+  updateStatusNotificacao,
+  appendStatusNotificacao,
 
 
 };

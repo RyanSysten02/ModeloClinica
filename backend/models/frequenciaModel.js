@@ -211,6 +211,30 @@ const getDetalhesFaltasParaEmail = async (frequenciaIds) => {
   return rows;
 };
 
+// ... (mantenha a função updateStatusNotificacao como está)
+
+// --- NOVA FUNÇÃO ---
+const appendStatusNotificacao = async (frequenciaIds, statusToAdd) => {
+  if (!frequenciaIds || frequenciaIds.length === 0) return { affectedRows: 0 };
+  
+  const query = `
+    UPDATE frequencia
+    SET notificacao_status = CASE
+      -- Se o status atual for 'pendente', apenas substitua
+      WHEN notificacao_status = 'pendente' THEN ?
+      
+      -- Se o status a adicionar já estiver lá, não faça nada
+      WHEN FIND_IN_SET(?, notificacao_status) > 0 THEN notificacao_status
+      
+      -- Senão, anexe com uma vírgula
+      ELSE CONCAT(notificacao_status, ',', ?)
+    END
+    WHERE id IN (?);
+  `;
+  
+  const [result] = await pool.query(query, [statusToAdd, statusToAdd, statusToAdd, frequenciaIds]);
+  return result;
+};
 
 module.exports = {
   createFrequencia,
@@ -226,4 +250,5 @@ module.exports = {
   getAlunosAusentes,
   updateStatusNotificacao,
   getDetalhesFaltasParaEmail,
+  appendStatusNotificacao,
 };
