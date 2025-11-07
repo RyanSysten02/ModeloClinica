@@ -264,6 +264,47 @@ const appendStatusNotificacao = async (req, res) => {
   }
 };
 
+// (Cole isso no final do seu frequenciaController.js, antes do module.exports)
+
+const getBoletimIndividual = async (req, res) => {
+    try {
+        const { aluno_id, data_inicial, data_final, disciplina_id } = req.query;
+        if (!aluno_id) {
+            return res.status(400).json({ message: "O 'aluno_id' é obrigatório." });
+        }
+        const dados = await frequenciaServices.getBoletimIndividual(req.query);
+        res.status(200).json(dados);
+    } catch (error) {
+        console.error("Erro ao buscar boletim individual:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getBoletimPorTurma = async (req, res) => {
+    try {
+        const { turma_id, data_inicial, data_final, disciplina_id } = req.query;
+        if (!turma_id) {
+            return res.status(400).json({ message: "O 'turma_id' é obrigatório." });
+        }
+        const dados = await frequenciaServices.getBoletimPorTurma(req.query);
+        res.status(200).json(dados);
+    } catch (error) {
+        console.error("Erro ao buscar boletim por turma:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getRankingFaltas = async (req, res) => {
+    try {
+        // Filtros são opcionais aqui, o serviço define o limite padrão
+        const dados = await frequenciaServices.getRankingFaltas(req.query);
+        res.status(200).json(dados);
+    } catch (error) {
+        console.error("Erro ao buscar ranking de faltas:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
   createFrequencia,
   createBulkFrequencia,
@@ -279,4 +320,7 @@ module.exports = {
   getAlunosAusentes,
   updateStatusNotificacao,
   appendStatusNotificacao,
+  getBoletimIndividual,
+  getBoletimPorTurma,
+  getRankingFaltas,
 };

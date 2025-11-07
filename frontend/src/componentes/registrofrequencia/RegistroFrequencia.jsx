@@ -141,41 +141,52 @@ export default function TelaRegistroFrequencia() {
         {menuInicial ? (
           <motion.div key="menu-inicial" variants={fadeVariant} initial="hidden" animate="visible" exit="exit">
             
-            {/* --- MODIFICADO: Layout da Row para 3 colunas --- */}
-            <Row className="g-4 justify-content-center">
-              
-              {/* --- MODIFICADO: Coluna alterada para md={4} --- */}
-              <Col md={4}>
-                <Card className="shadow p-4 text-center h-100" onClick={() => navigate("/pagConsultarFrequencias")} style={{ cursor: "pointer" }}>
-                  <Card.Body>
-                    <i className="bi bi-journal-text display-4 text-primary mb-3"></i>
-                    <h5 className="fw-bold">Consultar Lançamentos</h5>
-                    <p className="text-muted">Visualize e edite registros já lançados.</p>
-                  </Card.Body>
-                </Card>
-              </Col>
+            <Row className="justify-content-center">
+              <Col lg={9} xl={8}> {/* <-- Este Col limita a largura total do grid */}
+                
+                <Row className="g-4"> {/* <-- Esta é a sua Row original de cards */}
+                  
+                  <Col md={6}>
+                    <Card className="shadow p-4 text-center" onClick={() => navigate("/pagConsultarFrequencias")} style={{ cursor: "pointer", aspectRatio: '1 / 1' }}>
+                      <Card.Body className="d-flex flex-column justify-content-center align-items-center">
+                        <i className="bi bi-journal-text display-4 text-primary mb-3"></i>
+                        <h5 className="fw-bold">Consultar Lançamentos</h5>
+                        <p className="text-muted">Visualize e edite registros já lançados.</p>
+                      </Card.Body>
+                    </Card>
+                  </Col>
 
-              {/* --- MODIFICADO: Coluna alterada para md={4} --- */}
-              <Col md={4}>
-                <Card className="shadow p-4 text-center h-100" onClick={() => setMenuInicial(false)} style={{ cursor: "pointer" }}>
-                  <Card.Body>
-                    <i className="bi bi-plus-circle display-4 text-success mb-3"></i>
-                    <h5 className="fw-bold">Lançar Nova Frequência</h5>
-                    <p className="text-muted">Registre a frequência de uma nova aula.</p>
-                  </Card.Body>
-                </Card>
-              </Col>
+                  <Col md={6}>
+                    <Card className="shadow p-4 text-center" onClick={() => setMenuInicial(false)} style={{ cursor: "pointer", aspectRatio: '1 / 1' }}>
+                      <Card.Body className="d-flex flex-column justify-content-center align-items-center">
+                        <i className="bi bi-plus-circle display-4 text-success mb-3"></i>
+                        <h5 className="fw-bold">Lançar Nova Frequência</h5>
+                        <p className="text-muted">Registre a frequência de uma nova aula.</p>
+                      </Card.Body>
+                    </Card>
+                  </Col>
 
-              {/* --- NOVO CARD: Link para a Tela de Notificação --- */}
-              <Col md={4}>
-                {/* Ajuste a rota '/pagNotificarFaltas' se necessário */}
-                <Card className="shadow p-4 text-center h-100" onClick={() => navigate("/notifica")} style={{ cursor: "pointer" }}>
-                  <Card.Body>
-                    <i className="bi bi-bell-fill display-4 text-warning mb-3"></i>
-                    <h5 className="fw-bold">Notificar Ausências</h5>
-                    <p className="text-muted">Envie avisos de faltas para os responsáveis.</p>
-                  </Card.Body>
-                </Card>
+                  <Col md={6}>
+                    <Card className="shadow p-4 text-center" onClick={() => navigate("/notifica")} style={{ cursor: "pointer", aspectRatio: '1 / 1' }}>
+                      <Card.Body className="d-flex flex-column justify-content-center align-items-center">
+                        <i className="bi bi-bell-fill display-4 text-warning mb-3"></i>
+                        <h5 className="fw-bold">Notificar Ausências</h5>
+                        <p className="text-muted">Envie avisos de faltas para os responsáveis.</p>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col md={6}>
+                    <Card className="shadow p-4 text-center" onClick={() => navigate("/relatorios")} style={{ cursor: "pointer", aspectRatio: '1 / 1' }}>
+                      <Card.Body className="d-flex flex-column justify-content-center align-items-center">
+                        <i className="bi bi-bar-chart-line-fill display-4 text-info mb-3"></i> 
+                        <h5 className="fw-bold">Relatórios e Gráficos</h5>
+                        <p className="text-muted">Visualize dados e estatísticas.</p>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                </Row>
               </Col>
             </Row>
             

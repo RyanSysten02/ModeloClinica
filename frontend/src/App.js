@@ -29,6 +29,7 @@ import { LayoutMatricula } from './pages/pagmatricula';
 import Layoutprofessor from './pages/pagprofessor';
 import Layoutnotifica from './pages/pagnotifica'; // Layout da TelaNotificacaoFaltas
 import AcessoNegado from './pages/acessoNegado';
+import { LayoutRelatorios } from './pages/pagRelatorios';
 // Removida importação duplicada de alunoTurma.routes se existir, não estava no seu código original
 
 function App() {
@@ -166,6 +167,15 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route
+            path='/relatorios'
+            element={
+              <ProtectedRoute allowedPermissions={['relatorios', 'registrofrequencia', 'adm']}>
+                <LayoutRelatorios />
+              </ProtectedRoute>
+            }
+          />
 
             {/* Rota Catch-all para 404 ou redirecionamento pode ser adicionada aqui */}
             {/* <Route path="*" element={<NotFound />} /> */}

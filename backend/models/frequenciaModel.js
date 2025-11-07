@@ -236,6 +236,127 @@ const appendStatusNotificacao = async (frequenciaIds, statusToAdd) => {
   return result;
 };
 
+/**
+ * Relatório 1: Boletim Individual de Frequência (por disciplina)
+ * --- ATUALIZADO para usar aluno_id ---
+ */
+const getBoletimIndividual = async (aluno_id, data_inicial, data_final, disciplina_id) => {
+    let query = `
+        SELECT
+            d.nome AS disciplina_nome,
+            d.id AS disciplina_id,
+            COUNT(f.id) AS total_aulas,
+            SUM(CASE WHEN f.presente = 1 THEN 1 ELSE 0 END) AS total_presencas,
+            SUM(CASE WHEN f.presente = 0 THEN 1 ELSE 0 END) AS total_faltas,
+            (SUM(CASE WHEN f.presente = 0 THEN 1 ELSE 0 END) / COUNT(f.id)) * 100 AS percentual_faltas
+        FROM frequencia AS f
+        JOIN disciplina AS d ON f.disciplina_id = d.id
+        JOIN matricula AS m ON f.matricula_id = m.id -- <<< JOIN ADICIONADO
+        WHERE m.aluno_id = ?                          -- <<< FILTRO ALTERADO
+    `;
+    
+    const params = [aluno_id]; // <<< PARÂMETRO ALTERADO
+
+    if (data_inicial && data_final) {
+        query += ` AND f.data_aula BETWEEN ? AND ?`;
+        params.push(data_inicial, data_final);
+    }
+    if (disciplina_id) {
+        query += ` AND f.disciplina_id = ?`;
+        params.push(disciplina_id);
+    }
+
+    query += `
+        GROUP BY d.id, d.nome
+        ORDER BY d.nome;
+    `;
+    
+    const [rows] = await pool.query(query, params);
+    return rows;
+};
+
+/**
+ * Relatório 2: Boletim de Frequência por Turma
+ */
+const getBoletimPorTurma = async (turma_id, data_inicial, data_final, disciplina_id) => {
+    let query = `
+        SELECT
+            a.id AS aluno_id,
+            a.nome AS aluno_nome,
+            m.id AS matricula_id,
+            COUNT(f.id) AS total_aulas_lancadas,
+            SUM(CASE WHEN f.presente = 1 THEN 1 ELSE 0 END) AS total_presencas,
+            SUM(CASE WHEN f.presente = 0 THEN 1 ELSE 0 END) AS total_faltas,
+            (SUM(CASE WHEN f.presente = 0 THEN 1 ELSE 0 END) / COUNT(f.id)) * 100 AS percentual_faltas
+        FROM frequencia AS f
+        JOIN matricula AS m ON f.matricula_id = m.id
+        JOIN aluno AS a ON m.aluno_id = a.id
+        WHERE m.turma_id = ? AND m.status = 'ativa'
+    `;
+    
+    const params = [turma_id];
+
+    if (data_inicial && data_final) {
+        query += ` AND f.data_aula BETWEEN ? AND ?`;
+        params.push(data_inicial, data_final);
+    }
+    if (disciplina_id) {
+        query += ` AND f.disciplina_id = ?`;
+        params.push(disciplina_id);
+    }
+
+    query += `
+        GROUP BY a.id, a.nome, m.id
+        ORDER BY percentual_faltas DESC, a.nome ASC;
+    `;
+    
+    const [rows] = await pool.query(query, params);
+    return rows;
+};
+
+/**
+ * Relatório 3: Ranking de Alunos com Mais Faltas (Top N)
+ */
+const getRankingFaltas = async (limit, turma_id, data_inicial, data_final, disciplina_id) => {
+    let query = `
+        SELECT
+            a.id AS aluno_id,
+            a.nome AS aluno_nome,
+            t.nome AS turma_nome,
+            COUNT(f.id) AS total_faltas
+        FROM frequencia AS f
+        JOIN matricula AS m ON f.matricula_id = m.id
+        JOIN aluno AS a ON m.aluno_id = a.id
+        JOIN turma AS t ON m.turma_id = t.id
+        WHERE f.presente = 0
+    `;
+    
+    const params = [];
+
+    if (turma_id) {
+        query += ` AND m.turma_id = ?`;
+        params.push(turma_id);
+    }
+    if (data_inicial && data_final) {
+        query += ` AND f.data_aula BETWEEN ? AND ?`;
+        params.push(data_inicial, data_final);
+    }
+    if (disciplina_id) {
+        query += ` AND f.disciplina_id = ?`;
+        params.push(disciplina_id);
+    }
+
+    query += `
+        GROUP BY a.id, a.nome, t.nome
+        ORDER BY total_faltas DESC
+        LIMIT ?;
+    `;
+    params.push(limit); // Adiciona o LIMIT por último
+    
+    const [rows] = await pool.query(query, params);
+    return rows;
+};
+
 module.exports = {
   createFrequencia,
   getFrequencias,
@@ -251,4 +372,7 @@ module.exports = {
   updateStatusNotificacao,
   getDetalhesFaltasParaEmail,
   appendStatusNotificacao,
+  getBoletimIndividual,
+  getBoletimPorTurma,
+  getRankingFaltas,
 };
