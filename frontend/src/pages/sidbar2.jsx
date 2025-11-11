@@ -29,7 +29,6 @@ const Sidebar = () => {
       const decoded = jwtDecode(token);
       setUserName(decoded.nome);
 
-
       fetch('http://localhost:5001/api/permissoes', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -85,7 +84,7 @@ const Sidebar = () => {
               <span className='ms-3 d-inline-block'>Minha Agenda</span>
             </Button>
           </NavItem>
-           
+
           {podeAcessar('aluno') && (
             <NavItem className='sidenav-bg'>
               <Button
@@ -111,7 +110,6 @@ const Sidebar = () => {
               </Button>
             </NavItem>
           )}
-
 
           {podeAcessar('responsavel') && (
             <NavItem className='sidenav-bg'>
@@ -212,7 +210,7 @@ const Sidebar = () => {
                 className='nav-link text-secondary py-3'
                 onClick={() => navigate('/pagSubstituicoes')}
               >
-                <i class="bi bi-arrow-left-right"></i>
+                <i class='bi bi-arrow-left-right'></i>
                 <span className='ms-3 d-inline-block'>Substituições Prof.</span>
               </Button>
             </NavItem>
@@ -242,6 +240,17 @@ const Sidebar = () => {
               </Button>
             </NavItem>
           )}
+          {/* Central de Relacionamento */}
+          <NavItem className='sidenav-bg'>
+            <Button
+              color='link'
+              className='nav-link text-secondary py-3'
+              onClick={() => navigate('/centralRelacionamentos')}
+            >
+              <i className='bi bi-calendar-range'></i>
+              <span className='ms-3 d-inline-block'>Relacionamento</span>
+            </Button>
+          </NavItem>
         </Nav>
       </div>
 
