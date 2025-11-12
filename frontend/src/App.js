@@ -29,6 +29,7 @@ import Layoutprofessor from './pages/pagprofessor';
 import Layoutnotifica from './pages/pagnotifica';
 import AcessoNegado from './pages/acessoNegado';
 import { LayoutRelatorios } from './pages/pagRelatorios';
+import CentralRelacionamentos from './pages/CentralRelacionamentos';
 import { LayoutAnaliseSubstituicoes } from './pages/pagAnaliseSubstituicoes';
 
 function App() {
@@ -61,11 +62,13 @@ function App() {
                 </ProtectedRoute>
               }
             />
-             <Route
+            <Route
               path='/pagAulas'
               element={
-                <ProtectedRoute allowedPermissions={['aulas']}> {/* Verifique a permissão correta */}
-                  <LayoutAulas/>
+                <ProtectedRoute allowedPermissions={['aulas']}>
+                  {' '}
+                  {/* Verifique a permissão correta */}
+                  <LayoutAulas />
                 </ProtectedRoute>
               }
             />
@@ -81,15 +84,21 @@ function App() {
             <Route
               path='/notifica'
               element={
-                <ProtectedRoute allowedPermissions={['registrofrequencia', 'notifica']}> {/* Ou a permissão correta */}
+                <ProtectedRoute
+                  allowedPermissions={['registrofrequencia', 'notifica']}
+                >
+                  {' '}
+                  {/* Ou a permissão correta */}
                   <Layoutnotifica />
                 </ProtectedRoute>
               }
             />
-             <Route
+            <Route
               path='/atendimento'
               element={
-                <ProtectedRoute allowedPermissions={['atendimento']}> {/* Verifique a permissão correta */}
+                <ProtectedRoute allowedPermissions={['atendimento']}>
+                  {' '}
+                  {/* Verifique a permissão correta */}
                   <LayoutAtendimento />
                 </ProtectedRoute>
               }
@@ -110,7 +119,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-             <Route
+            <Route
               path='/pagMontarTurma'
               element={
                 <ProtectedRoute allowedPermissions={['montarturma']}>
@@ -153,7 +162,14 @@ function App() {
             <Route
               path='/pagConsultarFrequencias'
               element={
-                <ProtectedRoute allowedPermissions={['registrofrequencia', 'consultarfrequencia']}> {/* Ou a permissão correta */}
+                <ProtectedRoute
+                  allowedPermissions={[
+                    'registrofrequencia',
+                    'consultarfrequencia',
+                  ]}
+                >
+                  {' '}
+                  {/* Ou a permissão correta */}
                   <LayoutConsultaFrequencia />
                 </ProtectedRoute>
               }
@@ -161,20 +177,38 @@ function App() {
             <Route
               path='/pagSubstituicoes'
               element={
-                <ProtectedRoute allowedPermissions={['substituicoes']}> {/* Verifique a permissão correta */}
-                  <LayoutSubstituicoes/>
+                <ProtectedRoute allowedPermissions={['substituicoes']}>
+                  {' '}
+                  {/* Verifique a permissão correta */}
+                  <LayoutSubstituicoes />
                 </ProtectedRoute>
               }
             />
 
             <Route
-            path='/relatorios'
-            element={
-              <ProtectedRoute allowedPermissions={['relatorios', 'registrofrequencia', 'adm']}>
-                <LayoutRelatorios />
-              </ProtectedRoute>
-            }
-          />
+              path='/relatorios'
+              element={
+                <ProtectedRoute
+                  allowedPermissions={[
+                    'relatorios',
+                    'registrofrequencia',
+                    'adm',
+                  ]}
+                >
+                  <LayoutRelatorios />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Central de Relacionamentos */}
+            <Route
+              path='/centralRelacionamentos'
+              element={
+                <ProtectedRoute>
+                  <CentralRelacionamentos />
+                </ProtectedRoute>
+              }
+            />
 
           <Route
             path='/analise-substituicoes'
@@ -187,11 +221,14 @@ function App() {
 
             {/* Rota Catch-all para 404 ou redirecionamento pode ser adicionada aqui */}
             {/* <Route path="*" element={<NotFound />} /> */}
-
           </Routes>
 
           {/* ToastContainer fora do Routes */}
-          <ToastContainer position='bottom-right' autoClose={5000} style={{ zIndex: 99999 }}/>
+          <ToastContainer
+            position='bottom-right'
+            autoClose={5000}
+            style={{ zIndex: 99999 }}
+          />
         </BrowserRouter>
       </div>
     </LoadingProvider>
