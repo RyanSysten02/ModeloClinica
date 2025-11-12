@@ -6,7 +6,9 @@ import ModalConfirmacao from '../ModaisUteis/ModalConfirmação';
 import dayjs from 'dayjs';
 import axios from 'axios';
 import TurmaService from '../../services/Turma';       // Ajuste o caminho se necessário
-import DisciplinaService from '../../services/Disciplina'; // Ajuste o caminho se necessário
+import DisciplinaService from '../../services/Disciplina';
+import { Link } from 'react-router-dom';
+import { getProfessoresSubstitutosPriorizados } from './AnaliseSubstituicaoUtils.js';
 
 const apiClient = axios.create({
   baseURL: 'http://localhost:5001/api', 
@@ -18,106 +20,7 @@ apiClient.interceptors.request.use(config => {
   return config;
 }, error => Promise.reject(error));
 
-function getProfessoresSubstitutosPriorizados(alocacao, todosOsProfessores) {
-  console.log("==================================================");
-  console.log("======= INICIANDO ANÁLISE DE PRIORIZAÇÃO =======");
-  console.log("==================================================");
 
-  // --- 1. DADOS DE ENTRADA ---
-  console.log("Dados da Aula (alocacao):", alocacao);
-  console.log("Lista de Todos os Professores (todosOsProfessores):", todosOsProfessores);
-
-  const professorAtualId = alocacao.professorAtual.id;
-  const areaDaAula = alocacao.disciplina.areaConhecimento;
-  const nivelDaTurma = alocacao.turma.nivel;
-
-  console.log(`\n--- 2. PARÂMETROS EXTRAÍDOS ---`);
-  console.log(`ID do Professor Atual: ${professorAtualId}`);
-  console.log(`Área da Aula: "${areaDaAula}"`);
-  console.log(`Nível da Turma: "${nivelDaTurma}"`);
-
-  const professoresDisponiveis = todosOsProfessores.filter(p => p.id !== professorAtualId);
-  console.log("\n--- 3. PROFESSORES DISPONÍVEIS (após remover o atual) ---", professoresDisponiveis);
-
-  let listaPriorizada = [];
-
-  if (nivelDaTurma === 'Anos Finais') {
-    console.log("\n--- 4. APLICANDO REGRAS PARA 'ANOS FINAIS' ---");
-
-    // --- REGRA II.a ---
-    console.log("\n--- Verificando Regra II.a (Docentes da mesma área) ---");
-    const regraII_a = professoresDisponiveis.filter(p => {
-      const condTipo = p.tipo === 'docente';
-      const condArea = p.areaConhecimento === areaDaAula;
-      console.log(`- ${p.nome}: tipo é 'docente'? ${condTipo}. área é '${areaDaAula}'? ${condArea}.`);
-      return condTipo && condArea;
-    }).sort((a, b) => a.cargaHoraria - b.cargaHoraria);
-    console.log("Resultado Regra II.a:", regraII_a);
-
-    // --- REGRA II.b ---
-    console.log("\n--- Verificando Regra II.b (Docentes de outras áreas) ---");
-    const regraII_b = professoresDisponiveis.filter(p => {
-        const condTipo = p.tipo === 'docente';
-        const condArea = p.areaConhecimento !== areaDaAula;
-        console.log(`- ${p.nome}: tipo é 'docente'? ${condTipo}. área é diferente de '${areaDaAula}'? ${condArea}.`);
-        return condTipo && condArea;
-    }).sort((a, b) => a.cargaHoraria - b.cargaHoraria);
-    console.log("Resultado Regra II.b:", regraII_b);
-    
-    // --- REGRA II.c ---
-    console.log("\n--- Verificando Regra II.c (Coordenadores da mesma área) ---");
-    const regraII_c = professoresDisponiveis.filter(p => {
-        const condTipo = p.tipo === 'coordenador';
-        const condArea = p.areaConhecimento === areaDaAula;
-        console.log(`- ${p.nome}: tipo é 'coordenador'? ${condTipo}. área é '${areaDaAula}'? ${condArea}.`);
-        return condTipo && condArea;
-    });
-    console.log("Resultado Regra II.c:", regraII_c);
-
-    // --- REGRA II.d ---
-    console.log("\n--- Verificando Regra II.d (Todos os Coordenadores) ---");
-    const regraII_d = professoresDisponiveis.filter(p => {
-        const condTipo = p.tipo === 'coordenador';
-        console.log(`- ${p.nome}: tipo é 'coordenador'? ${condTipo}.`);
-        return condTipo;
-    }).sort((a, b) => a.cargaHoraria - b.cargaHoraria);
-    console.log("Resultado Regra II.d:", regraII_d);
-    
-    listaPriorizada = [
-        { label: "Prioridade 1: Docentes da mesma área", opcoes: regraII_a },
-        { label: "Prioridade 2: Docentes de outras áreas", opcoes: regraII_b },
-        { label: "Prioridade 3: Coordenadores", opcoes: [...new Set([...regraII_c, ...regraII_d])] }
-    ];
-
-  } else if (nivelDaTurma === 'Anos Iniciais') {
-    console.log("\n--- 4. APLICANDO REGRAS PARA 'ANOS INICIAIS' ---");
-    // Adicione logs aqui se precisar depurar este bloco também
-    const regraIII_a = professoresDisponiveis.filter(p => p.tipo === 'colaborativo');
-    const regraIII_b = professoresDisponiveis.filter(p => p.tipo === 'coordenador' && p.areaConhecimento === 'Linguagens');
-    listaPriorizada = [
-        { label: "Prioridade 1: Professor Colaborativo", opcoes: regraIII_a },
-        { label: "Prioridade 2: Coordenação de Linguagens", opcoes: regraIII_b },
-    ];
-  }
-
-  // --- Outras Opções ---
-  console.log("\n--- 5. CALCULANDO 'OUTRAS OPÇÕES' ---");
-  const todosPriorizadosIds = listaPriorizada.flatMap(grupo => grupo.opcoes.map(p => p.id));
-  const outros = professoresDisponiveis.filter(p => !todosPriorizadosIds.includes(p.id));
-  console.log("Professores que não se encaixaram em nenhuma regra:", outros);
-
-  if (outros.length > 0) {
-    listaPriorizada.push({ label: "Outras Opções", opcoes: outros });
-  }
-
-  console.log("\n--- 6. LISTA FINAL ANTES DE FILTRAR GRUPOS VAZIOS ---");
-  console.log(listaPriorizada);
-  console.log("==================================================");
-  console.log("========= FIM DA ANÁLISE DE PRIORIZAÇÃO =========");
-  console.log("==================================================");
-
-  return listaPriorizada.filter(grupo => grupo.opcoes.length > 0);
-}
 
 export default function TelaSubstituicaoProfessor() {
     const [alocacoes, setAlocacoes] = useState([]);
@@ -299,6 +202,29 @@ export default function TelaSubstituicaoProfessor() {
     return (
         <Container className="py-5">
             <h2 className="text-center mb-4">Substituição de Professores</h2>
+            <Card 
+                as={Link} 
+                to="/analise-substituicoes" 
+                className="text-decoration-none text-dark shadow-sm mb-4"
+            >
+                <Card.Body>
+                    <div className="d-flex align-items-center">
+                        {/* Ícone */}
+                        <i className="bi bi-clipboard-data fs-1 text-primary me-4"></i>
+                        
+                        {/* Textos */}
+                        <div className="flex-grow-1">
+                            <h5 className="mb-0">Simular Substuições</h5>
+                            <p className="mb-0 text-muted small">
+                                Veja a Matriz de cobertura de professores e identificar aulas sensiveis ou simule possiveis faltas para se organizar melhor.
+                            </p>
+                        </div>
+
+                        {/* Seta (ms-auto empurra para a direita) */}
+                        <i className="bi bi-arrow-right-circle fs-3 text-primary ms-auto d-none d-sm-block"></i>
+                    </div>
+                </Card.Body>
+            </Card>
             <Card className="shadow-sm p-4 mb-5">
                 <Row className="g-3 align-items-end">
                     <Col md={2}>

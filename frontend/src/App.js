@@ -6,12 +6,11 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
-// Componentes e Providers
+
 import ProtectedRoute from './componentes/protect';
 import Registro from './componentes/register';
 import { LoadingProvider } from './providers/loading.provider'; // Assumindo que você usa isso
 
-// Layouts das Páginas (Removidas duplicatas)
 import LayoutAulas from './pages/Aulas';
 import ConfiguracoesDeSeguranca from './pages/ConfiguracoesDeSeguranca';
 import PagLogin from './pages/login';
@@ -27,10 +26,10 @@ import Layoutaluno from './pages/pagaluno';
 import FullLayout from './pages/paginicial';
 import { LayoutMatricula } from './pages/pagmatricula';
 import Layoutprofessor from './pages/pagprofessor';
-import Layoutnotifica from './pages/pagnotifica'; // Layout da TelaNotificacaoFaltas
+import Layoutnotifica from './pages/pagnotifica';
 import AcessoNegado from './pages/acessoNegado';
 import { LayoutRelatorios } from './pages/pagRelatorios';
-// Removida importação duplicada de alunoTurma.routes se existir, não estava no seu código original
+import { LayoutAnaliseSubstituicoes } from './pages/pagAnaliseSubstituicoes';
 
 function App() {
   return (
@@ -173,6 +172,15 @@ function App() {
             element={
               <ProtectedRoute allowedPermissions={['relatorios', 'registrofrequencia', 'adm']}>
                 <LayoutRelatorios />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path='/analise-substituicoes'
+            element={
+              <ProtectedRoute allowedPermissions={['relatorios', 'substituicoes', 'adm']}> {/* Ajuste as permissões */}
+                <LayoutAnaliseSubstituicoes />
               </ProtectedRoute>
             }
           />
