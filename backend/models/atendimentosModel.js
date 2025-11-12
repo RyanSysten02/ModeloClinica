@@ -33,7 +33,7 @@ const listarAtendimentos = async () => {
           CASE
               WHEN a.tipo = 1 THEN al.nome
               WHEN a.tipo = 2 THEN r.nome
-              ELSE NULL
+              ELSE a.nome
           END AS nome,
           a.status,
           sa.descricao AS status_descricao,
