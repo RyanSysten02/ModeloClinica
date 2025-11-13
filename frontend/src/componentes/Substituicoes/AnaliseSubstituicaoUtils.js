@@ -142,9 +142,9 @@ export function calcularPrioridadeCelula(professor, linhaMatriz) {
     const label = `${professor.nome} (${cargaHoraria}h)`; // Tooltip
 
     if (nivel === 'Anos Finais') {
-        // Regra II.a (Docente, mesma área) - Marcado como TITULAR
+        // Regra II.a (Docente, mesma área) - Marcado como P1
         if (tipo === 'docente' && areaConhecimento === areaDaLinha) {
-            return { id: 'TITULAR', label: `Titular (${cargaHoraria}h)`, tooltip: label };
+            return { id: 'P1', label: `P1 (${cargaHoraria}h)`, tooltip: label };
         }
         // Regra II.b (Docente, outra área)
         if (tipo === 'docente' && areaConhecimento !== areaDaLinha) {

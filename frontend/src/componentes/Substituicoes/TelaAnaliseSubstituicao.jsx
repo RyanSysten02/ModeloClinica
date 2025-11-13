@@ -81,7 +81,7 @@ const MatrizEstilos = `
   
   /* REMOVIDO: Estilos .professor-ausente e .celula-ausente */
 
-  .celula-TITULAR { background-color: #0d6efd !important; color: white !important; }
+  .celula-P1 { background-color: #0d6efd !important; color: white !important; }
   .celula-P1-AI   { background-color: #0a58ca !important; color: white !important; }
   .celula-P2       { background-color: #198754 !important; color: white !important; }
   .celula-P2-AI   { background-color: #146c43 !important; color: white !important; }
@@ -96,7 +96,7 @@ const MatrizEstilos = `
 
 // Dados para a Legenda (Usado na Matriz e no PDF)
 const legendaItens = [
-    { id: 'TITULAR', cor: '#0d6efd', texto: 'Titular (P1) da Área', corTexto: '#FFFFFF' },
+    { id: 'P1', cor: '#0d6efd', texto: 'Titular (P1) da Área', corTexto: '#FFFFFF' },
     { id: 'P2', cor: '#198754', texto: 'P2: Docente (Outra Área)', corTexto: '#FFFFFF' },
     { id: 'P3', cor: '#ffc107', texto: 'P3: Coordenador (Mesma Área)', corTexto: '#000000' },
     { id: 'P4', cor: '#fd7e14', texto: 'P4: Coordenador (Outra Área)', corTexto: '#000000' },
@@ -157,7 +157,7 @@ function SimuladorTatico({ todosProfessoresDB }) {
 
             // --- Título e Subtítulo ---
             doc.setFontSize(16);
-            doc.text('Simulador Tático de Ausência', pageWidth / 2, 40, { align: 'center' });
+            doc.text('Simulador de Ausência', pageWidth / 2, 40, { align: 'center' });
             
             doc.setFontSize(10);
             doc.setTextColor(100);
@@ -259,7 +259,7 @@ function SimuladorTatico({ todosProfessoresDB }) {
     return (
         <Card id="card-simulador-tatico">
             <Card.Header className="d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">Simulador Tático de Ausência</h5>
+                <h5 className="mb-0">Simulador de Ausência</h5>
                 {/* ATUALIZADO: O botão agora chama a função de PDF e tem um ícone de PDF */}
                 <Button variant="outline-danger" size="sm" onClick={handlePrintSimulador} className="btn-print">
                     <i className="bi bi-file-earmark-pdf me-2"></i>Gerar PDF
@@ -602,34 +602,53 @@ export default function TelaAnaliseSubstituicao() {
         };
     }, []); 
 
-    useEffect(() => {
-        const carregarDadosIniciais = async () => {
-            setIsLoading(true);
-            try {
-                const [professoresData, turmasData, disciplinasData] = await Promise.all([
-                    apiClient.get('/professor/professores'),
-                    TurmaService.findAll(),
-                    DisciplinaService.findAll()
-                ]);
-                const turmas = Array.isArray(turmasData) ? turmasData : [];
-                setTodosProfessoresDB(professoresData.data || []);
-                setTurmasFiltro(turmas);
-                setDisciplinasFiltro(Array.isArray(disciplinasData) ? disciplinasData : []);
-                const anos = [...new Set(turmas.map(t => t.ano_letivo))].sort((a,b) => b-a);
-                const semestres = [...new Set(turmas.map(t => t.semestre))].sort();
-                setAnosLetivos(anos);
-                setSemestres(semestres);
-                setFiltros(prev => ({ ...prev, anoLetivo: anos[0] || '', semestre: semestres[0] || '' }));
-                setError(null);
-            } catch (err) {
-                toast.error("Falha ao carregar dados da matriz.");
-                setError("Não foi possível carregar os dados necessários.");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        carregarDadosIniciais();
-    }, []);
+   useEffect(() => {
+        const carregarDadosIniciais = async () => {
+            setIsLoading(true);
+            try {
+                const [professoresData, turmasData, disciplinasData] = await Promise.all([
+                    apiClient.get('/professor/professores'),
+                    TurmaService.findAll(),
+                    DisciplinaService.findAll()
+                ]);
+                const turmas = Array.isArray(turmasData) ? turmasData : [];
+                setTodosProfessoresDB(professoresData.data || []);
+                setTurmasFiltro(turmas);
+                setDisciplinasFiltro(Array.isArray(disciplinasData) ? disciplinasData : []);
+
+                // --- ALTERAÇÃO AQUI: Garantir que anos e semestres sejam tratados como números ---
+                const anos = [...new Set(turmas.map(t => parseInt(t.ano_letivo, 10)))]
+                    .filter(ano => !isNaN(ano)) // Remove entradas inválidas
+                    .sort((a, b) => b - a);
+                
+                const semestres = [...new Set(turmas.map(t => parseInt(t.semestre, 10)))]
+                    .filter(sem => !isNaN(sem)) // Remove entradas inválidas
+                    .sort();
+                // -----------------------------------------------------------------------------
+
+                setAnosLetivos(anos);
+                setSemestres(semestres);
+
+                // Define o "ano letivo atual" como o mais recente da lista
+                const anoAtual = anos[0] || ''; 
+                const semestreAtual = semestres[0] || '';
+
+                setFiltros(prev => ({ 
+                    ...prev, 
+                    // Garantir que o valor salvo no estado seja número (ou string vazia)
+                    anoLetivo: anoAtual, 
+                    semestre: semestreAtual 
+                }));
+                setError(null);
+            } catch (err) {
+                toast.error("Falha ao carregar dados da matriz.");
+                setError("Não foi possível carregar os dados necessários.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        carregarDadosIniciais();
+    }, []);
 
     // --- Handlers ---
     const handleFiltroChange = (e) => {
@@ -644,22 +663,39 @@ export default function TelaAnaliseSubstituicao() {
     // REMOVIDO: O handler 'toggleProfessorAusente' foi removido
 
     // --- Memo: Dados para a MATRIZ ---
-    const dadosMatriz = useMemo(() => {
-        if (todosProfessoresDB.length === 0 || disciplinasFiltro.length === 0 || turmasFiltro.length === 0) {
-            return { linhas: [], colunas: [] };
-        }
-        const turmasProcessadas = turmasFiltro.filter(t => 
-            (filtros.anoLetivo ? t.ano_letivo == filtros.anoLetivo : true) &&
-            (filtros.semestre ? t.semestre == filtros.semestre : true)
-        );
-        const professoresFiltrados = todosProfessoresDB.filter(p => filtros.tipos.includes(p.tipo));
-        professoresFiltrados.sort((a, b) => {
-            if (filtros.sortBy === 'nome') return a.nome.localeCompare(b.nome);
-            return a.cargaHoraria - b.cargaHoraria;
-        });
-        return gerarDadosMatriz(professoresFiltrados, disciplinasFiltro, turmasProcessadas);
-    }, [todosProfessoresDB, disciplinasFiltro, turmasFiltro, filtros]);
+ // --- Memo: Dados para a MATRIZ ---
+    const dadosMatriz = useMemo(() => {
+        if (todosProfessoresDB.length === 0 || disciplinasFiltro.length === 0 || turmasFiltro.length === 0) {
+            return { linhas: [], colunas: [] };
+        }
 
+        // --- CORREÇÃO: Converter filtros para número antes de comparar ---
+        // O valor '' (Todos) virará NaN
+        const anoLetivoFiltro = parseInt(filtros.anoLetivo, 10);
+        const semestreFiltro = parseInt(filtros.semestre, 10);
+
+        const turmasProcessadas = turmasFiltro.filter(t => {
+            // Converte os dados da turma para número
+            const anoTurma = parseInt(t.ano_letivo, 10);
+            const semestreTurma = parseInt(t.semestre, 10);
+
+            // Comparações numéricas estritas
+            // Se o filtro for NaN (ex: selecionou "Todos"), a condição isNaN() será true
+            const matchAno = isNaN(anoLetivoFiltro) || anoTurma === anoLetivoFiltro;
+            const matchSemestre = isNaN(semestreFiltro) || semestreTurma === semestreFiltro;
+            
+            return matchAno && matchSemestre;
+        });
+        
+        const professoresFiltrados = todosProfessoresDB.filter(p => filtros.tipos.includes(p.tipo));
+        
+        professoresFiltrados.sort((a, b) => {
+            if (filtros.sortBy === 'nome') return a.nome.localeCompare(b.nome);
+            return a.cargaHoraria - b.cargaHoraria;
+        });
+
+        return gerarDadosMatriz(professoresFiltrados, disciplinasFiltro, turmasProcessadas);
+    }, [todosProfessoresDB, disciplinasFiltro, turmasFiltro, filtros]);
 
     return (
         <Container fluid className="py-5 analise-substituicao-page"> 
@@ -676,7 +712,7 @@ export default function TelaAnaliseSubstituicao() {
             <Tabs defaultActiveKey="simulador" id="analise-tabs" className="mb-3 btn-print" fill>
                 
                 {/* --- ABA 1: SIMULADOR TÁTICO --- */}
-                <Tab eventKey="simulador" title={<span><i className="bi bi-person-check-fill me-2"></i>Simulador Tático</span>}>
+                <Tab eventKey="simulador" title={<span><i className="bi bi-person-check-fill me-2"></i>Simulador Ausências</span>}>
                     {isLoading ? (
                         <div className="text-center p-5"><Spinner animation="border" /></div>
                     ) : error ? (
