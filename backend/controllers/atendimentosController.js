@@ -48,13 +48,19 @@ const adicionarAtendimento = async (req, res) => {
 };
 
 const listarAtendimentos = async (req, res) => {
-  const { nome, dataInicio, dataFim } = req.query;
+  const { nome, dataInicio, dataFim, status } = req.query;
   try {
     const aluno = await atendimentoServices.listarAtendimentos();
     const alunoPlano = aluno[0] || [];
     let lista = alunoPlano;
     if (nome) {
-      lista = lista.filter((at) => at.nome?.toLowerCase().includes(nome));
+      lista = lista.filter((at) =>
+        at.nome?.toLowerCase().includes(nome.toLowerCase())
+      );
+    }
+
+    if (status) {
+      lista = lista.filter((at) => parseInt(at.status) === parseInt(status));
     }
 
     const start = dataInicio ? moment(dataInicio, 'YYYY-MM-DD', true) : null;
@@ -132,7 +138,7 @@ const deletarAtendimento = async (req, res) => {
 
   try {
     await atendimentoServices.deletarAtendimento(id);
-    res.status(200).json({ message: 'Dados do aluno atualizados com sucesso' });
+    res.status(200).json({ message: 'Atendimento excluído com sucesso.' });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import FormularioAtendimento from './FormularioAtendimento';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import ModalConfirmacao from '../ModaisUteis/ModalConfirmação';
 
 const IniciarAtendimento = ({ onSelectProfessor }) => {
   const [atendimentos, setAtendimentos] = useState([]);
@@ -26,6 +27,18 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
   const [editarAtendimentoFormFields, setEditarAtendimentoFormFields] =
     useState(null);
   const navigate = useNavigate();
+  const [statusAtendimento, setStatusAtendimento] = useState([]);
+  const [statusAtendimentoFiltro, setStatusAtendimentoFiltro] = useState([]);
+  const handleCloseModal = () => {
+    setModalConfig({ ...modalConfig, show: false });
+  };
+  const [modalConfig, setModalConfig] = useState({
+    show: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    confirmVariant: 'primary',
+  });
 
   const BG_BADGES_BY_STATUS = {
     1: 'success',
@@ -55,6 +68,20 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
     setShowCadastroModal(true);
   };
 
+  const handleExcluirAtendimento = async (id) => {
+    setModalConfig({
+      show: true,
+      title: 'Excluir Atendimento',
+      message:
+        'Deseja realmente excluir este atendimento? Essa ação não pode ser desfeita.',
+      confirmVariant: 'danger',
+      onConfirm: () => {
+        deletarAtendimento(id);
+        handleCloseModal();
+      },
+    });
+  };
+
   const fetchAtendimentos = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -63,6 +90,16 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
         navigate('/login');
         return;
       }
+
+      const { data } = await axios.get(
+        'http://localhost:5001/api/atendimentos/status/listar',
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      setStatusAtendimentoFiltro(data);
 
       const response = await fetch(
         'http://localhost:5001/api/atendimentos/listar',
@@ -98,7 +135,7 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
       }
 
       const response = await fetch(
-        `http://localhost:5001/api/atendimentos/listar?nome=${nomeAtendimento}&dataInicio=${dataInicioPeriodoAtendimento}&dataFim=${dataFimPeriodoAtendimento}`,
+        `http://localhost:5001/api/atendimentos/listar?nome=${nomeAtendimento}&dataInicio=${dataInicioPeriodoAtendimento}&dataFim=${dataFimPeriodoAtendimento}&status=${statusAtendimento}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -125,7 +162,7 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
         <Form onSubmit={handleSubmit}>
           <Row>
             {/* Data */}
-            <Col md={6}>
+            <Col md={3}>
               <Form.Group className='mb-3 text-start'>
                 <Form.Label>Nome do Atendido</Form.Label>
                 <Form.Control
@@ -134,6 +171,23 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
                   value={nomeAtendimento}
                   onChange={(e) => setNomeAtendimento(e.target.value)}
                 />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <Form.Group className='mb-3 text-start'>
+                <Form.Label>Status do Atendimento</Form.Label>
+                <Form.Select
+                  name='status'
+                  value={statusAtendimento}
+                  onChange={(e) => setStatusAtendimento(e.target.value)}
+                >
+                  <option value=''>Selecione...</option>
+                  {statusAtendimentoFiltro.map((status) => (
+                    <option key={status.id} value={status.id}>
+                      {status.descricao}
+                    </option>
+                  ))}
+                </Form.Select>
               </Form.Group>
             </Col>
             <Col md={3}>
@@ -215,7 +269,7 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
                     className='bi bi-trash'
                     role='button'
                     title='Excluir Atendimento'
-                    onClick={() => deletarAtendimento(atendimento.id)}
+                    onClick={() => handleExcluirAtendimento(atendimento.id)}
                   ></i>
                 </div>
               </td>
@@ -229,6 +283,14 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
         formValues={editarAtendimentoFormFields}
         onHide={() => setShowCadastroModal(false)}
         onCadastroSuccess={fetchAtendimentos}
+      />
+      <ModalConfirmacao
+        show={modalConfig.show}
+        onHide={handleCloseModal}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmVariant={modalConfig.confirmVariant}
       />
     </Container>
   );
