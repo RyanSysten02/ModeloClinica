@@ -210,7 +210,7 @@ const Sidebar = () => {
                 className='nav-link text-secondary py-3'
                 onClick={() => navigate('/pagSubstituicoes')}
               >
-                <i class='bi bi-arrow-left-right'></i>
+                <i className='bi bi-arrow-left-right'></i>
                 <span className='ms-3 d-inline-block'>Substituições Prof.</span>
               </Button>
             </NavItem>

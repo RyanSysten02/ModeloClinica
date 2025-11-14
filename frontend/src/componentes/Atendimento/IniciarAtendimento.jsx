@@ -1,7 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Table, Button } from 'react-bootstrap';
+import { useState, useEffect } from 'react';
+import {
+  Container,
+  Table,
+  Button,
+  Form,
+  Row,
+  Col,
+  Badge,
+} from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
 import FormularioAtendimento from './FormularioAtendimento';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -10,10 +17,23 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
   const [atendimentos, setAtendimentos] = useState([]);
   const [handleListaAtendimentos, setHandleListaAtendimentos] = useState(true);
   const [mensagemErro, setMensagemErro] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [professorSelecionado, setProfessorSelecionado] = useState(null);
   const [showCadastroModal, setShowCadastroModal] = useState(false);
+  const [dataInicioPeriodoAtendimento, setDataInicioPeriodoAtendimento] =
+    useState('');
+  const [dataFimPeriodoAtendimento, setDataFimPeriodoAtendimento] =
+    useState('');
+  const [nomeAtendimento, setNomeAtendimento] = useState('');
+  const [editarAtendimentoFormFields, setEditarAtendimentoFormFields] =
+    useState(null);
   const navigate = useNavigate();
+
+  const BG_BADGES_BY_STATUS = {
+    1: 'success',
+    2: 'danger',
+    3: 'primary',
+    4: 'warning',
+    5: 'secondary',
+  };
 
   const deletarAtendimento = async (id) => {
     const token = localStorage.getItem('token');
@@ -28,18 +48,11 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
     setHandleListaAtendimentos(!handleListaAtendimentos);
   };
 
-  const editarAtendimento = async (id, tipo) => {
-    const token = localStorage.getItem('token');
-
-    const response = await axios.put(
-      `http://localhost:5001/api/atendimentos/${id}/editar?tipo=${tipo}`,
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+  const editarAtendimentoExistente = async (id) => {
+    setEditarAtendimentoFormFields(
+      atendimentos.find((at) => parseInt(at.id) === parseInt(id))
     );
-    toast.success(response.data.message);
-    setHandleListaAtendimentos(!handleListaAtendimentos);
+    setShowCadastroModal(true);
   };
 
   const fetchAtendimentos = async () => {
@@ -64,7 +77,7 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
         const data = await response.json();
         setAtendimentos(data);
       } else {
-        setMensagemErro('Erro ao carregar os atendimentos.');
+        setMensagemErro('Erro ao carregar os funcionários.');
       }
     } catch (error) {
       setMensagemErro('Erro ao conectar com o servidor.');
@@ -75,22 +88,7 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
     fetchAtendimentos();
   }, [handleListaAtendimentos]);
 
-  const handleSave = async (formData) => {
-    console.log('Tentando salvar:', formData);
-
-    // Corrigir a data no formato aceito pelo MySQL (yyyy-MM-dd)
-    if (formData.data_nasc) {
-      try {
-        const dataFormatada = format(
-          new Date(formData.data_nasc),
-          'yyyy-MM-dd'
-        );
-        formData.data_nasc = dataFormatada;
-      } catch (e) {
-        console.error('Erro ao formatar data:', e.message);
-      }
-    }
-
+  const handleSubmit = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -100,41 +98,84 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
       }
 
       const response = await fetch(
-        `http://localhost:5001/api/professor/professor/${formData.id}`,
+        `http://localhost:5001/api/atendimentos/listar?nome=${nomeAtendimento}&dataInicio=${dataInicioPeriodoAtendimento}&dataFim=${dataFimPeriodoAtendimento}`,
         {
-          method: 'PUT',
           headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(formData),
         }
       );
 
-      const data = await response.json();
-      console.log('Resposta do servidor:', data);
-
       if (response.ok) {
-        await fetchAtendimentos();
+        const data = await response.json();
+        setAtendimentos(data);
+        setMensagemErro('');
       } else {
-        setMensagemErro('Erro ao salvar alterações do funcionário.');
+        setMensagemErro('Erro ao carregar os funcionários.');
       }
     } catch (error) {
-      console.error('Erro na atualização:', error.message);
       setMensagemErro('Erro ao conectar com o servidor.');
     }
   };
 
-  const closeModal = () => {
-    setShowModal(false);
-    setProfessorSelecionado(null);
-  };
-
   return (
     <Container>
-      <h1 className='mt-4'>Iniciar Atendimento</h1>
+      <h1 className='mt-4'>Listar Atendimentos</h1>
+      <div>
+        <Form onSubmit={handleSubmit}>
+          <Row>
+            {/* Data */}
+            <Col md={6}>
+              <Form.Group className='mb-3 text-start'>
+                <Form.Label>Nome do Atendido</Form.Label>
+                <Form.Control
+                  type='text'
+                  name='data'
+                  value={nomeAtendimento}
+                  onChange={(e) => setNomeAtendimento(e.target.value)}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <Form.Group className='mb-3 text-start'>
+                <Form.Label>Data Inicial Atendimento</Form.Label>
+                <Form.Control
+                  type='date'
+                  name='data'
+                  value={dataInicioPeriodoAtendimento}
+                  onChange={(e) =>
+                    setDataInicioPeriodoAtendimento(e.target.value)
+                  }
+                />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <Form.Group className='mb-3 text-start'>
+                <Form.Label>Data Final Atendimento</Form.Label>
+                <Form.Control
+                  type='date'
+                  name='data'
+                  value={dataFimPeriodoAtendimento}
+                  onChange={(e) => setDataFimPeriodoAtendimento(e.target.value)}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+        </Form>
+      </div>
+      <div className='d-flex align-items-center justify-content-center'>
+        <Button variant='primary' onClick={handleSubmit}>
+          Buscar
+        </Button>
+      </div>
       <div className='m-2 d-flex justify-content-start'>
-        <Button variant='info' onClick={() => setShowCadastroModal(true)}>
+        <Button
+          variant='info'
+          onClick={() => {
+            setEditarAtendimentoFormFields(null);
+            setShowCadastroModal(true);
+          }}
+        >
           Novo Atendimento
         </Button>
       </div>
@@ -157,20 +198,18 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
               <td>{atendimento.data}</td>
               <td>{atendimento.motivo}</td>
               <td>{atendimento.resolucao}</td>
-              <td>{atendimento.status_descricao}</td>
+              <td>
+                <Badge bg={BG_BADGES_BY_STATUS[atendimento.status]}>
+                  {atendimento.status_descricao}
+                </Badge>
+              </td>
               <td>
                 <div className='d-flex w-100 h-100 align-items-center justify-content-center gap-2'>
                   <i
-                    className='bi bi-pause cursor-pointer'
+                    className='bi bi-pencil-square cursor-pointer'
                     role='button'
-                    title='Pausar Atendimento'
-                    onClick={() => editarAtendimento(atendimento.id, 5)}
-                  ></i>
-                  <i
-                    className='bi bi-x'
-                    role='button'
-                    title='Cancelar Atendimento'
-                    onClick={() => editarAtendimento(atendimento.id, 4)}
+                    title='Editar Atendimento'
+                    onClick={() => editarAtendimentoExistente(atendimento.id)}
                   ></i>
                   <i
                     className='bi bi-trash'
@@ -187,6 +226,7 @@ const IniciarAtendimento = ({ onSelectProfessor }) => {
 
       <FormularioAtendimento
         show={showCadastroModal}
+        formValues={editarAtendimentoFormFields}
         onHide={() => setShowCadastroModal(false)}
         onCadastroSuccess={fetchAtendimentos}
       />
