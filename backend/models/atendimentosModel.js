@@ -26,6 +26,21 @@ const adicionarAtendimento = async (
   return result;
 };
 
+const editarAtendimentoCompleto = async (id, details) => {
+  return await pool.query(
+    `
+      UPDATE atendimento
+        SET
+          status = '${details.status}',
+          motivo = '${details.motivo}',
+          data = '${details.data}',
+          resolucao = '${details.resolucao}',
+          operador = '${details.operador}'
+        WHERE id = ${id}
+    `
+  );
+};
+
 const listarAtendimentos = async () => {
   const result = await pool.query(`
       SELECT
@@ -138,4 +153,5 @@ module.exports = {
   getAtendimentosByAlunoId,
   getHistoricoConsultasByAlunoId,
   listarStatusAtendimentos,
+  editarAtendimentoCompleto,
 };

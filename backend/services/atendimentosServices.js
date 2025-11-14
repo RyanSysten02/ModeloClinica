@@ -31,6 +31,14 @@ const listarStatusAtendimentos = async () => {
   return atendimentos;
 };
 
+const editarAtendimentoCompleto = async (id, details) => {
+  const atendimento = await atendimentosModel.editarAtendimentoCompleto(
+    id,
+    details
+  );
+  return atendimento;
+};
+
 const listarNomesAtendimentos = async (tipo) => {
   const [nomes] = await atendimentosModel.listarNomesAtendimentos(tipo);
   return nomes;
@@ -61,4 +69,5 @@ module.exports = {
   deletarAtendimento,
   listarStatusAtendimentos,
   getAtendimentosByAlunoId,
+  editarAtendimentoCompleto,
 };

@@ -1,12 +1,19 @@
+const moment = require('moment');
 const atendimentoServices = require('../services/atendimentosServices');
 const jwt = require('jsonwebtoken');
 
 const adicionarAtendimento = async (req, res) => {
-  const { nome, status, motivo, data, resolucao, tipo } = req.body;
+  const { nome, status, motivo, data, resolucao, tipo, id } = req.body;
   console.log(nome, status, motivo, data, resolucao);
 
   const token = req.header('Authorization');
   if (!token) return res.status(401).json({ message: 'Token não fornecido' });
+
+  if (!nome || !status || !motivo || !data || !resolucao || !tipo) {
+    return res
+      .status(400)
+      .json({ message: 'Preencha todos os campos obrigatórios.' });
+  }
 
   try {
     const tokenLimpo = token.split(' ')[1];
@@ -14,15 +21,26 @@ const adicionarAtendimento = async (req, res) => {
     req.user = decoded;
     const operador = req.user.id;
 
-    await atendimentoServices.adicionarAtendimento(
-      nome,
-      status,
-      motivo,
-      data,
-      resolucao,
-      operador,
-      tipo
-    );
+    if (id) {
+      await atendimentoServices.editarAtendimentoCompleto(id, {
+        nome,
+        status,
+        motivo,
+        data,
+        resolucao,
+        operador,
+        tipo,
+      });
+    } else
+      await atendimentoServices.adicionarAtendimento(
+        nome,
+        status,
+        motivo,
+        data,
+        resolucao,
+        operador,
+        tipo
+      );
     res.status(201).json({ message: 'Aluno cadastrado com sucesso' });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -30,24 +48,41 @@ const adicionarAtendimento = async (req, res) => {
 };
 
 const listarAtendimentos = async (req, res) => {
+  const { nome, dataInicio, dataFim } = req.query;
   try {
     const aluno = await atendimentoServices.listarAtendimentos();
     const alunoPlano = aluno[0] || [];
-    res.status(200).json(alunoPlano);
+    let lista = alunoPlano;
+    if (nome) {
+      lista = lista.filter((at) => at.nome?.toLowerCase().includes(nome));
+    }
+
+    const start = dataInicio ? moment(dataInicio, 'YYYY-MM-DD', true) : null;
+    const end = dataFim ? moment(dataFim, 'YYYY-MM-DD', true) : null;
+
+    if (start && end && start.isValid() && end.isValid()) {
+      lista = lista.filter((at) => {
+        const d = moment(at?.data, 'DD/MM/YYYY', true);
+        if (!d.isValid()) return false; // skip bad dates
+        // "day" = compare by day only, "[]" = inclusive of endpoints
+        return d.isBetween(start, end, 'day', '[]');
+      });
+    } else if (start && start.isValid()) {
+      lista = lista.filter((at) => {
+        const d = moment(at?.data, 'DD/MM/YYYY', true);
+        return d.isValid() && d.isSameOrAfter(start, 'day');
+      });
+    } else if (end && end.isValid()) {
+      lista = lista.filter((at) => {
+        const d = moment(at?.data, 'DD/MM/YYYY', true);
+        return d.isValid() && d.isSameOrBefore(end, 'day');
+      });
+    }
+
+    res.status(200).json(lista);
   } catch (error) {
     console.error('Erro ao buscar alunos:', error);
     res.status(400).json({ message: error.message });
-  }
-};
-
-const listarStatusAtendimentos = async (req, res) => {
-  try {
-    const listaStatusAtendimentos =
-      await atendimentoServices.listarStatusAtendimentos();
-    res.status(200).json(listaStatusAtendimentos);
-  } catch ({ message, ...error }) {
-    console.error('Erro ao buscar status de atendimento:', error);
-    res.status(400).json({ message });
   }
 };
 
@@ -57,6 +92,17 @@ const listarNomesAtendimentos = async (req, res) => {
     const listarNomesAtendimentos =
       await atendimentoServices.listarNomesAtendimentos(tipo);
     res.status(200).json(listarNomesAtendimentos);
+  } catch ({ message, ...error }) {
+    console.error('Erro ao buscar status de atendimento:', error);
+    res.status(400).json({ message });
+  }
+};
+
+const listarStatusAtendimentos = async (req, res) => {
+  try {
+    const listaStatusAtendimentos =
+      await atendimentoServices.listarStatusAtendimentos();
+    res.status(200).json(listaStatusAtendimentos);
   } catch ({ message, ...error }) {
     console.error('Erro ao buscar status de atendimento:', error);
     res.status(400).json({ message });
