@@ -16,4 +16,21 @@ router.delete('/:id/excluir', atendimentosController.deletarAtendimento);
 
 router.get('/:id', atendimentosController.getAtendimentosByAlunoId);
 
+router.get('/relatorios/gerar', atendimentosController.gerarRelatorio);
+
+router.get(
+  '/relatorios/turmas/gerar',
+  atendimentosController.gerarRelatorioTurmas
+);
+
+router.get('/turmas/listar', atendimentosController.listarTurmas);
+
+router.get('/turmas/anos-letivos', atendimentosController.listarAnosLetivos);
+
+router.get('/turmas/status', atendimentosController.listarStatusTurma);
+
+router.get('/turmas/status', atendimentosController.listarStatusTurma);
+
+router.get('/listar/usuarios', atendimentosController.listarUsuarios);
+
 module.exports = router;

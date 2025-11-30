@@ -251,6 +251,17 @@ const Sidebar = () => {
               <span className='ms-3 d-inline-block'>Relacionamento</span>
             </Button>
           </NavItem>
+          {/* Relatório Atendimento */}
+          <NavItem className='sidenav-bg'>
+            <Button
+              color='link'
+              className='nav-link text-secondary py-3'
+              onClick={() => navigate('/relatorioAtendimentos')}
+            >
+              <i className='bi bi-calendar-range'></i>
+              <span className='ms-3 d-inline-block'>Relatório Atds.</span>
+            </Button>
+          </NavItem>
         </Nav>
       </div>
 

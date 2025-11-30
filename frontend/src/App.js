@@ -6,7 +6,6 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
-
 import ProtectedRoute from './componentes/protect';
 import Registro from './componentes/register';
 import { LoadingProvider } from './providers/loading.provider'; // Assumindo que você usa isso
@@ -30,6 +29,7 @@ import Layoutnotifica from './pages/pagnotifica';
 import AcessoNegado from './pages/acessoNegado';
 import { LayoutRelatorios } from './pages/pagRelatorios';
 import CentralRelacionamentos from './pages/CentralRelacionamentos';
+import RelatorioAtendimentoPage from './pages/relatorioAtendimentos';
 import { LayoutAnaliseSubstituicoes } from './pages/pagAnaliseSubstituicoes';
 
 function App() {
@@ -210,14 +210,28 @@ function App() {
               }
             />
 
-          <Route
-            path='/analise-substituicoes'
-            element={
-              <ProtectedRoute allowedPermissions={['relatorios', 'substituicoes', 'adm']}> {/* Ajuste as permissões */}
-                <LayoutAnaliseSubstituicoes />
-              </ProtectedRoute>
-            }
-          />
+            {/* Relatório de Atendimentos */}
+            <Route
+              path='/relatorioAtendimentos'
+              element={
+                <ProtectedRoute>
+                  <RelatorioAtendimentoPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path='/analise-substituicoes'
+              element={
+                <ProtectedRoute
+                  allowedPermissions={['relatorios', 'substituicoes', 'adm']}
+                >
+                  {' '}
+                  {/* Ajuste as permissões */}
+                  <LayoutAnaliseSubstituicoes />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Rota Catch-all para 404 ou redirecionamento pode ser adicionada aqui */}
             {/* <Route path="*" element={<NotFound />} /> */}

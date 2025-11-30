@@ -89,6 +89,10 @@ const editarAtendimento = async (id, status) => {
   );
 };
 
+const listarUsuarios = async () => {
+  return await pool.query(`SELECT id, nome FROM user WHERE role_id = 3`);
+};
+
 const deletarAtendimento = async (id) => {
   const result = await pool.query(`DELETE FROM atendimento WHERE id = ${id}`);
   return result;
@@ -144,6 +148,158 @@ const getAtendimentosByAlunoId = async (idAluno, tipo) => {
   return rows;
 };
 
+const listarAtendimentosRelatorio = async (
+  dataInicio = '',
+  dataFim = '',
+  operador = '',
+  responsavel = ''
+) => {
+  const getStatementData = (date, operator, column) => {
+    const suffix = operator === '>=' ? ' 00:00:00' : ' 23:59:59';
+
+    return `AND ${column} ${operator} STR_TO_DATE('${
+      date + suffix
+    }', '%Y-%m-%d %H:%i:%s')`;
+  };
+
+  const [rows] = await pool.query(`
+      SELECT
+        a.id,
+        CASE
+          WHEN a.tipo = 1 THEN al.nome
+          WHEN a.tipo = 2 THEN r.nome
+          ELSE a.nome
+        END AS nome,
+        a.motivo,
+        a.resolucao,
+        a.status,
+        sa.descricao AS status_descricao,
+        date_format(a.data, '%d/%m/%Y') as data
+      FROM
+        atendimento a
+      LEFT JOIN aluno al
+        ON a.tipo = 1 AND a.nome = al.id
+      LEFT JOIN responsavel r
+        ON a.tipo = 2 AND a.nome = r.id
+      LEFT JOIN status_atendimento sa
+        ON a.status = sa.id
+      WHERE 1 = 1
+      ${dataInicio ? getStatementData(dataInicio, '>=', 'a.data') : ''}
+      ${dataFim ? getStatementData(dataFim, '<=', 'a.data') : ''};
+  `);
+  return rows;
+};
+
+const listarTurmas = async () => {
+  return await pool.query(
+    `
+      SELECT t.id, t.nome FROM TURMA t;
+    `
+  );
+};
+
+const listarAnosLetivos = async () => {
+  return await pool.query(
+    `
+      SELECT DISTINCT t.ano_letivo FROM TURMA t;
+    `
+  );
+};
+
+const listarStatusTurma = async () => {
+  return await pool.query(
+    `
+      SELECT DISTINCT t.status FROM TURMA t;
+    `
+  );
+};
+
+const gerarRelatorioPDFTurmas = async (filtros = {}) => {
+  const { turmas, ano_letivo, status } = filtros;
+
+  let query = `
+    SELECT
+      t.id,
+      t.nome,
+      t.nivel,
+      t.ano_letivo,
+      t.periodo,
+      t.semestre,
+      t.status,
+      JSON_ARRAYAGG(
+        CASE
+          WHEN a.id IS NOT NULL THEN
+            JSON_OBJECT(
+              'id', a.id,
+              'nome', a.nome,
+              'matricula', m.id,
+              'dataAlocacao', at.data_alocacao
+            )
+          ELSE NULL
+        END
+      ) as alunos
+    FROM turma t
+    LEFT JOIN aluno_turma at ON t.id = at.turma_id
+    LEFT JOIN matricula m ON at.matricula_id = m.id
+    LEFT JOIN aluno a ON m.aluno_id = a.id
+    WHERE 1=1
+  `;
+
+  const params = [];
+
+  if (turmas && turmas.length > 0) {
+    const placeholders = turmas.map(() => '?').join(',');
+    query += ` AND t.id IN (${placeholders})`;
+    params.push(...turmas);
+  }
+
+  if (ano_letivo) {
+    query += ` AND t.ano_letivo = ?`;
+    params.push(ano_letivo);
+  }
+
+  if (status) {
+    query += ` AND t.status = ?`;
+    params.push(status);
+  }
+
+  query += ` GROUP BY t.id, t.nome, t.nivel, t.ano_letivo, t.periodo, t.semestre, t.status`;
+  query += ` ORDER BY t.nome`;
+
+  const [rows] = await pool.query(query, params);
+
+  const turmasLista = rows.map((turma) => {
+    let alunosArray = [];
+
+    try {
+      // Parse do JSON retornado pelo MySQL
+      if (turma.alunos) {
+        const parsed =
+          typeof turma.alunos === 'string'
+            ? JSON.parse(turma.alunos)
+            : turma.alunos;
+        alunosArray = parsed.filter((aluno) => aluno !== null);
+      }
+    } catch (error) {
+      console.error('Erro ao parsear alunos da turma:', turma.id, error);
+      alunosArray = [];
+    }
+
+    return {
+      id: turma.id,
+      nome: turma.nome,
+      nivel: turma.nivel,
+      ano_letivo: turma.ano_letivo,
+      periodo: turma.periodo,
+      semestre: turma.semestre,
+      status: turma.status,
+      alunos: alunosArray,
+    };
+  });
+
+  return turmasLista;
+};
+
 module.exports = {
   adicionarAtendimento,
   listarAtendimentos,
@@ -154,4 +310,10 @@ module.exports = {
   getHistoricoConsultasByAlunoId,
   listarStatusAtendimentos,
   editarAtendimentoCompleto,
+  listarAtendimentosRelatorio,
+  listarTurmas,
+  listarAnosLetivos,
+  listarStatusTurma,
+  gerarRelatorioPDFTurmas,
+  listarUsuarios,
 };

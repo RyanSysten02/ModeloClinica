@@ -3,6 +3,7 @@ import { Button, Container, Form, InputGroup, Table } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import TurmaService from '../../services/Turma';
 import { ModalForm } from './ModalForm';
+import { ModalGerarRelatorio } from './ModalGerarRelatorio';
 import { ModalList } from './ModalList';
 import { ModalDeletar } from '../ModalDeletar';
 
@@ -11,6 +12,8 @@ export const ListaTurma = () => {
   const [messageError, setMessageError] = useState(null);
   const [selected, setSelected] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showModalGerarRelatorioTurmas, setShowModalGerarRelatorioTurmas] =
+    useState(false);
   const [showModalList, setShowModalList] = useState(false);
   const [searchText, setSearchText] = useState();
   const [showModalDelete, setShowModalDelete] = useState(false);
@@ -119,7 +122,7 @@ export const ListaTurma = () => {
     <Container>
       <h1 className='mt-4'>Lista de Turmas</h1>
 
-      <div className='mb-2 d-flex justify-content-start'>
+      <div className='mb-2 d-flex justify-content-start gap-2'>
         <Button
           variant='info'
           onClick={() => {
@@ -128,6 +131,15 @@ export const ListaTurma = () => {
           }}
         >
           Cadastrar Turma
+        </Button>
+
+        <Button
+          variant='secondary'
+          onClick={() => {
+            setShowModalGerarRelatorioTurmas(true);
+          }}
+        >
+          Gerar Relatório
         </Button>
       </div>
 
@@ -207,6 +219,13 @@ export const ListaTurma = () => {
         onHide={onCloseModal}
         onSave={onSubmit}
         selected={selected}
+      />
+
+      <ModalGerarRelatorio
+        show={showModalGerarRelatorioTurmas}
+        onHide={() => {
+          setShowModalGerarRelatorioTurmas(false);
+        }}
       />
 
       <ModalList

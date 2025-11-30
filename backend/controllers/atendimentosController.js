@@ -1,10 +1,11 @@
 const moment = require('moment');
 const atendimentoServices = require('../services/atendimentosServices');
 const jwt = require('jsonwebtoken');
+const path = require('path');
+const fs = require('fs');
 
 const adicionarAtendimento = async (req, res) => {
   const { nome, status, motivo, data, resolucao, tipo, id } = req.body;
-  console.log(nome, status, motivo, data, resolucao);
 
   const token = req.header('Authorization');
   if (!token) return res.status(401).json({ message: 'Token não fornecido' });
@@ -163,6 +164,149 @@ const getAtendimentosByAlunoId = async (req, res) => {
   }
 };
 
+const gerarRelatorio = async (req, res, next) => {
+  try {
+    const { dataInicio, dataFim, operador, responsavel } = req.query;
+    const filePath = await atendimentoServices.listarAtendimentosRelatorio(
+      dataInicio,
+      dataFim,
+      operador,
+      responsavel
+    );
+
+    if (!filePath) {
+      return res.status(500).json({ error: 'Erro ao gerar o relatório.' });
+    }
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Arquivo PDF não encontrado.' });
+    }
+
+    // Converter para caminho absoluto
+    const absolutePath = path.resolve(filePath);
+
+    // Configurar headers para PDF
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${path.basename(filePath)}"`
+    );
+
+    // Enviar arquivo usando sendFile
+    return res.sendFile(absolutePath, (err) => {
+      if (err) {
+        console.error('Erro ao enviar PDF:', err);
+        if (!res.headersSent) {
+          return res.status(500).json({ error: 'Falha ao enviar o arquivo.' });
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Erro inesperado ao gerar relatório:', error);
+    return res
+      .status(500)
+      .json({ error: 'Erro inesperado ao gerar relatório.' });
+  }
+};
+
+const listarTurmas = async (req, res) => {
+  try {
+    const listarTurmas = await atendimentoServices.listarTurmas();
+    res.status(200).json(listarTurmas);
+  } catch ({ message, ...error }) {
+    console.error('Erro ao buscar turmas:', error);
+    res.status(400).json({ message });
+  }
+};
+
+const listarAnosLetivos = async (req, res) => {
+  try {
+    const listarAnosLetivos = await atendimentoServices.listarAnosLetivos();
+    res.status(200).json(listarAnosLetivos);
+  } catch ({ message, ...error }) {
+    console.error('Erro ao buscar anos letivos:', error);
+    res.status(400).json({ message });
+  }
+};
+
+const listarStatusTurma = async (req, res) => {
+  try {
+    const listarStatusTurma = await atendimentoServices.listarStatusTurma();
+    res.status(200).json(listarStatusTurma);
+  } catch ({ message, ...error }) {
+    console.error('Erro ao buscar status de turma:', error);
+    res.status(400).json({ message });
+  }
+};
+
+const gerarRelatorioTurmas = async (req, res, next) => {
+  try {
+    const { turmas: turmasString, ano_letivo, status } = req.query;
+
+    // Preparar filtros
+    const filtros = {};
+
+    const turmas = turmasString ? turmasString.split(',') : null;
+
+    if (turmas && Array.isArray(turmas) && turmas.length > 0) {
+      filtros.turmas = turmas;
+    }
+
+    if (ano_letivo) {
+      filtros.ano_letivo = ano_letivo;
+    }
+
+    if (status) {
+      filtros.status = status;
+    }
+
+    const filePath = await atendimentoServices.gerarRelatorioPDFTurmas(filtros);
+
+    if (!filePath) {
+      return res.status(500).json({ error: 'Erro ao gerar o relatório.' });
+    }
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Arquivo PDF não encontrado.' });
+    }
+
+    // Converter para caminho absoluto
+    const absolutePath = path.resolve(filePath);
+
+    // Configurar headers para PDF
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${path.basename(filePath)}"`
+    );
+
+    // Enviar arquivo usando sendFile
+    return res.sendFile(absolutePath, (err) => {
+      if (err) {
+        console.error('Erro ao enviar PDF:', err);
+        if (!res.headersSent) {
+          return res.status(500).json({ error: 'Falha ao enviar o arquivo.' });
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Erro inesperado ao gerar relatório de turmas:', error);
+    return res
+      .status(500)
+      .json({ error: 'Erro inesperado ao gerar relatório.' });
+  }
+};
+
+const listarUsuarios = async (req, res) => {
+  try {
+    const listarUsuarios = await atendimentoServices.listarUsuarios();
+    res.status(200).json(listarUsuarios);
+  } catch ({ message, ...error }) {
+    console.error('Erro ao buscar usuarios:', error);
+    res.status(400).json({ message });
+  }
+};
+
 module.exports = {
   adicionarAtendimento,
   listarAtendimentos,
@@ -171,4 +315,10 @@ module.exports = {
   deletarAtendimento,
   getAtendimentosByAlunoId,
   listarStatusAtendimentos,
+  gerarRelatorio,
+  gerarRelatorioTurmas,
+  listarTurmas,
+  listarAnosLetivos,
+  listarStatusTurma,
+  listarUsuarios,
 };
