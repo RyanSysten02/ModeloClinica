@@ -3,6 +3,9 @@ import { Container, Row, Col, Card, Button, Form } from "react-bootstrap";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import jsPDF from 'jspdf'; // --- NOVO: Importação do jsPDF
+import autoTable from 'jspdf-autotable'; // --- NOVO: Importação do autoTable
+
 import TurmaService from "../../services/Turma";
 import DisciplinaService from '../../services/Disciplina';
 import ModalConfirmacao from "../ModaisUteis/ModalConfirmação";
@@ -110,6 +113,77 @@ export default function TelaRegistroFrequencia() {
     }
   };
 
+  // --- NOVA FUNÇÃO: Gerar Ficha Manual PDF (RF_S8) ---
+  const gerarFichaManualPDF = () => {
+    if (alunos.length === 0) {
+      toast.warning("Não há alunos listados para gerar a ficha.");
+      return;
+    }
+
+    // 1. Recuperar nomes legíveis dos filtros
+    const turmaNome = turmas.find(t => t.id == filtro.turma)?.nome || "N/A";
+    const disciplinaNome = disciplinas.find(d => d.id == filtro.disciplina)?.nome || "N/A";
+    const professorNome = professores.find(p => p.id == filtro.professor)?.nome || "N/A";
+    
+    // Formatar data para exibição (DD/MM/AAAA)
+    const dataFormatada = new Date(dataAula).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+    
+    // Obter o dia da semana
+    const diasSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+    const diaSemana = diasSemana[new Date(dataAula).getUTCDay()];
+
+    const doc = new jsPDF();
+
+    // 2. Cabeçalho da Ficha
+    doc.setFontSize(16);
+    doc.text("Ficha de Frequência Manual", 105, 15, { align: "center" });
+    
+    doc.setFontSize(10);
+    doc.text(`Turma: ${turmaNome}`, 14, 25);
+    doc.text(`Disciplina: ${disciplinaNome}`, 14, 30);
+    doc.text(`Professor: ${professorNome}`, 14, 35);
+    
+    doc.text(`Data: ${dataFormatada}`, 150, 25);
+    doc.text(`Dia: ${diaSemana}`, 150, 30);
+
+    // 3. Preparar dados para a tabela
+    const tableBody = alunos.map((aluno, index) => [
+      index + 1,           // Nº
+      aluno.aluno_nome,    // Nome do Aluno
+      "",                  // Coluna Vazia para Assinatura/Presença
+      ""                   // Coluna Vazia para Observação
+    ]);
+
+    // 4. Gerar Tabela
+    autoTable(doc, {
+      startY: 40,
+      head: [['Nº', 'Nome do Aluno', 'Presença (P) / Falta (F)', 'Observações']],
+      body: tableBody,
+      theme: 'grid',
+      headStyles: { fillColor: [220, 220, 220], textColor: 20, lineColor: 10 }, // Cabeçalho cinza claro
+      columnStyles: {
+        0: { cellWidth: 15, halign: 'center' }, // Coluna Nº
+        1: { cellWidth: 'auto' },               // Coluna Nome
+        2: { cellWidth: 40, halign: 'center' }, // Coluna Presença (para marcar X)
+        3: { cellWidth: 50 }                    // Coluna Obs
+      },
+      styles: {
+        lineColor: 10, // Linhas pretas para facilitar impressão manual
+        lineWidth: 0.1,
+        minCellHeight: 10 // Altura da linha maior para facilitar escrita manual
+      }
+    });
+
+    // 5. Rodapé
+    const finalY = doc.lastAutoTable.finalY + 20;
+    doc.text("__________________________________________", 105, finalY, { align: "center" });
+    doc.text("Assinatura do Professor", 105, finalY + 5, { align: "center" });
+
+    // 6. Salvar PDF
+    const nomeArquivo = `Ficha_Frequencia_${turmaNome.replace(/\s+/g, '_')}_${dataFormatada.replace(/\//g, '-')}.pdf`;
+    doc.save(nomeArquivo);
+  };
+
   const handleCloseModal = () => { setModalConfig({ ...modalConfig, show: false }); };
   const handleConfirmarFrequencia = () => {
     setModalConfig({
@@ -142,10 +216,8 @@ export default function TelaRegistroFrequencia() {
           <motion.div key="menu-inicial" variants={fadeVariant} initial="hidden" animate="visible" exit="exit">
             
             <Row className="justify-content-center">
-              <Col lg={9} xl={8}> {/* <-- Este Col limita a largura total do grid */}
-                
-                <Row className="g-4"> {/* <-- Esta é a sua Row original de cards */}
-                  
+              <Col lg={9} xl={8}>
+                <Row className="g-4">
                   <Col md={6}>
                     <Card className="shadow p-4 text-center" onClick={() => navigate("/pagConsultarFrequencias")} style={{ cursor: "pointer", aspectRatio: '1 / 1' }}>
                       <Card.Body className="d-flex flex-column justify-content-center align-items-center">
@@ -195,7 +267,6 @@ export default function TelaRegistroFrequencia() {
           <motion.div key="filtros" variants={fadeVariant} initial="hidden" animate="visible" exit="exit">
             <Card className="shadow p-4">
               <Card.Body>
-                {/* --- MODIFICADO: Layout dos filtros para 4 colunas --- */}
                 <Row className="mb-3 g-3 align-items-end">
                   <Col md={3}><Form.Label>Turma</Form.Label>
                     <Form.Select value={filtro.turma} onChange={(e) => setFiltro({ ...filtro, turma: e.target.value })} >
@@ -236,10 +307,25 @@ export default function TelaRegistroFrequencia() {
               <p className="lead">Registrando frequência para a data: <strong>{new Date(dataAula).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</strong></p>
             </div>
             <Card className="shadow mt-3">
+              {/* --- AQUI ESTÁ O CABEÇALHO COM O BOTÃO --- */}
               <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center fw-bold">
                 <span>Lista de Alunos - Turma {turmas.find(t => t.id == filtro.turma)?.nome}</span>
-                <span>Presente / Ausente</span>
+                
+                {/* Div que agrupa o botão e o texto */}
+                <div className="d-flex align-items-center gap-3">
+                    <Button 
+                        variant="light" 
+                        size="sm" 
+                        onClick={gerarFichaManualPDF}
+                        title="Imprimir ficha para preenchimento manual"
+                    >
+                        {/* Se o ícone não aparecer, verifique se instalou o bootstrap-icons */}
+                        <i className="bi bi-printer-fill me-1"></i> Ficha Manual
+                    </Button>
+                    <span>Presente / Ausente</span>
+                </div>
               </Card.Header>
+
               <Card.Body>
                 {alunos.map((aluno) => (
                   <Form.Check
