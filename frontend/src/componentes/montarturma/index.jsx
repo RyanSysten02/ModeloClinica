@@ -33,7 +33,7 @@ export const MontarTurma = () => {
     periodo: [],
     turma_id: '',
   });
-  
+
   const [groupedMatriculas, setGroupedMatriculas] = useState(null);
   const [alocarTurmaId, setAlocarTurmaId] = useState(null);
   const [areTurmasDiferentes, setAreTurmasDiferentes] = useState(false);
@@ -42,11 +42,7 @@ export const MontarTurma = () => {
     useState([]);
   const [sourceTurmaForTransfer, setSourceTurmaForTransfer] = useState(null);
 
-  // ===================================================================
-  // 1. NOVO ESTADO para controlar o Acordeão
-  // ===================================================================
   const [activeAccordionKeys, setActiveAccordionKeys] = useState([]);
-  // ===================================================================
 
   const { openLoading, closeLoading } = useLoading();
   const roleUser = useUser();
@@ -57,16 +53,23 @@ export const MontarTurma = () => {
     </Tooltip>
   );
 
-  // ... (funções getData, getTurmas permanecem iguais) ...
+  // Garante ID único mesmo para alunos sem turma
+  const getRowId = (item) => {
+    return item?.campo_unico || String(item?.id);
+  };
+
   const getData = useCallback(async () => {
     try {
       const periodoString = form.periodo
         .map((dateObj) => dateObj.format('YYYY'))
         .join(';');
+        
       const apiParams = {
         turma_id: form.turma_id,
         periodo: periodoString,
+        _t: new Date().getTime(), // Evita cache
       };
+      
       const result = await ApiConfig.get('/matricula/query', {
         params: apiParams,
       });
@@ -101,8 +104,8 @@ export const MontarTurma = () => {
     },
     [openLoading, closeLoading]
   );
-  
-  // useEffect para agrupar os alunos (sem alterações)
+
+  // Agrupamento de alunos
   useEffect(() => {
     if (!matriculas) {
       setGroupedMatriculas(null);
@@ -113,8 +116,8 @@ export const MontarTurma = () => {
       if (!acc[turmaNome]) {
         acc[turmaNome] = {
           turma_id: aluno.turma_id,
-          status: turmas.find(t => t.id === aluno.turma_id)?.status || 'N/A',
-          alunos: []
+          status: turmas.find((t) => t.id === aluno.turma_id)?.status || 'N/A',
+          alunos: [],
         };
       }
       acc[turmaNome].alunos.push(aluno);
@@ -132,7 +135,7 @@ export const MontarTurma = () => {
     setGroupedMatriculas(sortedGroups);
   }, [matriculas, turmas]);
 
-  // useEffect para checar turmas diferentes (sem alterações)
+  // Verifica turmas diferentes
   useEffect(() => {
     if (selectedRows.length < 2) {
       setAreTurmasDiferentes(false);
@@ -145,74 +148,71 @@ export const MontarTurma = () => {
     setAreTurmasDiferentes(different);
   }, [selectedRows]);
 
-  // ... (funções handleSelectedRow, isSelected, handleRemoveRow permanecem iguais) ...
-  const handleSelectedRow = useCallback(
-    (item) => {
-      setSelectedRows((prev) => [...prev, item]);
-    },
-    []
-  );
+  // --- Lógica de Seleção ---
+  const handleSelectedRow = useCallback((item) => {
+    setSelectedRows((prev) => [...prev, item]);
+  }, []);
 
   const isSelected = useCallback(
     (item) =>
-      !!selectedRows?.find((row) => row.campo_unico === item?.campo_unico),
+      !!selectedRows?.find((row) => getRowId(row) === getRowId(item)),
     [selectedRows]
   );
 
   const handleRemoveRow = useCallback(
     (item) => {
       const filteredItems = selectedRows?.filter(
-        (row) => row?.campo_unico !== item?.campo_unico
+        (row) => getRowId(row) !== getRowId(item)
       );
       setSelectedRows(filteredItems);
     },
     [selectedRows]
   );
 
-  // Funções de seleção por grupo (sem alterações)
   const handleSelectGroup = (alunosDoGrupo, checked) => {
-    const groupIds = alunosDoGrupo.map(a => a.campo_unico);
-    
+    const groupIds = alunosDoGrupo.map((a) => getRowId(a));
+
     if (checked) {
-      setSelectedRows(prev => [
-        ...prev.filter(row => !groupIds.includes(row.campo_unico)),
-        ...alunosDoGrupo
+      setSelectedRows((prev) => [
+        ...prev.filter((row) => !groupIds.includes(getRowId(row))),
+        ...alunosDoGrupo,
       ]);
     } else {
-      setSelectedRows(prev => prev.filter(row => !groupIds.includes(row.campo_unico)));
+      setSelectedRows((prev) =>
+        prev.filter((row) => !groupIds.includes(getRowId(row)))
+      );
     }
   };
 
   const isGroupSelected = (alunosDoGrupo) => {
-    return alunosDoGrupo.every(aluno => isSelected(aluno));
+    return alunosDoGrupo.every((aluno) => isSelected(aluno));
   };
 
+  // --- Atualização da tela após ação ---
+  const handleRefreshAfterAction = useCallback(async () => {
+    // Limpa estados para forçar renderização limpa
+    setAlocarTurmaId(null);
+    setSelectedRows([]);
+    
+    // Recarrega dados
+    await getData();
+    await getTurmas(false);
+  }, [getData, getTurmas]);
 
   const handleFiltered = useCallback(async () => {
     setIsLoadingButton(true);
-    setSelectedRows([]);
-    setAlocarTurmaId(null);
     setMatriculas(null);
     setGroupedMatriculas(null);
-    
-    // ===================================================================
-    // 2. FECHA O ACORDEÃO ao clicar em buscar
-    // ===================================================================
     setActiveAccordionKeys([]);
-    // ===================================================================
+    setSelectedRows([]);
+    setAlocarTurmaId(null);
 
     await getData();
     setIsLoadingButton(false);
-  }, [getData]); // getData já está com 'useCallback'
+  }, [getData]);
 
-  // ... (funções onUpdate, onSave, handleAlocarClick, etc... permanecem iguais) ...
-  // Elas já contêm a lógica correta do campo_unico (mat + turma + ano)
   const updateMatricula = useCallback(async (payload) => {
-    try {
-      await ApiConfig.put(`/matricula/matricula/${payload?.id}`, payload);
-    } catch (error) {
-      toast.error('Erro ao atualizar a matrícula');
-    }
+    return ApiConfig.put(`/matricula/matricula/${payload?.id}`, payload);
   }, []);
 
   const executeFunctionWithRole = useCallback(
@@ -225,51 +225,42 @@ export const MontarTurma = () => {
     },
     [roleUser?.role]
   );
-  
+
+  // Retorna a Promise para ser usada no Promise.all
   const onUpdate = useCallback(
     async (id, payload) => {
-      try {
-        const novoCampoUnico = `${payload?.id}_${payload?.turma_id}_${payload?.ano_letivo}`;
-        await ApiConfig.put(`/aluno-turma/update/${id}`, {
-          matricula_id: payload?.id,
-          turma_id: payload?.turma_id,
-          ano_letivo: payload?.ano_letivo,
-          data_alocacao: new Date().toISOString().split('T')[0],
-          campo_unico: novoCampoUnico,
-        });
-        toast.success(`Aluno ${payload.aluno_nome} atualizado.`);
-        handleRemoveRow(payload);
-      } catch (error) {
-        const message = error?.response?.data?.message;
-        toast.error(`Erro ao atualizar, ${message}`);
-      }
+      const novoCampoUnico = `${payload?.id}_${payload?.turma_id}_${payload?.ano_letivo}`;
+      return ApiConfig.put(`/aluno-turma/update/${id}`, {
+        matricula_id: payload?.id,
+        turma_id: payload?.turma_id,
+        ano_letivo: payload?.ano_letivo,
+        data_alocacao: new Date().toISOString().split('T')[0],
+        campo_unico: novoCampoUnico,
+      });
     },
-    [handleRemoveRow]
+    []
   );
 
+  // Retorna a Promise para ser usada no Promise.all
   const onSave = useCallback(
     async (payload) => {
-      try {
-        const novoCampoUnico = `${payload?.id}_${payload?.turma_id}_${payload?.ano_letivo}`;
-        await ApiConfig.post('/aluno-turma/create', {
-          matricula_id: payload?.id,
-          turma_id: payload?.turma_id,
-          ano_letivo: payload?.ano_letivo,
-          data_alocacao: new Date().toISOString().split('T')[0],
-          campo_unico: novoCampoUnico,
-        });
-        await updateMatricula(payload);
-        toast.success(`Aluno ${payload.aluno_nome} alocado com sucesso.`);
-        handleRemoveRow(payload);
-      } catch (error) {
-        const message = error?.response?.data?.message;
-        toast.error(`Erro ao salvar, ${message}`);
-      }
+      const novoCampoUnico = `${payload?.id}_${payload?.turma_id}_${payload?.ano_letivo}`;
+      await ApiConfig.post('/aluno-turma/create', {
+        matricula_id: payload?.id,
+        turma_id: payload?.turma_id,
+        ano_letivo: payload?.ano_letivo,
+        data_alocacao: new Date().toISOString().split('T')[0],
+        campo_unico: novoCampoUnico,
+      });
+      await updateMatricula(payload);
     },
-    [updateMatricula, handleRemoveRow]
+    [updateMatricula]
   );
-  
+
+  // --- FUNÇÃO DE ALOCAÇÃO OTIMIZADA ---
   const handleAlocarClick = () => {
+    if (isLoadingButton) return; // Previne cliques duplos
+
     if (!alocarTurmaId) {
       toast.error('Selecione uma turma de destino.');
       return;
@@ -279,20 +270,42 @@ export const MontarTurma = () => {
       toast.error('Turma de destino inválida.');
       return;
     }
+
     executeFunctionWithRole(async () => {
-      for (const row of selectedRows) {
-        const payload = {
-          ...row,
-          turma_id: turmaDestino.id,
-          turma_nome: turmaDestino.nome,
-          ano_letivo: turmaDestino.ano_letivo,
-        };
-        const alunoTurmaId = payload?.aluno_turma_id;
-        if (alunoTurmaId) {
-          await onUpdate(alunoTurmaId, payload);
-        } else {
-          await onSave(payload);
-        }
+      setIsLoadingButton(true); // Bloqueia UI imediatamente
+      
+      try {
+        // Cria array de Promises para execução em paralelo (muito mais rápido)
+        const promises = selectedRows.map((row) => {
+          const payload = {
+            ...row,
+            turma_id: turmaDestino.id,
+            turma_nome: turmaDestino.nome,
+            ano_letivo: turmaDestino.ano_letivo,
+          };
+
+          const alunoTurmaId = payload?.aluno_turma_id;
+          
+          // Retorna a promise da operação
+          if (alunoTurmaId) {
+            return onUpdate(alunoTurmaId, payload);
+          } else {
+            return onSave(payload);
+          }
+        });
+
+        // Aguarda todas as requisições terminarem
+        await Promise.all(promises);
+
+        toast.success(`${selectedRows.length} aluno(s) alocado(s) com sucesso!`);
+        await handleRefreshAfterAction(); // Atualiza a tela
+
+      } catch (error) {
+        console.error(error);
+        const msg = error?.response?.data?.message || 'Erro ao realizar alocação em massa.';
+        toast.error(msg);
+      } finally {
+        setIsLoadingButton(false); // Libera UI
       }
     });
   };
@@ -319,7 +332,8 @@ export const MontarTurma = () => {
     const status = filtered?.status?.toLowerCase();
     if (
       status !== 'Não iniciada'.toLowerCase() &&
-      status !== 'Aberta para Alocação'.toLowerCase()
+      status !== 'Aberta para Alocação'.toLowerCase() &&
+      status !== 'em andamento' // Adicionado caso precise permitir em andamento
     ) {
       return `A turma "${filtered.nome}" não pode receber alunos (Status: ${filtered.status}).`;
     }
@@ -354,12 +368,17 @@ export const MontarTurma = () => {
     setSourceTurmaForTransfer(null);
   }, []);
 
-  const handleTransferSuccess = useCallback(() => {
-    setSelectedRows([]);
-    setAlocarTurmaId(null);
-    getData();
-    getTurmas(false);
-  }, [getData, getTurmas]);
+  const handleTransferSuccess = useCallback(async () => {
+    setIsLoadingButton(true);
+    try {
+      await handleRefreshAfterAction();
+      toast.success('Transferência realizada com sucesso!');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoadingButton(false);
+    }
+  }, [handleRefreshAfterAction]);
 
   useEffect(() => {
     getTurmas();
@@ -371,14 +390,10 @@ export const MontarTurma = () => {
   const alocarDisabledReason = getAlocarDisabledReason();
   const canTransfer = canTransferStudents();
 
-  // ===================================================================
-  // INÍCIO DO LAYOUT (JSX)
-  // ===================================================================
   return (
     <Container>
       <h2 className="mt-4">Montar Turma</h2>
 
-      {/* PAINEL 1: FILTROS (Sem alterações) */}
       <Card className="mb-4">
         <Card.Header as="h5">1. Filtrar Alunos</Card.Header>
         <Card.Body>
@@ -458,22 +473,22 @@ export const MontarTurma = () => {
         </Card.Body>
       </Card>
 
-      {/* LAYOUT DE DUAS COLUNAS */}
       <Row>
-        {/* =================================================================== */}
-        {/* COLUNA DA ESQUERDA (Mestre / Resultados com ACORDEÃO)               */}
-        {/* =================================================================== */}
         <Col md={8}>
           <Card className="mb-4">
             <Card.Header as="h5">2. Lista de Alunos</Card.Header>
             <Card.Body
-              style={{ minHeight: '500px', maxHeight: '70vh', overflowY: 'auto' }}
+              style={{
+                minHeight: '500px',
+                maxHeight: '70vh',
+                overflowY: 'auto',
+              }}
               className="p-0"
             >
               {isLoadingButton ? (
                 <div className="text-center p-5">
                   <Spinner animation="border" role="status" />
-                  <p className="mt-2 text-muted">Buscando alunos...</p>
+                  <p className="mt-2 text-muted">Processando dados...</p>
                 </div>
               ) : groupedMatriculas === null ? (
                 <div className="text-center p-5 text-muted">
@@ -490,93 +505,105 @@ export const MontarTurma = () => {
                   </p>
                 </div>
               ) : (
-                // 3. ACORDEÃO CONTROLADO
                 <Accordion
                   activeKey={activeAccordionKeys}
                   onSelect={(keys) => setActiveAccordionKeys(keys)}
                   alwaysOpen
                 >
-                  {Object.entries(groupedMatriculas).map(([turmaNome, data], index) => {
-                    const { alunos, status } = data;
-                    const isGrupoTodoSelecionado = isGroupSelected(alunos);
-                    const eventKey = index.toString();
-                    
-                    return (
-                      <Accordion.Item eventKey={eventKey} key={turmaNome}>
-                        <Accordion.Header>
-                          {/* 4. CHECKBOX MOVIDO PARA O HEADER */}
-                          <Form.Check
-                            type="checkbox"
-                            id={`select-group-${index}`}
-                            label=""
-                            checked={isGrupoTodoSelecionado}
-                            onChange={(e) => handleSelectGroup(alunos, e.target.checked)}
-                            onClick={(e) => e.stopPropagation()} // Impede o acordeão de abrir/fechar
-                            className="me-2"
-                          />
-                          <span className="fw-bold">{turmaNome}</span>
-                          <span className="ms-2 text-muted">
-                            ({alunos.length} alunos)
-                          </span>
-                          {status !== 'N/A' && (
-                             <span className={`ms-2 badge bg-${status === 'Concluída' ? 'success' : 'secondary'}`}>
-                               {status}
-                             </span>
-                          )}
-                        </Accordion.Header>
-                        <Accordion.Body className="p-0">
-                          <Table striped bordered hover responsive="md" size="sm" className="mb-0">
-                            <thead>
-                              <tr>
-                                {/* 5. HEADER DA TABELA LIMPO */}
-                                <th>{/* Coluna para checkbox individual */}</th>
-                                <th>Aluno</th>
-                                <th>Ano</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {alunos.map((item) => (
-                                <tr key={item?.campo_unico}>
-                                  <td>
-                                    <Form.Check
-                                      type="checkbox"
-                                      id={`select-aluno-${item.id}`}
-                                      label=""
-                                      checked={isSelected(item)}
-                                      onChange={() => {
-                                        const isChecked = isSelected(item);
-                                        if (isChecked) {
-                                          handleRemoveRow(item);
-                                        } else {
-                                          handleSelectedRow(item);
-                                        }
-                                      }}
-                                    />
-                                  </td>
-                                  <td>{item?.aluno_nome}</td>
-                                  <td>{item?.ano_letivo}</td>
+                  {Object.entries(groupedMatriculas).map(
+                    ([turmaNome, data], index) => {
+                      const { alunos, status } = data;
+                      const isGrupoTodoSelecionado = isGroupSelected(alunos);
+                      const eventKey = index.toString();
+
+                      return (
+                        <Accordion.Item eventKey={eventKey} key={turmaNome}>
+                          <Accordion.Header>
+                            <Form.Check
+                              type="checkbox"
+                              id={`select-group-${index}`}
+                              label=""
+                              checked={isGrupoTodoSelecionado}
+                              onChange={(e) =>
+                                handleSelectGroup(alunos, e.target.checked)
+                              }
+                              onClick={(e) => e.stopPropagation()}
+                              className="me-2"
+                            />
+                            <span className="fw-bold">{turmaNome}</span>
+                            <span className="ms-2 text-muted">
+                              ({alunos.length} alunos)
+                            </span>
+                            {status !== 'N/A' && (
+                              <span
+                                className={`ms-2 badge bg-${
+                                  status === 'Concluída'
+                                    ? 'success'
+                                    : 'secondary'
+                                }`}
+                              >
+                                {status}
+                              </span>
+                            )}
+                          </Accordion.Header>
+                          <Accordion.Body className="p-0">
+                            <Table
+                              striped
+                              bordered
+                              hover
+                              responsive="md"
+                              size="sm"
+                              className="mb-0"
+                            >
+                              <thead>
+                                <tr>
+                                  <th style={{ width: '50px' }}></th>
+                                  <th>Aluno</th>
+                                  <th>Ano</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </Table>
-                        </Accordion.Body>
-                      </Accordion.Item>
-                    )
-                  })}
+                              </thead>
+                              <tbody>
+                                {alunos.map((item) => (
+                                  <tr key={getRowId(item)}>
+                                    <td className="text-center">
+                                      <Form.Check
+                                        type="checkbox"
+                                        id={`select-aluno-${item.id}`}
+                                        label=""
+                                        checked={isSelected(item)}
+                                        onChange={() => {
+                                          const isChecked = isSelected(item);
+                                          if (isChecked) {
+                                            handleRemoveRow(item);
+                                          } else {
+                                            handleSelectedRow(item);
+                                          }
+                                        }}
+                                      />
+                                    </td>
+                                    <td>{item?.aluno_nome}</td>
+                                    <td>{item?.ano_letivo}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </Table>
+                          </Accordion.Body>
+                        </Accordion.Item>
+                      );
+                    }
+                  )}
                 </Accordion>
               )}
             </Card.Body>
             {matriculas && matriculas.length > 0 && (
               <Card.Footer className="text-muted">
-                {matriculas.length} aluno(s) encontrado(s) em {Object.keys(groupedMatriculas || {}).length} grupo(s).
+                {matriculas.length} aluno(s) encontrado(s) em{' '}
+                {Object.keys(groupedMatriculas || {}).length} grupo(s).
               </Card.Footer>
             )}
           </Card>
         </Col>
 
-        {/* =================================================================== */}
-        {/* COLUNA DA DIREITA (Painel de Ações) (Sem alterações)                */}
-        {/* =================================================================== */}
         <Col md={4}>
           <Card
             className="mb-4 shadow-sm"
@@ -597,7 +624,6 @@ export const MontarTurma = () => {
                   </div>
                 </div>
               ) : canTransfer ? (
-                // --- PAINEL DE PROMOÇÃO (TRANSFERÊNCIA) ---
                 <div className="p-3 text-center">
                   <Alert variant="success">
                     <Alert.Heading>
@@ -612,15 +638,21 @@ export const MontarTurma = () => {
                   <Button
                     variant="success"
                     size="lg"
+                    disabled={isLoadingButton}
                     onClick={handleOpenTransferModal}
                     className="px-4 mt-3 w-100"
                   >
-                    <i className="bi bi-arrow-right-circle"></i> Iniciar
-                    Transferência
+                    {isLoadingButton ? (
+                      <Spinner as="span" animation="border" size="sm" />
+                    ) : (
+                      <>
+                        <i className="bi bi-arrow-right-circle"></i> Iniciar
+                        Transferência
+                      </>
+                    )}
                   </Button>
                 </div>
               ) : (
-                // --- PAINEL DE ALOCAÇÃO / REMANEJAMENTO ---
                 <div className="p-2">
                   <Alert variant="info">
                     <strong>Alocar ou Remanejar Alunos</strong>
@@ -631,7 +663,6 @@ export const MontarTurma = () => {
                     </p>
                   </Alert>
 
-                  {/* AVISO DE TURMAS DIFERENTES */}
                   {areTurmasDiferentes && (
                     <Alert variant="warning" className="py-2">
                       <i className="bi bi-exclamation-triangle-fill"></i>{' '}
@@ -661,6 +692,7 @@ export const MontarTurma = () => {
                       onChange={(selectedOption) => {
                         setAlocarTurmaId(selectedOption?.value || null);
                       }}
+                      isDisabled={isLoadingButton}
                     />
                   </Form.Group>
 
@@ -677,14 +709,29 @@ export const MontarTurma = () => {
                         className="w-100"
                         size="lg"
                         onClick={handleAlocarClick}
-                        disabled={!!alocarDisabledReason}
+                        disabled={!!alocarDisabledReason || isLoadingButton}
                         style={
                           alocarDisabledReason
                             ? { pointerEvents: 'none' }
                             : {}
                         }
                       >
-                        <i className="bi bi-check-lg"></i> Salvar Alocações
+                        {isLoadingButton ? (
+                          <>
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                            />{' '}
+                            Processando...
+                          </>
+                        ) : (
+                          <>
+                            <i className="bi bi-check-lg"></i> Salvar Alocações
+                          </>
+                        )}
                       </Button>
                     </span>
                   </OverlayTrigger>
@@ -695,7 +742,6 @@ export const MontarTurma = () => {
         </Col>
       </Row>
 
-      {/* MODAL DE TRANSFERÊNCIA (Já modificado) */}
       <ModalTransferencia
         show={showTransferModal}
         onHide={handleCloseTransferModal}

@@ -24,8 +24,8 @@ const ListaTurmasModal = ({ show, onHide, onSelectTurma }) => {
     const textoBusca = searchText.toLowerCase();
     return (
       turma?.nome?.toLowerCase().includes(textoBusca) ||
+      turma?.nivel?.toLowerCase().includes(textoBusca) || // Filtro por Nivel
       String(turma?.ano_letivo).includes(textoBusca) ||
-      turma?.periodo?.toLowerCase().includes(textoBusca) ||
       String(turma?.semestre).includes(textoBusca)
     );
   });
@@ -33,14 +33,14 @@ const ListaTurmasModal = ({ show, onHide, onSelectTurma }) => {
   return (
     <Modal show={show} onHide={onHide} size="lg">
       <Modal.Header closeButton>
-        <Modal.Title>Lista de Turmas</Modal.Title>
+        <Modal.Title>Selecionar Turma</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {mensagemErro && <p className="text-danger">{mensagemErro}</p>}
 
         <InputGroup className="mb-3">
           <Form.Control
-            placeholder="Buscar por nome, ano letivo, período ou semestre"
+            placeholder="Buscar por nome, nível, ano..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
@@ -53,22 +53,23 @@ const ListaTurmasModal = ({ show, onHide, onSelectTurma }) => {
           <thead>
             <tr>
               <th>Nome</th>
+              <th>Nível</th>
               <th>Ano Letivo</th>
-              <th>Período</th>
               <th>Semestre</th>
-              <th>Ações</th>
+              <th>Ação</th>
             </tr>
           </thead>
           <tbody>
             {turmasFiltradas.map((turma) => (
               <tr key={turma.id}>
                 <td>{turma.nome}</td>
+                <td>{turma.nivel}</td>
                 <td>{turma.ano_letivo}</td>
-                <td>{turma.periodo}</td>
                 <td>{turma.semestre}</td>
                 <td>
                   <Button
                     variant="success"
+                    size="sm"
                     onClick={() => onSelectTurma(turma)}
                   >
                     Selecionar

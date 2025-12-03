@@ -12,37 +12,33 @@ export const ListaTurma = () => {
   const [messageError, setMessageError] = useState(null);
   const [selected, setSelected] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [showModalGerarRelatorioTurmas, setShowModalGerarRelatorioTurmas] =
-    useState(false);
+  const [showModalGerarRelatorioTurmas, setShowModalGerarRelatorioTurmas] = useState(false);
   const [showModalList, setShowModalList] = useState(false);
-  const [searchText, setSearchText] = useState();
+  const [searchText, setSearchText] = useState(''); // Inicializado com string vazia
   const [showModalDelete, setShowModalDelete] = useState(false);
 
   const listFiltered = useMemo(() => {
     if (!searchText) return listAll;
 
-    const list = listAll?.filter((turma) => {
+    return listAll?.filter((turma) => {
       const currentSearch = searchText?.toLowerCase();
 
       return (
         turma?.nome?.toLowerCase()?.includes(currentSearch) ||
+        turma?.nivel?.toLowerCase()?.includes(currentSearch) || // Filtro por Nivel
         String(turma?.ano_letivo)?.toLowerCase()?.includes(currentSearch) ||
-        turma?.periodo?.toLowerCase()?.includes(currentSearch) ||
         String(turma?.semestre)?.toLowerCase()?.includes(currentSearch) ||
         turma?.status?.toLowerCase()?.includes(currentSearch)
       );
     });
-
-    return list;
   }, [searchText, listAll]);
 
   const getData = async () => {
     try {
       const response = await TurmaService.findAll();
-
       setListAll(response);
     } catch (error) {
-      setMessageError(error?.response?.data?.message);
+      setMessageError(error?.response?.data?.message || 'Erro ao buscar turmas');
     }
   };
 
@@ -55,11 +51,10 @@ export const ListaTurma = () => {
     try {
       await TurmaService.create(formData);
       toast.success('Turma cadastrada com sucesso!');
-
       await getData();
       onCloseModal();
     } catch (error) {
-      setMessageError(error?.response?.data?.message);
+      toast.error(error?.response?.data?.message || 'Erro ao salvar');
     }
   };
 
@@ -67,11 +62,10 @@ export const ListaTurma = () => {
     try {
       await TurmaService.update(selected?.id, formData);
       toast.success('Turma atualizada com sucesso!');
-
       await getData();
       onCloseModal();
     } catch (error) {
-      setMessageError(error?.response?.data?.message);
+      toast.error(error?.response?.data?.message || 'Erro ao atualizar');
     }
   };
 
@@ -80,7 +74,6 @@ export const ListaTurma = () => {
       await handleSave(formData);
       return;
     }
-
     await handleUpdate(formData);
   };
 
@@ -88,11 +81,10 @@ export const ListaTurma = () => {
     try {
       await TurmaService.delete(selected?.id);
       toast.success('Turma deletada com sucesso!');
-
       await getData();
       onCloseModal();
     } catch (error) {
-      setMessageError(error?.response?.data?.message);
+      toast.error(error?.response?.data?.message || 'Erro ao deletar');
     }
   };
 
@@ -105,18 +97,12 @@ export const ListaTurma = () => {
   const resetAll = () => {
     setMessageError(null);
     setSelected(null);
-    setSearchText(null);
+    setSearchText('');
   };
 
   useEffect(() => {
     getData();
   }, []);
-
-  useEffect(() => {
-    if (messageError) {
-      toast.error(messageError);
-    }
-  }, [messageError]);
 
   return (
     <Container>
@@ -126,8 +112,8 @@ export const ListaTurma = () => {
         <Button
           variant='info'
           onClick={() => {
-            setShowModal(true);
             resetAll();
+            setShowModal(true);
           }}
         >
           Cadastrar Turma
@@ -145,69 +131,57 @@ export const ListaTurma = () => {
 
       <InputGroup className='mb-3'>
         <Form.Control
-          aria-label='Example text with button addon'
-          aria-describedby='basic-addon1'
-          placeholder='Busque a turma'
+          aria-label='Busca'
+          placeholder='Busque por nome, nível, ano ou status'
           onChange={(e) => setSearchText(e.target.value)}
+          value={searchText}
         />
-
-        <Button variant='outline-secondary' id='button-addon1'>
+        <Button variant='outline-secondary'>
           <i className='bi bi-search'></i>
         </Button>
       </InputGroup>
 
       {messageError && <p className='text-danger'>{messageError}</p>}
 
-      <Table striped bordered hover>
+      <Table striped bordered hover responsive>
         <thead>
           <tr>
             <th>Nome</th>
+            <th>Nível</th> 
             <th>Ano Letivo</th>
-            <th>Período</th>
-            <th>Série</th>
+            <th>Semestre</th>
             <th>Status</th>
-            <th>Ações</th>
+            <th className="text-center">Ações</th>
           </tr>
         </thead>
         <tbody>
           {listFiltered?.map((item) => (
             <tr key={item?.id}>
               <td>{item?.nome}</td>
+              <td>{item?.nivel}</td> 
               <td>{item?.ano_letivo}</td>
-              <td>{item?.periodo}</td>
-              <td>{item?.semestre}</td>
+              <td>{item?.semestre}º</td>
               <td>{item?.status}</td>
-              <td
-                style={{
-                  display: 'inline-flex',
-                  gap: 10,
-                  width: '100%',
-                  justifyContent: 'center',
-                }}
-              >
-                <Button variant='primary' onClick={() => onDetails(item)}>
-                  Detalhes
-                </Button>
+              <td className="text-center">
+                <div className="d-flex gap-2 justify-content-center">
+                    <Button size="sm" variant='primary' onClick={() => onDetails(item)}>
+                    Detalhes
+                    </Button>
 
-                <Button
-                  variant='info'
-                  onClick={() => {
-                    setShowModalList(true);
-                    setSelected(item);
-                  }}
-                >
-                  Alunos matrículados
-                </Button>
+                    <Button size="sm" variant='info' onClick={() => {
+                        setShowModalList(true);
+                        setSelected(item);
+                    }}>
+                    Alunos
+                    </Button>
 
-                <Button
-                  variant='danger'
-                  onClick={() => {
-                    setShowModalDelete(true);
-                    setSelected(item);
-                  }}
-                >
-                  Excluir
-                </Button>
+                    <Button size="sm" variant='danger' onClick={() => {
+                        setShowModalDelete(true);
+                        setSelected(item);
+                    }}>
+                    Excluir
+                    </Button>
+                </div>
               </td>
             </tr>
           ))}
@@ -223,9 +197,7 @@ export const ListaTurma = () => {
 
       <ModalGerarRelatorio
         show={showModalGerarRelatorioTurmas}
-        onHide={() => {
-          setShowModalGerarRelatorioTurmas(false);
-        }}
+        onHide={() => setShowModalGerarRelatorioTurmas(false)}
       />
 
       <ModalList

@@ -17,10 +17,11 @@ export const ModalForm = ({ show, onHide, onSave, selected }) => {
 
     if (isValid) {
       const formData = new FormData(event.target);
+      // Removido periodo, adicionado nivel
       const payload = {
         nome: formData.get('nome'),
+        nivel: formData.get('nivel'), 
         ano_letivo: formData.get('ano_letivo'),
-        periodo: formData.get('periodo'),
         semestre: formData.get('semestre'),
         status: formData.get('status'),
       };
@@ -33,21 +34,38 @@ export const ModalForm = ({ show, onHide, onSave, selected }) => {
   return (
     <Modal show={show} onHide={onHide} size='xl'>
       <Modal.Header closeButton>
-        <Modal.Title>Detalhes da Turma</Modal.Title>
+        <Modal.Title>{selected ? 'Editar Turma' : 'Cadastrar Turma'}</Modal.Title>
       </Modal.Header>
 
       <Form noValidate validated={validated} onSubmit={handleSubmit}>
         <Modal.Body>
           <Row className='mb-3'>
-            <Form.Group as={Col} md={12} controlId='validationCustomNome'>
+            <Form.Group as={Col} md={8} controlId='validationCustomNome'>
               <Form.Label>Nome</Form.Label>
               <Form.Control
                 required
                 type='text'
                 name='nome'
-                placeholder='Digite o nome da turma'
+                placeholder='Ex: 1º Ano A'
                 defaultValue={selected?.nome}
               />
+              <Form.Control.Feedback type='invalid'>
+                Campo obrigatório
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group as={Col} md={4} controlId='validationCustomNivel'>
+              <Form.Label>Nível de Ensino</Form.Label>
+              <Form.Select
+                name='nivel'
+                required
+                defaultValue={selected?.nivel ?? ''}
+              >
+                <option value='' disabled>Selecione o nível</option>
+                <option value='Anos Iniciais'>Anos Iniciais</option>
+                <option value='Anos Finais'>Anos Finais</option>
+                <option value='Ensino Médio'>Ensino Médio</option>
+              </Form.Select>
               <Form.Control.Feedback type='invalid'>
                 Campo obrigatório
               </Form.Control.Feedback>
@@ -55,80 +73,46 @@ export const ModalForm = ({ show, onHide, onSave, selected }) => {
           </Row>
 
           <Row className='mb-3'>
-            <Form.Group as={Col} md={3} controlId='validationCustomAnoLetivo'>
+            <Form.Group as={Col} md={4} controlId='validationCustomAnoLetivo'>
               <Form.Label>Ano Letivo</Form.Label>
-              <Form.Select
+              <Form.Control
+                type="number"
                 name='ano_letivo'
-                placeholder='Escolha o ano letivo'
+                placeholder='Ex: 2025'
                 required
-                defaultValue={selected?.ano_letivo ?? ''}
-              >
-                <option value='' defaultValue=''>
-                  Selecione o ano
-                </option>
-                <option value='2025'>2025</option>
-                <option value='2026'>2026</option>
-                <option value='2027'>2027</option>
-              </Form.Select>
+                defaultValue={selected?.ano_letivo ?? new Date().getFullYear()}
+              />
               <Form.Control.Feedback type='invalid'>
                 Campo obrigatório
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group as={Col} md={3} controlId='validationCustomPeriodo'>
-              <Form.Label>Período</Form.Label>
-              <Form.Select
-                name='periodo'
-                placeholder='Escolha o período'
-                required
-                defaultValue={selected?.periodo ?? ''}
-              >
-                <option value='' defaultValue=''>
-                  Selecione o periodo
-                </option>
-                <option value='manha'>Manhã</option>
-                <option value='tarde'>Tarde</option>
-                <option value='noite'>Noite</option>
-              </Form.Select>
-              <Form.Control.Feedback type='invalid'>
-                Campo obrigatório
-              </Form.Control.Feedback>
-            </Form.Group>
-
-            <Form.Group as={Col} md={3} controlId='validationCustomSemestre'>
-              <Form.Label>Série</Form.Label>
+            <Form.Group as={Col} md={4} controlId='validationCustomSemestre'>
+              <Form.Label>Semestre</Form.Label>
               <Form.Select
                 name='semestre'
-                placeholder='Escolha a série'
                 required
                 defaultValue={selected?.semestre ?? ''}
               >
-                <option value='' defaultValue=''>
-                  Selecione a série
-                </option>
-                <option value='1'>1</option>
-                <option value='2'>2</option>
-                <option value='3'>3</option>
+                <option value='' disabled>Selecione</option>
+                <option value='1'>1º Semestre</option>
+                <option value='2'>2º Semestre</option>
               </Form.Select>
               <Form.Control.Feedback type='invalid'>
                 Campo obrigatório
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group as={Col} md={3} controlId='validationCustomStatus'>
+            <Form.Group as={Col} md={4} controlId='validationCustomStatus'>
               <Form.Label>Status</Form.Label>
               <Form.Select
-                aria-label='Escolha o status'
                 required
                 name='status'
                 defaultValue={selected?.status ?? ''}
               >
-                <option value='' defaultValue=''>
-                  Escolha o status
-                </option>
+                <option value='' disabled>Escolha o status</option>
                 <option value='Não iniciada'>Não iniciada</option>
                 <option value='Em andamento'>Em andamento</option>
-                <option value='Em andamento'>Aberta para Alocação</option>
                 <option value='Concluída'>Concluída</option>
                 <option value='Encerrada'>Encerrada</option>
               </Form.Select>
@@ -143,7 +127,7 @@ export const ModalForm = ({ show, onHide, onSave, selected }) => {
           <Button variant='secondary' onClick={onHide}>
             Fechar
           </Button>
-          <Button variant='outline-dark' type='reset'>
+          <Button variant='outline-dark' type='reset' onClick={() => setValidated(false)}>
             Limpar
           </Button>
           <Button type='submit'>Salvar</Button>

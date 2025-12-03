@@ -630,7 +630,7 @@ const gerarRelatorioPDFTurmas = async (filtros = {}) => {
               <span class="info-item"><strong>Período:</strong> ${
                 turma.periodo
               }</span>
-              <span class="info-item"><strong>Série:</strong> ${
+              <span class="info-item"><strong>Semestre:</strong> ${
                 turma.semestre
               }ª</span>
               <span class="info-item"><strong>Status:</strong> ${escapeHtml(
