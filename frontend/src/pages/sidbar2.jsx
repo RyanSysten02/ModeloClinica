@@ -84,7 +84,7 @@ const Sidebar = () => {
               <span className='ms-3 d-inline-block'>Minha Agenda</span>
             </Button>
           </NavItem>
-           
+
           {podeAcessar('aluno') && (
             <NavItem className='sidenav-bg'>
               <Button
@@ -110,7 +110,6 @@ const Sidebar = () => {
               </Button>
             </NavItem>
           )}
-
 
           {podeAcessar('responsavel') && (
             <NavItem className='sidenav-bg'>
@@ -151,6 +150,19 @@ const Sidebar = () => {
             </NavItem>
           )}
 
+          {podeAcessar('montarturma') && (
+            <NavItem className='sidenav-bg'>
+              <Button
+                color='link'
+                className='nav-link text-secondary py-3'
+                onClick={() => navigate('/pagMontarTurma')}
+              >
+                <i className='bi bi-backpack3'></i>
+                <span className='ms-3 d-inline-block'>Montar Turma</span>
+              </Button>
+            </NavItem>
+          )}
+
           {podeAcessar('disciplina') && (
             <NavItem className='sidenav-bg'>
               <Button
@@ -184,7 +196,9 @@ const Sidebar = () => {
                 onClick={() => navigate('/pagRegistroFrequencia')}
               >
                 <i className='bi bi-card-list'></i>
-                <span className='ms-3 d-inline-block'>Registrar Frequência</span>
+                <span className='ms-3 d-inline-block'>
+                  Registrar Frequência
+                </span>
               </Button>
             </NavItem>
           )}
@@ -196,7 +210,7 @@ const Sidebar = () => {
                 className='nav-link text-secondary py-3'
                 onClick={() => navigate('/pagSubstituicoes')}
               >
-                <i class="bi bi-arrow-left-right"></i>
+                <i className='bi bi-arrow-left-right'></i>
                 <span className='ms-3 d-inline-block'>Substituições Prof.</span>
               </Button>
             </NavItem>
@@ -226,7 +240,28 @@ const Sidebar = () => {
               </Button>
             </NavItem>
           )}
-
+          {/* Central de Relacionamento */}
+          <NavItem className='sidenav-bg'>
+            <Button
+              color='link'
+              className='nav-link text-secondary py-3'
+              onClick={() => navigate('/centralRelacionamentos')}
+            >
+              <i className='bi bi-calendar-range'></i>
+              <span className='ms-3 d-inline-block'>Relacionamento</span>
+            </Button>
+          </NavItem>
+          {/* Relatório Atendimento */}
+          <NavItem className='sidenav-bg'>
+            <Button
+              color='link'
+              className='nav-link text-secondary py-3'
+              onClick={() => navigate('/relatorioAtendimentos')}
+            >
+              <i className='bi bi-calendar-range'></i>
+              <span className='ms-3 d-inline-block'>Relatório Atds.</span>
+            </Button>
+          </NavItem>
         </Nav>
       </div>
 

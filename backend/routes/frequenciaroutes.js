@@ -26,4 +26,16 @@ router.get('/detalhada', frequenciaController.getFrequenciaDetalhadaPorAula);
 
 router.put('/atualizar', frequenciaController.updateBulkFrequencia);
 
+router.get('/ausentes', frequenciaController.getAlunosAusentes);
+
+router.put('/notificacao', frequenciaController.updateStatusNotificacao);
+
+router.put('/notificacao/append', frequenciaController.appendStatusNotificacao);
+
+router.get('/relatorios/individual', frequenciaController.getBoletimIndividual);
+
+router.get('/relatorios/por-turma', frequenciaController.getBoletimPorTurma);
+
+router.get('/relatorios/ranking-faltas', frequenciaController.getRankingFaltas);
+
 module.exports = router;

@@ -1,168 +1,251 @@
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Garante que JS do Bootstrap esteja disponível
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
+
 import ProtectedRoute from './componentes/protect';
 import Registro from './componentes/register';
+import { LoadingProvider } from './providers/loading.provider'; // Assumindo que você usa isso
+
+import LayoutAulas from './pages/Aulas';
+import ConfiguracoesDeSeguranca from './pages/ConfiguracoesDeSeguranca';
 import PagLogin from './pages/login';
-import { LayoutDisciplina } from './pages/pagDisciplina';
-import Layoutresponsavel from './pages/pagResponsavel';
-import { LayoutTurma } from './pages/pagTurma';
-import { LayoutRegistroFrequencia } from './pages/pagRegistroFrequencia';
+import LayoutAtendimento from './pages/pagAtendimento';
 import { LayoutConsultaFrequencia } from './pages/pagConsultaFrequencia';
+import { LayoutDisciplina } from './pages/pagDisciplina';
+import { LayoutMontarTurma } from './pages/pagMontarTurma';
+import { LayoutRegistroFrequencia } from './pages/pagRegistroFrequencia';
+import Layoutresponsavel from './pages/pagResponsavel';
+import { LayoutSubstituicoes } from './pages/pagSubstituicoes';
+import { LayoutTurma } from './pages/pagTurma';
 import Layoutaluno from './pages/pagaluno';
 import FullLayout from './pages/paginicial';
-import Layoutprofessor from './pages/pagprofessor';
 import { LayoutMatricula } from './pages/pagmatricula';
-import ConfiguracoesDeSeguranca from './pages/ConfiguracoesDeSeguranca';
-import AcessoNegado from './pages/acessoNegado';
-import TelaSubstituicaoProfessor from './componentes/Substituicoes/TelaSubstituicaoProfessor';
-import { LayoutSubstituicoes } from './pages/pagSubstituicoes';
+import Layoutprofessor from './pages/pagprofessor';
 import Layoutnotifica from './pages/pagnotifica';
-import LayoutAtendimento from './pages/pagAtendimento';
-import LayoutAulas from './pages/Aulas';
+import AcessoNegado from './pages/acessoNegado';
+import { LayoutRelatorios } from './pages/pagRelatorios';
+import CentralRelacionamentos from './pages/CentralRelacionamentos';
+import RelatorioAtendimentoPage from './pages/relatorioAtendimentos';
+import { LayoutAnaliseSubstituicoes } from './pages/pagAnaliseSubstituicoes';
 
 function App() {
   return (
-    <div className='App'>
-      <BrowserRouter>
-        <Routes>
-          <Route path='/' element={<PagLogin />} />
-          <Route path='/login' element={<PagLogin />} />
-          <Route path='/registro' element={<Registro />} />
+    // Se estiver usando LoadingProvider, envolva o BrowserRouter
+    <LoadingProvider>
+      <div className='App'>
+        <BrowserRouter>
+          <Routes>
+            {/* Rotas Públicas */}
+            <Route path='/' element={<PagLogin />} />
+            <Route path='/login' element={<PagLogin />} />
+            <Route path='/registro' element={<Registro />} />
+            <Route path='/acesso-negado' element={<AcessoNegado />} />
 
-          <Route
-            path='/paginicial'
-            element={
-              <ProtectedRoute>
-                <FullLayout />
-              </ProtectedRoute>
-            }
-          />
+            {/* Rotas Protegidas */}
+            <Route
+              path='/paginicial'
+              element={
+                <ProtectedRoute>
+                  <FullLayout />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/pagAluno'
+              element={
+                <ProtectedRoute allowedPermissions={['aluno']}>
+                  <Layoutaluno />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/pagAulas'
+              element={
+                <ProtectedRoute allowedPermissions={['aulas']}>
+                  {' '}
+                  {/* Verifique a permissão correta */}
+                  <LayoutAulas />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/pagResponsavel'
+              element={
+                <ProtectedRoute allowedPermissions={['responsavel']}>
+                  <Layoutresponsavel />
+                </ProtectedRoute>
+              }
+            />
+            {/* Rota para TelaNotificacaoFaltas */}
+            <Route
+              path='/notifica'
+              element={
+                <ProtectedRoute
+                  allowedPermissions={['registrofrequencia', 'notifica']}
+                >
+                  {' '}
+                  {/* Ou a permissão correta */}
+                  <Layoutnotifica />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/atendimento'
+              element={
+                <ProtectedRoute allowedPermissions={['atendimento']}>
+                  {' '}
+                  {/* Verifique a permissão correta */}
+                  <LayoutAtendimento />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/pagProfessor'
+              element={
+                <ProtectedRoute allowedPermissions={['professor']}>
+                  <Layoutprofessor />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/pagMatricula'
+              element={
+                <ProtectedRoute allowedPermissions={['matricula']}>
+                  <LayoutMatricula />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/pagMontarTurma'
+              element={
+                <ProtectedRoute allowedPermissions={['montarturma']}>
+                  <LayoutMontarTurma />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/pagDisciplina'
+              element={
+                <ProtectedRoute allowedPermissions={['disciplina']}>
+                  <LayoutDisciplina />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/pagTurma'
+              element={
+                <ProtectedRoute allowedPermissions={['turma']}>
+                  <LayoutTurma />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/configuracoes-de-seguranca' // Rota para TelaConfiguracoes (antiga Seguranca)
+              element={
+                <ProtectedRoute allowedPermissions={['configuracoes']}>
+                  <ConfiguracoesDeSeguranca />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/pagRegistroFrequencia'
+              element={
+                <ProtectedRoute allowedPermissions={['registrofrequencia']}>
+                  <LayoutRegistroFrequencia />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/pagConsultarFrequencias'
+              element={
+                <ProtectedRoute
+                  allowedPermissions={[
+                    'registrofrequencia',
+                    'consultarfrequencia',
+                  ]}
+                >
+                  {' '}
+                  {/* Ou a permissão correta */}
+                  <LayoutConsultaFrequencia />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/pagSubstituicoes'
+              element={
+                <ProtectedRoute allowedPermissions={['substituicoes']}>
+                  {' '}
+                  {/* Verifique a permissão correta */}
+                  <LayoutSubstituicoes />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path='/pagAluno'
-            element={
-              <ProtectedRoute allowedPermissions={['aluno']}>
-                <Layoutaluno />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path='/relatorios'
+              element={
+                <ProtectedRoute
+                  allowedPermissions={[
+                    'relatorios',
+                    'registrofrequencia',
+                    'adm',
+                  ]}
+                >
+                  <LayoutRelatorios />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path='/pagAulas'
-            element={
-              <ProtectedRoute allowedPermissions={['aluno']}>
-                <LayoutAulas/>
-              </ProtectedRoute>
-            }
-          />
+            {/* Central de Relacionamentos */}
+            <Route
+              path='/centralRelacionamentos'
+              element={
+                <ProtectedRoute>
+                  <CentralRelacionamentos />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path='/pagResponsavel'
-            element={
-              <ProtectedRoute allowedPermissions={['responsavel']}>
-                <Layoutresponsavel />
-              </ProtectedRoute>
-            }
-          />
+            {/* Relatório de Atendimentos */}
+            <Route
+              path='/relatorioAtendimentos'
+              element={
+                <ProtectedRoute>
+                  <RelatorioAtendimentoPage />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path='/notifica'
-            element={
-              <ProtectedRoute allowedPermissions={['notifica']}>
-                <Layoutnotifica />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/atendimento'
-            element={
-              <ProtectedRoute allowedPermissions={['notifica']}>
-                <LayoutAtendimento />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path='/analise-substituicoes'
+              element={
+                <ProtectedRoute
+                  allowedPermissions={['relatorios', 'substituicoes', 'adm']}
+                >
+                  {' '}
+                  {/* Ajuste as permissões */}
+                  <LayoutAnaliseSubstituicoes />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path='/pagProfessor'
-            element={
-              <ProtectedRoute allowedPermissions={['professor']}>
-                <Layoutprofessor />
-              </ProtectedRoute>
-            }
-          />
+            {/* Rota Catch-all para 404 ou redirecionamento pode ser adicionada aqui */}
+            {/* <Route path="*" element={<NotFound />} /> */}
+          </Routes>
 
-          <Route
-            path='/pagMatricula'
-            element={
-              <ProtectedRoute allowedPermissions={['matricula']}>
-                <LayoutMatricula />
-              </ProtectedRoute>
-            }
+          {/* ToastContainer fora do Routes */}
+          <ToastContainer
+            position='bottom-right'
+            autoClose={5000}
+            style={{ zIndex: 99999 }}
           />
-
-          <Route
-            path='/pagDisciplina'
-            element={
-              <ProtectedRoute allowedPermissions={['disciplina']}>
-                <LayoutDisciplina />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path='/pagTurma'
-            element={
-              <ProtectedRoute allowedPermissions={['turma']}>
-                <LayoutTurma />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path='/configuracoes-de-seguranca'
-            element={
-              <ProtectedRoute allowedPermissions={['configuracoes']}>
-                <ConfiguracoesDeSeguranca />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/pagRegistroFrequencia'
-            element={
-              <ProtectedRoute allowedPermissions={['registrofrequencia']}>
-                <LayoutRegistroFrequencia />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/pagConsultarFrequencias'
-            element={
-              <ProtectedRoute allowedPermissions={['registrofrequencia']}>
-                <LayoutConsultaFrequencia />
-              </ProtectedRoute>
-            }
-          />
-
-                    <Route
-            path='/pagSubstituicoes'
-            element={
-              <ProtectedRoute allowedPermissions={['registrofrequencia']}>
-                <LayoutSubstituicoes/>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route path='/acesso-negado' element={<AcessoNegado />} />
-        </Routes>
-
-        <ToastContainer position='bottom-right' autoClose={5000} />
-      </BrowserRouter>
-    </div>
+        </BrowserRouter>
+      </div>
+    </LoadingProvider>
   );
 }
 

@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "fs-extra": "^11.3.2",
+    "mdb-react-ui-kit": "^9.0.0",
+    "moment": "^2.30.1",
+    "pdfkit": "^0.17.2",
+    "puppeteer": "^24.31.0"
+  }
+}

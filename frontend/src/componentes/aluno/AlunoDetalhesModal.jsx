@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, Container, Row, Col, Alert } from 'react-bootstrap';
+// 1. Importar Tabs e Tab
+import { Modal, Button, Form, Container, Row, Col, Alert, Tabs, Tab } from 'react-bootstrap'; 
 import InputMask from 'react-input-mask';
+import AlunoFrequenciaTab from './AlunoFrequenciaTab';
 
 const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
   const [formData, setFormData] = useState(aluno || {});
@@ -81,259 +83,279 @@ const AlunoDetalhesModal = ({ show, onHide, aluno, onSave }) => {
     return true;
   };
 
-const handleSubmit = async () => {
-  if (!validarTodosCampos()) {
-    setMostrarAlertaObrigatorios(true);
-    return;
-  }
+  const handleSubmit = async () => {
+    if (!validarTodosCampos()) {
+      setMostrarAlertaObrigatorios(true);
+      return;
+    }
 
-  try {
-    const formDataCorrigido = {
-      ...formData,
-      cpf: formData.cpf.replace(/\D/g, ''),
-    };
+    try {
+      const formDataCorrigido = {
+        ...formData,
+        cpf: formData.cpf.replace(/\D/g, ''),
+      };
 
-    setMostrarAlertaObrigatorios(false);
-    await onSave(formDataCorrigido);
-    onHide();
-  } catch (error) {
-    const msg = error?.message || 'Erro ao salvar dados. Tente novamente.';
-    setAlertaMensagem(msg);
-    setMostrarAlertaObrigatorios(true);
-  }
-};
-
-
+      setMostrarAlertaObrigatorios(false);
+      await onSave(formDataCorrigido);
+      onHide();
+    } catch (error) {
+      const msg = error?.message || 'Erro ao salvar dados. Tente novamente.';
+      setAlertaMensagem(msg);
+      setMostrarAlertaObrigatorios(true);
+    }
+  };
 
   return (
     <Modal show={show} onHide={onHide} size="xl">
       <Modal.Header closeButton>
-        <Modal.Title>Detalhes do Aluno</Modal.Title>
+        <Modal.Title>
+          Detalhes: {aluno ? aluno.nome : 'Aluno'}
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container className="mt-4">
           {mostrarAlertaObrigatorios && (
             <Alert variant="danger">{alertaMensagem || 'Por favor, preencha todos os campos obrigatórios.'}</Alert>
           )}
-          <Form>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Nome *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="nome"
-                    value={formData.nome || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={3}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>CPF *</Form.Label>
-                  <InputMask
-                    mask="999.999.999-99"
-                    value={formData.cpf || ''}
-                    onChange={handleChange}
-                  >
-                    {(inputProps) => (
+
+          {/* 2. Adicionar a estrutura de Tabs */}
+          <Tabs defaultActiveKey="detalhes" id="aluno-detalhes-tabs" className="mb-3">
+            
+            {/* 3. Mover o formulário para a primeira Tab */}
+            <Tab eventKey="detalhes" title="Detalhes">
+              <Form>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>Nome *</Form.Label>
                       <Form.Control
-                        {...inputProps}
                         type="text"
-                        name="cpf"
+                        name="nome"
+                        value={formData.nome || ''}
+                        onChange={handleChange}
                       />
-                    )}
-                  </InputMask>
-                </Form.Group>
-              </Col>
-              <Col md={3}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>RG *</Form.Label>
-                  <InputMask
-                    mask="999999999"
-                    maskChar=""
-                    value={formData.rg || ''}
-                    onChange={handleChange}
-                  >
-                    {(inputProps) => (
+                    </Form.Group>
+                  </Col>
+                  <Col md={3}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>CPF *</Form.Label>
+                      <InputMask
+                        mask="999.999.999-99"
+                        value={formData.cpf || ''}
+                        onChange={handleChange}
+                      >
+                        {(inputProps) => (
+                          <Form.Control
+                            {...inputProps}
+                            type="text"
+                            name="cpf"
+                          />
+                        )}
+                      </InputMask>
+                    </Form.Group>
+                  </Col>
+                  <Col md={3}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>RG *</Form.Label>
+                      <InputMask
+                        mask="999999999"
+                        maskChar=""
+                        value={formData.rg || ''}
+                        onChange={handleChange}
+                      >
+                        {(inputProps) => (
+                          <Form.Control
+                            {...inputProps}
+                            type="text"
+                            name="rg"
+                          />
+                        )}
+                      </InputMask>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={2}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>Dt Nascimento *</Form.Label>
                       <Form.Control
-                        {...inputProps}
+                        type="date"
+                        name="dataNascimento"
+                        value={formData.dataNascimento ? formData.dataNascimento.split('T')[0] : ''}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={2}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>Sexo *</Form.Label>
+                      <Form.Select
+                        name="sexo"
+                        value={formData.sexo || ''}
+                        onChange={handleChange}
+                      >
+                        <option value="">Selecione</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Feminino">Feminino</option>
+                        <option value="Outros">Outro</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={4}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>RA *</Form.Label>
+                      <Form.Control
                         type="text"
-                        name="rg"
+                        name="numeroBeneficio"
+                        value={formData.numeroBeneficio || ''}
+                        onChange={handleChange}
                       />
-                    )}
-                  </InputMask>
-                </Form.Group>
-              </Col>
-            </Row>
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-            <Row>
-              <Col md={2}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Dt Nascimento *</Form.Label>
-                  <Form.Control
-                    type="date"
-                    name="dataNascimento"
-                    value={formData.dataNascimento ? formData.dataNascimento.split('T')[0] : ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={2}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Sexo *</Form.Label>
-                  <Form.Select
-                    name="sexo"
-                    value={formData.sexo || ''}
-                    onChange={handleChange}
-                  >
-                    <option value="">Selecione</option>
-                    <option value="Masculino">Masculino</option>
-                    <option value="Feminino">Feminino</option>
-                    <option value="Outros">Outro</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-
-              <Col md={4}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>RA *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="numeroBeneficio"
-                    value={formData.numeroBeneficio || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Endereço *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="endereco"
-                    value={formData.endereco || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={1}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Núm.*</Form.Label>
-                  <Form.Control
-                    type="number"
-                    name="num"
-                    value={formData.num || ''}
-                    onChange={handleChange}
-                    min={1}
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={5}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Complemento</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="complemento"
-                    value={formData.complemento || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col md={3}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Celular *</Form.Label>
-                  <InputMask
-                    mask="(99) 99999-9999"
-                    value={formData.celular || ''}
-                    onChange={handleChange}
-                  >
-                    {(inputProps) => (
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>Endereço *</Form.Label>
                       <Form.Control
-                        {...inputProps}
-                        type="tel"
-                        name="celular"
+                        type="text"
+                        name="endereco"
+                        value={formData.endereco || ''}
+                        onChange={handleChange}
                       />
-                    )}
-                  </InputMask>
-                </Form.Group>
-              </Col>
+                    </Form.Group>
+                  </Col>
 
-              <Col md={3}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Telefone</Form.Label>
-                  <InputMask
-                    mask="(99) 9999-9999"
-                    value={formData.telefone || ''}
-                    onChange={handleChange}
-                  >
-                    {(inputProps) => (
+                  <Col md={1}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>Núm.*</Form.Label>
                       <Form.Control
-                        {...inputProps}
-                        type="tel"
-                        name="telefone"
+                        type="number"
+                        name="num"
+                        value={formData.num || ''}
+                        onChange={handleChange}
+                        min={1}
                       />
-                    )}
-                  </InputMask>
-                </Form.Group>
-              </Col>
+                    </Form.Group>
+                  </Col>
 
-              <Col md={6}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>E-mail *</Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="email"
-                    value={formData.email || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col md={12}>
-                <Form.Group className="mb-3 text-start">
-                  <Form.Label>Contato de Emergência</Form.Label>
-                  <InputMask
-                    mask="(99) 99999-9999"
-                    value={formData.contatoEmergencia || ''}
-                    onChange={handleChange}
-                  >
-                    {(inputProps) => (
+                  <Col md={5}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>Complemento</Form.Label>
                       <Form.Control
-                        {...inputProps}
-                        type="tel"
-                        name="contatoEmergencia"
+                        type="text"
+                        name="complemento"
+                        value={formData.complemento || ''}
+                        onChange={handleChange}
                       />
-                    )}
-                  </InputMask>
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-            <Col md={12}>
-                <Form.Group className="mb-3 text-start">
-                    <Form.Label>Observações</Form.Label>
-                    <Form.Control
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={3}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>Celular *</Form.Label>
+                      <InputMask
+                        mask="(99) 99999-9999"
+                        value={formData.celular || ''}
+                        onChange={handleChange}
+                      >
+                        {(inputProps) => (
+                          <Form.Control
+                            {...inputProps}
+                            type="tel"
+                            name="celular"
+                          />
+                        )}
+                      </InputMask>
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={3}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>Telefone</Form.Label>
+                      <InputMask
+                        mask="(99) 9999-9999"
+                        value={formData.telefone || ''}
+                        onChange={handleChange}
+                      >
+                        {(inputProps) => (
+                          <Form.Control
+                            {...inputProps}
+                            type="tel"
+                            name="telefone"
+                          />
+                        )}
+                      </InputMask>
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={6}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>E-mail *</Form.Label>
+                      <Form.Control
+                        type="email"
+                        name="email"
+                        value={formData.email || ''}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={12}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>Contato de Emergência</Form.Label>
+                      <InputMask
+                        mask="(99) 99999-9999"
+                        value={formData.contatoEmergencia || ''}
+                        onChange={handleChange}
+                      >
+                        {(inputProps) => (
+                          <Form.Control
+                            {...inputProps}
+                            type="tel"
+                            name="contatoEmergencia"
+                          />
+                        )}
+                      </InputMask>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={12}>
+                    <Form.Group className="mb-3 text-start">
+                      <Form.Label>Observações</Form.Label>
+                      <Form.Control
                         as="textarea"
                         name="observacoes"
-                        value={aluno.observacoes}
+                        value={formData.observacoes || ''} // Corrigido para usar formData
                         onChange={handleChange}
-                    />
-                </Form.Group>
-            </Col>
-        </Row>
-          </Form>
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </Form>
+            </Tab>
+
+            <Tab eventKey="frequencia" title="Frequência">
+              {/* Renderiza o componente da aba, passando o ID do aluno */}
+              {aluno && aluno.id ? (
+                <AlunoFrequenciaTab aluno={aluno} />
+              ) : (
+                <Alert variant="info">
+                  Não foi possível carregar a frequência. Dados do aluno não encontrados.
+                </Alert>
+              )}
+            </Tab>
+
+          </Tabs>
         </Container>
       </Modal.Body>
       <Modal.Footer>

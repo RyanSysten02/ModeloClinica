@@ -3,6 +3,9 @@ import { Container, Row, Col, Card, Button, Form } from "react-bootstrap";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import jsPDF from 'jspdf'; // --- NOVO: Importação do jsPDF
+import autoTable from 'jspdf-autotable'; // --- NOVO: Importação do autoTable
+
 import TurmaService from "../../services/Turma";
 import DisciplinaService from '../../services/Disciplina';
 import ModalConfirmacao from "../ModaisUteis/ModalConfirmação";
@@ -11,12 +14,8 @@ export default function TelaRegistroFrequencia() {
   const [turmas, setTurmas] = useState([]);
   const [professores, setProfessores] = useState([]);
   const [disciplinas, setDisciplinas] = useState([]);
-  
-  // --- REMOVIDO: O estado de 'periodos' não é mais necessário.
-
-  // --- ALTERADO: Estado do filtro simplificado, sem 'periodo'.
   const [filtro, setFiltro] = useState({ turma: "", professor: "", disciplina: "" });
-  
+
   const [alunos, setAlunos] = useState([]);
   const [presencas, setPresencas] = useState({});
   const [filtrosConfirmados, setFiltrosConfirmados] = useState(false);
@@ -50,7 +49,6 @@ export default function TelaRegistroFrequencia() {
     fetchDadosIniciais();
   }, []);
 
-  // --- ALTERADO: Validação da busca sem o 'periodo'.
   const buscarAlunos = async () => {
     if (!filtro.turma || !filtro.disciplina || !filtro.professor) {
       toast.warning("Selecione Turma, Disciplina e Professor antes de continuar.");
@@ -84,7 +82,6 @@ export default function TelaRegistroFrequencia() {
     setPresencas((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // --- ALTERADO: Payload de confirmação sem o 'periodo'.
   const confirmarFrequencia = async () => {
     const token = localStorage.getItem("token");
     const payload = alunos.map((aluno) => ({
@@ -105,7 +102,6 @@ export default function TelaRegistroFrequencia() {
         setMenuInicial(true);
         setFiltrosConfirmados(false);
         setAlunos([]);
-        // --- ALTERADO: Reset do filtro sem o 'periodo'.
         setFiltro({ turma: "", professor: "", disciplina: "" });
         setDataAula(new Date().toISOString().split("T")[0]);
       } else {
@@ -115,6 +111,77 @@ export default function TelaRegistroFrequencia() {
     } catch (error) {
       toast.error("Erro de conexão ao registrar frequência.");
     }
+  };
+
+  // --- NOVA FUNÇÃO: Gerar Ficha Manual PDF (RF_S8) ---
+  const gerarFichaManualPDF = () => {
+    if (alunos.length === 0) {
+      toast.warning("Não há alunos listados para gerar a ficha.");
+      return;
+    }
+
+    // 1. Recuperar nomes legíveis dos filtros
+    const turmaNome = turmas.find(t => t.id == filtro.turma)?.nome || "N/A";
+    const disciplinaNome = disciplinas.find(d => d.id == filtro.disciplina)?.nome || "N/A";
+    const professorNome = professores.find(p => p.id == filtro.professor)?.nome || "N/A";
+    
+    // Formatar data para exibição (DD/MM/AAAA)
+    const dataFormatada = new Date(dataAula).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+    
+    // Obter o dia da semana
+    const diasSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+    const diaSemana = diasSemana[new Date(dataAula).getUTCDay()];
+
+    const doc = new jsPDF();
+
+    // 2. Cabeçalho da Ficha
+    doc.setFontSize(16);
+    doc.text("Ficha de Frequência Manual", 105, 15, { align: "center" });
+    
+    doc.setFontSize(10);
+    doc.text(`Turma: ${turmaNome}`, 14, 25);
+    doc.text(`Disciplina: ${disciplinaNome}`, 14, 30);
+    doc.text(`Professor: ${professorNome}`, 14, 35);
+    
+    doc.text(`Data: ${dataFormatada}`, 150, 25);
+    doc.text(`Dia: ${diaSemana}`, 150, 30);
+
+    // 3. Preparar dados para a tabela
+    const tableBody = alunos.map((aluno, index) => [
+      index + 1,           // Nº
+      aluno.aluno_nome,    // Nome do Aluno
+      "",                  // Coluna Vazia para Assinatura/Presença
+      ""                   // Coluna Vazia para Observação
+    ]);
+
+    // 4. Gerar Tabela
+    autoTable(doc, {
+      startY: 40,
+      head: [['Nº', 'Nome do Aluno', 'Presença (P) / Falta (F)', 'Observações']],
+      body: tableBody,
+      theme: 'grid',
+      headStyles: { fillColor: [220, 220, 220], textColor: 20, lineColor: 10 }, // Cabeçalho cinza claro
+      columnStyles: {
+        0: { cellWidth: 15, halign: 'center' }, // Coluna Nº
+        1: { cellWidth: 'auto' },               // Coluna Nome
+        2: { cellWidth: 40, halign: 'center' }, // Coluna Presença (para marcar X)
+        3: { cellWidth: 50 }                    // Coluna Obs
+      },
+      styles: {
+        lineColor: 10, // Linhas pretas para facilitar impressão manual
+        lineWidth: 0.1,
+        minCellHeight: 10 // Altura da linha maior para facilitar escrita manual
+      }
+    });
+
+    // 5. Rodapé
+    const finalY = doc.lastAutoTable.finalY + 20;
+    doc.text("__________________________________________", 105, finalY, { align: "center" });
+    doc.text("Assinatura do Professor", 105, finalY + 5, { align: "center" });
+
+    // 6. Salvar PDF
+    const nomeArquivo = `Ficha_Frequencia_${turmaNome.replace(/\s+/g, '_')}_${dataFormatada.replace(/\//g, '-')}.pdf`;
+    doc.save(nomeArquivo);
   };
 
   const handleCloseModal = () => { setModalConfig({ ...modalConfig, show: false }); };
@@ -147,65 +214,92 @@ export default function TelaRegistroFrequencia() {
       <AnimatePresence mode="wait">
         {menuInicial ? (
           <motion.div key="menu-inicial" variants={fadeVariant} initial="hidden" animate="visible" exit="exit">
-             <Row className="g-4 justify-content-center">
-               <Col md={5}>
-                 <Card className="shadow p-4 text-center h-100" onClick={() => navigate("/pagConsultarFrequencias")} style={{ cursor: "pointer" }}>
-                   <Card.Body>
-                     <i className="bi bi-journal-text display-4 text-primary mb-3"></i>
-                     <h5 className="fw-bold">Consultar Lançamentos Anteriores</h5>
-                     <p className="text-muted">Visualize e edite registros já lançados.</p>
-                   </Card.Body>
-                 </Card>
-               </Col>
-               <Col md={5}>
-                 <Card className="shadow p-4 text-center h-100" onClick={() => setMenuInicial(false)} style={{ cursor: "pointer" }}>
-                   <Card.Body>
-                     <i className="bi bi-plus-circle display-4 text-success mb-3"></i>
-                     <h5 className="fw-bold">Lançar Nova Frequência</h5>
-                     <p className="text-muted">Registre a frequência de uma nova aula.</p>
-                   </Card.Body>
-                 </Card>
-               </Col>
-             </Row>
+            
+            <Row className="justify-content-center">
+              <Col lg={9} xl={8}>
+                <Row className="g-4">
+                  <Col md={6}>
+                    <Card className="shadow p-4 text-center" onClick={() => navigate("/pagConsultarFrequencias")} style={{ cursor: "pointer", aspectRatio: '1 / 1' }}>
+                      <Card.Body className="d-flex flex-column justify-content-center align-items-center">
+                        <i className="bi bi-journal-text display-4 text-primary mb-3"></i>
+                        <h5 className="fw-bold">Consultar Lançamentos</h5>
+                        <p className="text-muted">Visualize e edite registros já lançados.</p>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col md={6}>
+                    <Card className="shadow p-4 text-center" onClick={() => setMenuInicial(false)} style={{ cursor: "pointer", aspectRatio: '1 / 1' }}>
+                      <Card.Body className="d-flex flex-column justify-content-center align-items-center">
+                        <i className="bi bi-plus-circle display-4 text-success mb-3"></i>
+                        <h5 className="fw-bold">Lançar Nova Frequência</h5>
+                        <p className="text-muted">Registre a frequência de uma nova aula.</p>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col md={6}>
+                    <Card className="shadow p-4 text-center" onClick={() => navigate("/notifica")} style={{ cursor: "pointer", aspectRatio: '1 / 1' }}>
+                      <Card.Body className="d-flex flex-column justify-content-center align-items-center">
+                        <i className="bi bi-bell-fill display-4 text-warning mb-3"></i>
+                        <h5 className="fw-bold">Notificar Ausências</h5>
+                        <p className="text-muted">Envie avisos de faltas para os responsáveis.</p>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col md={6}>
+                    <Card className="shadow p-4 text-center" onClick={() => navigate("/relatorios")} style={{ cursor: "pointer", aspectRatio: '1 / 1' }}>
+                      <Card.Body className="d-flex flex-column justify-content-center align-items-center">
+                        <i className="bi bi-bar-chart-line-fill display-4 text-info mb-3"></i> 
+                        <h5 className="fw-bold">Relatórios e Gráficos</h5>
+                        <p className="text-muted">Visualize dados e estatísticas.</p>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                </Row>
+              </Col>
+            </Row>
+            
           </motion.div>
         ) : !filtrosConfirmados ? (
           <motion.div key="filtros" variants={fadeVariant} initial="hidden" animate="visible" exit="exit">
-             <Card className="shadow p-4">
-               <Card.Body>
-                 {/* --- ALTERADO: Layout dos filtros sem o Período --- */}
-                 <Row className="mb-3 g-3 align-items-end">
-                    <Col md={4}><Form.Label>Turma</Form.Label>
-                      <Form.Select value={filtro.turma} onChange={(e) => setFiltro({ ...filtro, turma: e.target.value })} >
-                        <option value="">Selecione a Turma</option>
-                        {turmas.map((t) => (<option key={t.id} value={t.id}>{t.nome}</option>))}
-                      </Form.Select>
-                    </Col>
-                    <Col md={4}><Form.Label>Disciplina</Form.Label>
-                      <Form.Select value={filtro.disciplina} onChange={(e) => setFiltro({ ...filtro, disciplina: e.target.value })} >
-                        <option value="">Selecione a Disciplina</option>
-                        {disciplinas.map((d) => (<option key={d.id} value={d.id}>{d.nome}</option>))}
-                      </Form.Select>
-                    </Col>
-                    <Col md={4}><Form.Label>Professor</Form.Label>
-                      <Form.Select value={filtro.professor} onChange={(e) => setFiltro({ ...filtro, professor: e.target.value })} >
-                        <option value="">Selecione o Professor</option>
-                        {professores.map((p) => (<option key={p.id} value={p.id}>{p.nome}</option>))}
-                      </Form.Select>
-                    </Col>
-                    <Col md={4}><Form.Label>Data da Aula</Form.Label>
-                      <Form.Control type="date" value={dataAula} onChange={(e) => setDataAula(e.target.value)} />
-                    </Col>
-                 </Row>
-                 <div className="d-flex justify-content-center mt-4">
-                   <Button variant="primary" onClick={buscarAlunos}><i className="bi bi-search me-2"></i>Buscar Alunos</Button>
-                 </div>
-               </Card.Body>
-             </Card>
-             <div className="d-flex justify-content-center mt-4">
-               <Button variant="outline-secondary" onClick={() => setMenuInicial(true)}>
-                 <i className="bi bi-arrow-left me-2"></i>Voltar ao Menu Inicial
-               </Button>
-             </div>
+            <Card className="shadow p-4">
+              <Card.Body>
+                <Row className="mb-3 g-3 align-items-end">
+                  <Col md={3}><Form.Label>Turma</Form.Label>
+                    <Form.Select value={filtro.turma} onChange={(e) => setFiltro({ ...filtro, turma: e.target.value })} >
+                      <option value="">Selecione a Turma</option>
+                      {turmas.map((t) => (<option key={t.id} value={t.id}>{t.nome}</option>))}
+                    </Form.Select>
+                  </Col>
+                  <Col md={3}><Form.Label>Disciplina</Form.Label>
+                    <Form.Select value={filtro.disciplina} onChange={(e) => setFiltro({ ...filtro, disciplina: e.target.value })} >
+                      <option value="">Selecione a Disciplina</option>
+                      {disciplinas.map((d) => (<option key={d.id} value={d.id}>{d.nome}</option>))}
+                    </Form.Select>
+                  </Col>
+                  <Col md={3}><Form.Label>Professor</Form.Label>
+                    <Form.Select value={filtro.professor} onChange={(e) => setFiltro({ ...filtro, professor: e.target.value })} >
+                      <option value="">Selecione o Professor</option>
+                      {professores.map((p) => (<option key={p.id} value={p.id}>{p.nome}</option>))}
+                    </Form.Select>
+                  </Col>
+                  <Col md={3}><Form.Label>Data da Aula</Form.Label>
+                    <Form.Control type="date" value={dataAula} onChange={(e) => setDataAula(e.target.value)} />
+                  </Col>
+                </Row>
+                <div className="d-flex justify-content-center mt-4">
+                  <Button variant="primary" onClick={buscarAlunos}><i className="bi bi-search me-2"></i>Buscar Alunos</Button>
+                </div>
+              </Card.Body>
+            </Card>
+            <div className="d-flex justify-content-center mt-4">
+              <Button variant="outline-secondary" onClick={() => setMenuInicial(true)}>
+                <i className="bi bi-arrow-left me-2"></i>Voltar ao Menu Inicial
+              </Button>
+            </div>
           </motion.div>
         ) : (
           <motion.div key="lista-alunos" variants={fadeVariant} initial="hidden" animate="visible" exit="exit">
@@ -213,10 +307,25 @@ export default function TelaRegistroFrequencia() {
               <p className="lead">Registrando frequência para a data: <strong>{new Date(dataAula).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</strong></p>
             </div>
             <Card className="shadow mt-3">
+              {/* --- AQUI ESTÁ O CABEÇALHO COM O BOTÃO --- */}
               <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center fw-bold">
                 <span>Lista de Alunos - Turma {turmas.find(t => t.id == filtro.turma)?.nome}</span>
-                <span>Presente / Ausente</span>
+                
+                {/* Div que agrupa o botão e o texto */}
+                <div className="d-flex align-items-center gap-3">
+                    <Button 
+                        variant="light" 
+                        size="sm" 
+                        onClick={gerarFichaManualPDF}
+                        title="Imprimir ficha para preenchimento manual"
+                    >
+                        {/* Se o ícone não aparecer, verifique se instalou o bootstrap-icons */}
+                        <i className="bi bi-printer-fill me-1"></i> Ficha Manual
+                    </Button>
+                    <span>Presente / Ausente</span>
+                </div>
               </Card.Header>
+
               <Card.Body>
                 {alunos.map((aluno) => (
                   <Form.Check

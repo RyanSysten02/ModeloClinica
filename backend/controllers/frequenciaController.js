@@ -211,6 +211,100 @@ const deleteBulkFrequencia = async (req, res) => {
     }
 };
 
+const getAlunosAusentes = async (req, res) => {
+    try {
+        const { turma_id, data_aula, disciplina_id } = req.query;
+        if (!turma_id || !data_aula) {
+            return res.status(400).json({ message: "Os parâmetros 'turma_id' e 'data_aula' são obrigatórios." });
+        }
+
+        const ausentes = await frequenciaServices.getAlunosAusentes(turma_id, data_aula, disciplina_id);
+        res.status(200).json(ausentes);
+
+    } catch (error) {
+        console.error("Erro ao buscar alunos ausentes:", error);
+        res.status(500).json({ message: "Erro interno ao processar a solicitação." });
+    }
+};
+
+const updateStatusNotificacao = async (req, res) => {
+    try {
+        // Recebe um array de IDs de frequência e o novo status
+        const { frequencia_ids, status } = req.body;
+        if (!frequencia_ids || !Array.isArray(frequencia_ids) || frequencia_ids.length === 0 || !status) {
+            return res.status(400).json({ message: "Payload inválido. É esperado um array de 'frequencia_ids' e um 'status'." });
+        }
+
+        await frequenciaServices.updateStatusNotificacao(frequencia_ids, status);
+        res.status(200).json({ message: "Status de notificação atualizado com sucesso." });
+
+    } catch (error) {
+        console.error("Erro ao atualizar status de notificação:", error);
+        res.status(500).json({ message: "Erro interno ao processar a solicitação." });
+    }
+};
+
+// ... (mantenha o controller updateStatusNotificacao)
+
+// --- NOVO CONTROLLER ---
+const appendStatusNotificacao = async (req, res) => {
+  try {
+    const { frequencia_ids, status } = req.body;
+    
+    if (!frequencia_ids || !Array.isArray(frequencia_ids) || frequencia_ids.length === 0 || !status) {
+      return res.status(400).json({ message: "Payload inválido. 'frequencia_ids' (array) e 'status' (string) são obrigatórios." });
+    }
+
+    await frequenciaServices.appendStatusNotificacao(frequencia_ids, status);
+    res.status(200).json({ message: "Status de notificação anexado com sucesso." });
+
+  } catch (error) {
+    console.error("Erro ao anexar status de notificação:", error);
+    res.status(500).json({ message: "Erro interno ao processar a solicitação." });
+  }
+};
+
+// (Cole isso no final do seu frequenciaController.js, antes do module.exports)
+
+const getBoletimIndividual = async (req, res) => {
+    try {
+        const { aluno_id, data_inicial, data_final, disciplina_id } = req.query;
+        if (!aluno_id) {
+            return res.status(400).json({ message: "O 'aluno_id' é obrigatório." });
+        }
+        const dados = await frequenciaServices.getBoletimIndividual(req.query);
+        res.status(200).json(dados);
+    } catch (error) {
+        console.error("Erro ao buscar boletim individual:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getBoletimPorTurma = async (req, res) => {
+    try {
+        const { turma_id, data_inicial, data_final, disciplina_id } = req.query;
+        if (!turma_id) {
+            return res.status(400).json({ message: "O 'turma_id' é obrigatório." });
+        }
+        const dados = await frequenciaServices.getBoletimPorTurma(req.query);
+        res.status(200).json(dados);
+    } catch (error) {
+        console.error("Erro ao buscar boletim por turma:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getRankingFaltas = async (req, res) => {
+    try {
+        // Filtros são opcionais aqui, o serviço define o limite padrão
+        const dados = await frequenciaServices.getRankingFaltas(req.query);
+        res.status(200).json(dados);
+    } catch (error) {
+        console.error("Erro ao buscar ranking de faltas:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
   createFrequencia,
   createBulkFrequencia,
@@ -222,5 +316,11 @@ module.exports = {
   getFrequenciasPorMatricula,
   getFrequenciasAgrupadas,
   getFrequenciaDetalhadaPorAula,
-  deleteBulkFrequencia
+  deleteBulkFrequencia,
+  getAlunosAusentes,
+  updateStatusNotificacao,
+  appendStatusNotificacao,
+  getBoletimIndividual,
+  getBoletimPorTurma,
+  getRankingFaltas,
 };

@@ -82,6 +82,34 @@ const getFrequenciaDetalhadaPorAula = async (turmaId, professorId, disciplinaId,
     return await frequenciaModel.getFrequenciaDetalhadaPorAula(turmaId, professorId, disciplinaId, dataAula); // Período removido
 };
 
+const getAlunosAusentes = async (turmaId, dataAula, disciplinaId) => { // <-- Agora recebe 3
+     return await frequenciaModel.getAlunosAusentes(turmaId, dataAula, disciplinaId); // <-- Agora passa 3
+};
+const updateStatusNotificacao = async (frequenciaIds, status) => {
+    return await frequenciaModel.updateStatusNotificacao(frequenciaIds, status);
+};
+
+const appendStatusNotificacao = async (frequenciaIds, status) => {
+  return await frequenciaModel.appendStatusNotificacao(frequenciaIds, status);
+};
+
+const getBoletimIndividual = async (filtro) => {
+    const { aluno_id, data_inicial, data_final, disciplina_id } = filtro;
+    return await frequenciaModel.getBoletimIndividual(aluno_id, data_inicial, data_final, disciplina_id);
+};
+
+const getBoletimPorTurma = async (filtro) => {
+    const { turma_id, data_inicial, data_final, disciplina_id } = filtro;
+    return await frequenciaModel.getBoletimPorTurma(turma_id, data_inicial, data_final, disciplina_id);
+};
+
+const getRankingFaltas = async (filtro) => {
+    const { limit, turma_id, data_inicial, data_final, disciplina_id } = filtro;
+    // Garante um limite numérico, com padrão 10
+    const numericLimit = parseInt(limit, 10) || 10;
+    return await frequenciaModel.getRankingFaltas(numericLimit, turma_id, data_inicial, data_final, disciplina_id);
+};
+
 module.exports = {
   createFrequencia,
   createBulkFrequencia,
@@ -94,4 +122,12 @@ module.exports = {
   getFrequenciasAgrupadas,
   getFrequenciaDetalhadaPorAula,
   deleteBulkFrequencia,
+  getAlunosAusentes,
+  updateStatusNotificacao,
+  appendStatusNotificacao,
+  getBoletimIndividual,
+  getBoletimPorTurma,
+  getRankingFaltas,
+
+
 };
