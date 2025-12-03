@@ -103,7 +103,7 @@ const RelatorioAtendimentos = () => {
 
       <Form>
         <Row>
-          <Col md={3}>
+          <Col md={4}>
             <Form.Group className='mb-3'>
               <Form.Label>Data Inicial</Form.Label>
               <Form.Control
@@ -115,7 +115,7 @@ const RelatorioAtendimentos = () => {
             </Form.Group>
           </Col>
 
-          <Col md={3}>
+          <Col md={4}>
             <Form.Group className='mb-3'>
               <Form.Label>Data Final</Form.Label>
               <Form.Control
@@ -127,7 +127,7 @@ const RelatorioAtendimentos = () => {
             </Form.Group>
           </Col>
 
-          <Col md={3}>
+          <Col md={4}>
             <Form.Group className='mb-3'>
               <Form.Label>Operador</Form.Label>
               <Form.Select
@@ -145,7 +145,7 @@ const RelatorioAtendimentos = () => {
             </Form.Group>
           </Col>
 
-          <Col md={3}>
+          {/* <Col md={3}>
             <Form.Group className='mb-3'>
               <Form.Label>Responsável</Form.Label>
               <Form.Select
@@ -161,7 +161,7 @@ const RelatorioAtendimentos = () => {
                 ))}
               </Form.Select>
             </Form.Group>
-          </Col>
+          </Col> */}
         </Row>
       </Form>
 

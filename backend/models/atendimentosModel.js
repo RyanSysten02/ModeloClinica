@@ -89,8 +89,15 @@ const editarAtendimento = async (id, status) => {
   );
 };
 
-const listarUsuarios = async () => {
-  return await pool.query(`SELECT id, nome FROM user WHERE role_id = 3`);
+const listarUsuarios = async (usuario) => {
+  return await pool.query(
+    `SELECT
+      id,
+      nome
+    FROM user
+    WHERE role_id = 3
+    ${usuario ? 'AND id = ' + usuario : ''};`
+  );
 };
 
 const deletarAtendimento = async (id) => {
@@ -183,10 +190,16 @@ const listarAtendimentosRelatorio = async (
         ON a.tipo = 2 AND a.nome = r.id
       LEFT JOIN status_atendimento sa
         ON a.status = sa.id
+      ${operador ? getOperadorStatement(operador) : ''}
       WHERE 1 = 1
       ${dataInicio ? getStatementData(dataInicio, '>=', 'a.data') : ''}
       ${dataFim ? getStatementData(dataFim, '<=', 'a.data') : ''};
   `);
+
+  function getOperadorStatement(id) {
+    return `JOIN user us on us.id = ${id}`;
+  }
+
   return rows;
 };
 

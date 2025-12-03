@@ -138,7 +138,9 @@ const listarAtendimentosRelatorio = async (
   const dataFimFormatada =
     dataFim?.split('-').reverse().join('/') || 'Não especificada';
   const responsavelFormatado = responsavel || 'Todos';
-  const operadorFormatado = operador || 'Todos';
+  const operadorFormatado = operador
+    ? (await listarUsuarios(operador))[0].nome
+    : 'Todos';
 
   const linhasTabela = atendimentos
     .map((item) => {
@@ -446,7 +448,6 @@ const listarAtendimentosRelatorio = async (
     <h3>Filtros Aplicados</h3>
     <p><strong>Data Início:</strong> ${dataInicioFormatada}</p>
     <p><strong>Data Fim:</strong> ${dataFimFormatada}</p>
-    <p><strong>Responsável:</strong> ${responsavelFormatado}</p>
     <p><strong>Operador:</strong> ${operadorFormatado}</p>
   </div>
 
