@@ -1,40 +1,57 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Button, ButtonGroup, Container } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 import EditarAulas from './EditarAulas';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import RelatorioProfessoresModal from './RelatorioProfessoresModal';
+import HistoricoAulasModal from './HistoricoAulasModal';
 
 const DAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
-const COLUMNS = [
-  '6º ano',
-  '7º ano',
-  '8º ano',
-  '9º ano',
-  '1ª série',
-  '2ª série',
-  '3ª série',
-];
 
 const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
 
 export default function AtribuicaoDeAulas() {
   const [horarios, setHorarios] = useState([]);
-  const [schedule, setSchedule] = useState(
+  const [turmas, setTurmas] = useState([]);
+
+  const [scheduleByDay, setScheduleByDay] = useState(
     DAYS.reduce((acc, d) => ({ ...acc, [d]: [] }), {})
   );
+  const [draftByDay, setDraftByDay] = useState(
+    DAYS.reduce((acc, d) => ({ ...acc, [d]: [] }), {})
+  );
+
   const [currentDay, setCurrentDay] = useState(DAYS[0]);
   const [editMode, setEditMode] = useState(false);
-  const [draft, setDraft] = useState([]);
+
   const [clipboard, setClipboard] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalCell, setModalCell] = useState(null);
 
+  const [showRelatorio, setShowRelatorio] = useState(false);
+  const [showHistorico, setShowHistorico] = useState(false);
+
   const token = localStorage.getItem('token');
 
-  const emptyDay = useMemo(() => {
-    return () => horarios.map(() => COLUMNS.map(() => null));
-  }, [horarios]);
+  const columns = useMemo(() => turmas.map((t) => t.nome), [turmas]);
+
+  const emptyDayFactory = useMemo(() => {
+    return () => horarios.map(() => columns.map(() => null));
+  }, [horarios, columns]);
+
+  const currentDraft = useMemo(() => {
+    return draftByDay[currentDay]?.length
+      ? draftByDay[currentDay]
+      : emptyDayFactory();
+  }, [draftByDay, currentDay, emptyDayFactory]);
+
+  const currentSchedule = useMemo(() => {
+    return scheduleByDay[currentDay]?.length
+      ? scheduleByDay[currentDay]
+      : emptyDayFactory();
+  }, [scheduleByDay, currentDay, emptyDayFactory]);
+
+  const currentMatrix = editMode ? currentDraft : currentSchedule;
 
   useEffect(() => {
     const loadHorarios = async () => {
@@ -48,16 +65,32 @@ export default function AtribuicaoDeAulas() {
   }, [token]);
 
   useEffect(() => {
+    const loadTurmas = async () => {
+      const resp = await fetch('http://localhost:5001/api/turma/list', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await resp.json();
+      setTurmas(Array.isArray(data) ? data : []);
+    };
+    if (token) loadTurmas();
+  }, [token]);
+
+  useEffect(() => {
     const loadAulasDia = async () => {
-      if (!horarios.length) return;
+      if (!horarios.length || !columns.length) return;
+
       const resp = await fetch(
-        `http://localhost:5001/api/aulas?dia=${encodeURIComponent(currentDay)}`,
+        `http://localhost:5001/api/aulas?dia=${encodeURIComponent(
+          currentDay
+        )}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
       const data = await resp.json();
-      const matrix = emptyDay();
+
+      const matrix = emptyDayFactory();
+
       const rowIndexByHorario = {};
       horarios.forEach((h, idx) => {
         rowIndexByHorario[h.id] = idx;
@@ -65,7 +98,7 @@ export default function AtribuicaoDeAulas() {
 
       data.forEach((a) => {
         const r = rowIndexByHorario[a.horario_id];
-        const c = COLUMNS.findIndex((col) => col === a.turma);
+        const c = columns.findIndex((col) => col === a.turma);
         if (r >= 0 && c >= 0) {
           matrix[r][c] = {
             subjectId: a.disciplina_id,
@@ -77,25 +110,116 @@ export default function AtribuicaoDeAulas() {
         }
       });
 
-      setSchedule((prev) => ({ ...prev, [currentDay]: matrix }));
-      setDraft(matrix);
+      setScheduleByDay((prev) => ({
+        ...prev,
+        [currentDay]: matrix,
+      }));
+
+      setDraftByDay((prev) => {
+        if (prev[currentDay] && prev[currentDay].length) {
+          return prev;
+        }
+        return {
+          ...prev,
+          [currentDay]: deepClone(matrix),
+        };
+      });
     };
+
     if (token && currentDay) loadAulasDia();
-  }, [token, currentDay, horarios]);
+  }, [token, currentDay, horarios, columns, emptyDayFactory]);
+
+  useEffect(() => {
+    if (editMode) {
+      toast.info(`Editando horário de ${currentDay}`, { autoClose: 2500 });
+    }
+  }, [currentDay, editMode]);
+
+  const cargaProfessores = useMemo(() => {
+    const contador = {};
+    DAYS.forEach((dia) => {
+      const matriz =
+        (draftByDay[dia] && draftByDay[dia].length
+          ? draftByDay[dia]
+          : scheduleByDay[dia]) || [];
+      matriz.forEach((linha) => {
+        linha.forEach((cell) => {
+          if (cell && cell.teacherId) {
+            contador[cell.teacherId] = (contador[cell.teacherId] || 0) + 1;
+          }
+        });
+      });
+    });
+    return contador;
+  }, [draftByDay, scheduleByDay]);
+
+  const disciplinasProfessorMap = useMemo(() => {
+    return {
+      24: ['Matemática'],
+      25: ['Português', 'Redação', 'Língua Portuguesa', 'Gramática'],
+      26: ['Ciências', 'Biologia'],
+      27: ['História'],
+      28: ['Geografia'],
+      29: ['Inglês', 'Língua Inglesa', 'Inglês Instrumental'],
+    };
+  }, []);
 
   const handleEditToggle = () => {
     if (!editMode) {
-      setDraft(deepClone(schedule[currentDay] || emptyDay()));
+      setDraftByDay((prev) => ({
+        ...prev,
+        [currentDay]: deepClone(
+          prev[currentDay]?.length ? prev[currentDay] : currentSchedule
+        ),
+      }));
       setEditMode(true);
+      toast.info(`Modo edição ativado (${currentDay})`, { autoClose: 2500 });
     }
   };
 
+  const validaConflitosProfessorDia = () => {
+    const conflitos = {};
+    for (let rowIdx = 0; rowIdx < currentDraft.length; rowIdx++) {
+      const linha = currentDraft[rowIdx];
+      const h = horarios[rowIdx];
+      if (!h) continue;
+      if (Number(h.is_intervalo) === 1) continue;
+
+      for (let colIdx = 0; colIdx < linha.length; colIdx++) {
+        const cell = linha[colIdx];
+        if (!cell) continue;
+        const teacherId = cell.teacherId;
+        const turmaNome = columns[colIdx];
+        const horarioId = h.id;
+        if (!teacherId) continue;
+
+        if (!conflitos[horarioId]) conflitos[horarioId] = {};
+        if (!conflitos[horarioId][teacherId]) {
+          conflitos[horarioId][teacherId] = turmaNome;
+        } else {
+          const turmaConflitante = conflitos[horarioId][teacherId];
+          return {
+            ok: false,
+            mensagem: `Conflito: o professor "${cell.teacherName}" está em "${turmaConflitante}" e "${turmaNome}" no horário ${h.rotulo}.`,
+          };
+        }
+      }
+    }
+    return { ok: true };
+  };
+
   const handleSave = async () => {
+    const validacao = validaConflitosProfessorDia();
+    if (!validacao.ok) {
+      toast.error(validacao.mensagem, { autoClose: 5000 });
+      return;
+    }
+
     const aulas = [];
-    draft.forEach((row, rowIdx) => {
+    currentDraft.forEach((row, rowIdx) => {
       row.forEach((cell, colIdx) => {
         const h = horarios[rowIdx];
-        const turma = COLUMNS[colIdx];
+        const turma = columns[colIdx];
         const isBreak = Number(h?.is_intervalo) === 1;
         if (isBreak || !cell) return;
         aulas.push({
@@ -134,78 +258,183 @@ export default function AtribuicaoDeAulas() {
         },
       })
       .then(() => {
-        setSchedule((prev) => ({ ...prev, [currentDay]: deepClone(draft) }));
+        setScheduleByDay((prev) => ({
+          ...prev,
+          [currentDay]: deepClone(currentDraft),
+        }));
+        setDraftByDay((prev) => ({
+          ...prev,
+          [currentDay]: deepClone(currentDraft),
+        }));
         setEditMode(false);
       })
       .catch(() => {});
   };
 
   const handleCancel = () => {
-    setDraft(deepClone(schedule[currentDay] || emptyDay()));
+    setDraftByDay((prev) => ({
+      ...prev,
+      [currentDay]: deepClone(currentSchedule),
+    }));
     setEditMode(false);
     toast.info('Edição cancelada.');
   };
 
   const handleCopy = () => {
-    setClipboard(deepClone(schedule[currentDay] || emptyDay()));
+    setClipboard(deepClone(currentSchedule));
     toast.info(`Aulas de ${currentDay} copiadas!`);
   };
 
   const handlePaste = () => {
     if (editMode && clipboard) {
-      setDraft(deepClone(clipboard));
+      setDraftByDay((prev) => ({
+        ...prev,
+        [currentDay]: deepClone(clipboard),
+      }));
       toast.success('Aulas coladas com sucesso!');
     }
   };
 
   const handleClear = () => {
     if (!editMode) return;
-    if (window.confirm(`Limpar todas as aulas de ${currentDay}?`)) {
-      setDraft(emptyDay());
+    if (
+      window.confirm(
+        `Limpar todas as aulas de ${currentDay}? As células ficarão vazias.`
+      )
+    ) {
+      setDraftByDay((prev) => ({
+        ...prev,
+        [currentDay]: emptyDayFactory(),
+      }));
       toast.warn(`As aulas de ${currentDay} foram limpas.`);
     }
   };
 
   const openCellModal = (row, col) => {
-    if (editMode) {
-      setModalCell({ row, col });
-      setModalOpen(true);
-    }
+    if (!editMode) return;
+    setModalCell({ row, col });
+    setModalOpen(true);
   };
+
   const confirmCell = (entry) => {
-    setDraft((prev) => {
-      const next = deepClone(prev);
-      next[modalCell.row][modalCell.col] = entry;
-      return next;
+    if (!modalCell) return;
+    const { row, col } = modalCell;
+
+    if (entry === null) {
+      setDraftByDay((prev) => {
+        const nextDayDraft = deepClone(
+          prev[currentDay]?.length ? prev[currentDay] : emptyDayFactory()
+        );
+        nextDayDraft[row][col] = null;
+        return { ...prev, [currentDay]: nextDayDraft };
+      });
+      setModalOpen(false);
+      setModalCell(null);
+      return;
+    }
+
+    const newTeacherId = entry.teacherId;
+    if (newTeacherId) {
+      const linhaAtual =
+        draftByDay[currentDay]?.[row]?.length
+          ? draftByDay[currentDay][row]
+          : currentDraft[row] || [];
+
+      for (let c = 0; c < linhaAtual.length; c++) {
+        if (c === col) continue;
+        const cell = linhaAtual[c];
+        if (cell && cell.teacherId === newTeacherId) {
+          const turmaConflitante = columns[c];
+          const horarioRotulo = horarios[row]?.rotulo || 'este horário';
+          toast.error(
+            `Conflito: ${entry.teacherName} já está em "${turmaConflitante}" no ${horarioRotulo}.`,
+            { autoClose: 5000 }
+          );
+          return;
+        }
+      }
+    }
+
+    setDraftByDay((prev) => {
+      const nextDayDraft = deepClone(
+        prev[currentDay]?.length ? prev[currentDay] : emptyDayFactory()
+      );
+      nextDayDraft[row][col] = entry;
+      return { ...prev, [currentDay]: nextDayDraft };
     });
+
     setModalOpen(false);
     setModalCell(null);
   };
 
-  const currentMatrix = editMode ? draft : schedule[currentDay] || emptyDay();
+  const relatorioProfessores = useMemo(() => {
+    const acc = {};
+
+    const consumeMatrix = (matriz) => {
+      matriz.forEach((linha) => {
+        linha.forEach((cell, colIdx) => {
+          if (!cell || !cell.teacherId) return;
+          const pid = cell.teacherId;
+          if (!acc[pid]) {
+            acc[pid] = {
+              professorName: cell.teacherName,
+              porTurma: {},
+              total: 0,
+            };
+          }
+          const turma = columns[colIdx];
+          acc[pid].porTurma[turma] = (acc[pid].porTurma[turma] || 0) + 1;
+          acc[pid].total += 1;
+        });
+      });
+    };
+
+    DAYS.forEach((dia) => {
+      const matriz =
+        (draftByDay[dia] && draftByDay[dia].length
+          ? draftByDay[dia]
+          : scheduleByDay[dia]) || [];
+      consumeMatrix(matriz);
+    });
+
+    const rows = Object.entries(acc).map(([profId, data]) => ({
+      professorId: Number(profId),
+      professorName: data.professorName,
+      porTurma: data.porTurma,
+      total: data.total,
+    }));
+
+    rows.sort((a, b) =>
+      a.professorName.localeCompare(b.professorName, 'pt-BR')
+    );
+    return rows;
+  }, [draftByDay, scheduleByDay, columns]);
+
+  const handleAplicarSnapshotHistorico = (matrix, meta) => {
+    setDraftByDay((prev) => ({
+      ...prev,
+      [currentDay]: matrix,
+    }));
+    setEditMode(true);
+    toast.info(
+      `Versão de ${
+        meta?.dh_versao ? new Date(meta.dh_versao).toLocaleString('pt-BR') : ''
+      } carregada. Revise e clique em Salvar para aplicar.`,
+      { autoClose: 5000 }
+    );
+    setShowHistorico(false);
+  };
 
   return (
-    <Container fluid className='py-3'>
-      <ToastContainer
-        position='bottom-right'
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme='light'
-      />
-      <h2 className='text-center mb-4'>Aulas</h2>
+    <Container fluid className="py-3">
+      <h2 className="text-center mb-4">Aulas</h2>
 
-      <div className='d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3'>
-        <ButtonGroup className='flex-wrap'>
+      <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <ButtonGroup className="flex-wrap">
           {DAYS.map((d) => (
             <Button
               key={d}
-              size='sm'
+              size="sm"
               variant={currentDay === d ? 'primary' : 'outline-secondary'}
               onClick={() => setCurrentDay(d)}
               style={{ borderRadius: 999, marginRight: 6, marginBottom: 6 }}
@@ -215,11 +444,11 @@ export default function AtribuicaoDeAulas() {
           ))}
         </ButtonGroup>
 
-        <div className='d-flex align-items-center gap-2'>
+        <div className="d-flex align-items-center gap-2">
           {!editMode ? (
             <Button
-              size='sm'
-              variant='outline-secondary'
+              size="sm"
+              variant="outline-secondary"
               onClick={handleEditToggle}
               style={{ borderRadius: 999 }}
             >
@@ -228,16 +457,16 @@ export default function AtribuicaoDeAulas() {
           ) : (
             <>
               <Button
-                size='sm'
-                variant='primary'
+                size="sm"
+                variant="primary"
                 onClick={handleSave}
                 style={{ borderRadius: 999 }}
               >
                 💾 Salvar
               </Button>
               <Button
-                size='sm'
-                variant='outline-secondary'
+                size="sm"
+                variant="outline-secondary"
                 onClick={handleCancel}
                 style={{ borderRadius: 999 }}
               >
@@ -249,16 +478,16 @@ export default function AtribuicaoDeAulas() {
           <div style={{ width: 1, height: 24, background: '#dee2e6' }} />
 
           <Button
-            size='sm'
-            variant='outline-secondary'
+            size="sm"
+            variant="outline-secondary"
             onClick={handleCopy}
             style={{ borderRadius: 999 }}
           >
             📋 Copiar
           </Button>
           <Button
-            size='sm'
-            variant='outline-secondary'
+            size="sm"
+            variant="outline-secondary"
             onClick={handlePaste}
             disabled={!editMode || !clipboard}
             style={{ borderRadius: 999 }}
@@ -266,27 +495,45 @@ export default function AtribuicaoDeAulas() {
             📥 Colar
           </Button>
           <Button
-            size='sm'
-            variant='danger'
+            size="sm"
+            variant="danger"
             onClick={handleClear}
             disabled={!editMode}
             style={{ borderRadius: 999 }}
           >
             🧹 Limpar
           </Button>
+
+          <Button
+            size="sm"
+            variant="success"
+            onClick={() => setShowRelatorio(true)}
+            style={{ borderRadius: 999 }}
+          >
+            📊 Relatório
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline-primary"
+            onClick={() => setShowHistorico(true)}
+            style={{ borderRadius: 999 }}
+          >
+            🕒 Histórico
+          </Button>
         </div>
       </div>
 
       <div
-        className='table-responsive'
+        className="table-responsive"
         style={{
           border: '1px solid #dee2e6',
           borderRadius: 16,
           overflow: 'hidden',
         }}
       >
-        <table className='table mb-0' style={{ minWidth: 960 }}>
-          <thead className='table-light'>
+        <table className="table mb-0" style={{ minWidth: 960 }}>
+          <thead className="table-light">
             <tr>
               <th
                 style={{
@@ -299,7 +546,7 @@ export default function AtribuicaoDeAulas() {
               >
                 HORA
               </th>
-              {COLUMNS.map((col) => (
+              {columns.map((col) => (
                 <th key={col}>{col}</th>
               ))}
             </tr>
@@ -318,18 +565,19 @@ export default function AtribuicaoDeAulas() {
                 >
                   {h.rotulo}
                 </td>
-                {COLUMNS.map((_, colIdx) => {
+                {columns.map((_, colIdx) => {
                   const entry = currentMatrix[rowIdx]?.[colIdx] || null;
                   const isBreak = Number(h.is_intervalo) === 1;
-                  if (isBreak)
+                  if (isBreak) {
                     return (
                       <td
                         key={`${rowIdx}-${colIdx}`}
-                        className='text-center text-muted'
+                        className="text-center text-muted"
                       >
                         —
                       </td>
                     );
+                  }
                   return (
                     <td key={`${rowIdx}-${colIdx}`}>
                       <button
@@ -379,7 +627,7 @@ export default function AtribuicaoDeAulas() {
                           </div>
                         ) : (
                           <span
-                            className='text-muted'
+                            className="text-muted"
                             style={{
                               fontSize: 12,
                               display: 'block',
@@ -408,6 +656,24 @@ export default function AtribuicaoDeAulas() {
             : undefined
         }
         onConfirm={confirmCell}
+        cargaProfessores={cargaProfessores}
+        disciplinasProfessorMap={disciplinasProfessorMap}
+      />
+
+      <RelatorioProfessoresModal
+        show={showRelatorio}
+        onHide={() => setShowRelatorio(false)}
+        columns={columns}
+        relatorio={relatorioProfessores}
+      />
+
+      <HistoricoAulasModal
+        show={showHistorico}
+        onHide={() => setShowHistorico(false)}
+        dia={currentDay}
+        horarios={horarios}
+        columns={columns}
+        onApplySnapshot={handleAplicarSnapshotHistorico}
       />
     </Container>
   );

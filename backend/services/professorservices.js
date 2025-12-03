@@ -10,10 +10,10 @@ const createProfessor = async (
   bairro,
   cidade,
   data_nasc,
-  num_regis,
+  
   habilitacao,
-  especializacao,
-  cursos,
+  
+  
   telefone,
   sexo,
   email
@@ -28,10 +28,10 @@ const createProfessor = async (
     bairro,
     cidade,
     data_nasc,
-    num_regis,
+    
     habilitacao,
-    especializacao,
-    cursos,
+    
+    
     telefone,
     sexo,
     email
@@ -49,10 +49,10 @@ const getProfessor = async (
   bairro,
   cidade,
   data_nasc,
-  num_regis,
+  
   habilitacao,
-  especializacao,
-  cursos,
+  
+  
   telefone,
   sexo,
   email
@@ -67,10 +67,10 @@ const getProfessor = async (
     bairro,
     cidade,
     data_nasc,
-    num_regis,
+    
     habilitacao,
-    especializacao,
-    cursos,
+    
+    
     telefone,
     sexo,
     email
@@ -89,10 +89,10 @@ const updateProfessor = async (
   bairro,
   cidade,
   data_nasc,
-  num_regis,
+  
   habilitacao,
-  especializacao,
-  cursos,
+  
+  
   telefone,
   sexo,
   email
@@ -108,10 +108,10 @@ const updateProfessor = async (
     bairro,
     cidade,
     data_nasc,
-    num_regis,
+    
     habilitacao,
-    especializacao,
-    cursos,
+    
+    
     telefone,
     sexo,
     email

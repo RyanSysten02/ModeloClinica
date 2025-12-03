@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Button, Form, Alert, Modal } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 import ListaProfessoresModal from '../professor/ListaProfessores';
 import DisciplinaService from '../../services/Disciplina';
 
@@ -44,10 +45,18 @@ function pickRandomColor(excludeColors = []) {
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
-export default function EditarAulas({ show, onHide, onConfirm, defaults }) {
+export default function EditarAulas({
+  show,
+  onHide,
+  onConfirm,
+  defaults,
+  cargaProfessores = {},        // { [profId]: quantidadeDeAulas }
+  disciplinasProfessorMap = {}, // { [profId]: ["Matemática", "Física", ...] }
+}) {
   const [listaDisciplinas, setListaDisciplinas] = useState([]);
   const [mensagemErro, setMensagemErro] = useState('');
 
+  // defaults vêm da célula atual
   const initialSubjectId = defaults?.subjectId ?? defaults?.disciplina_id ?? '';
   const initialSubjectName = defaults?.subject ?? '';
 
@@ -60,6 +69,7 @@ export default function EditarAulas({ show, onHide, onConfirm, defaults }) {
   const [showListaProfessoresModal, setShowListaProfessoresModal] =
     useState(false);
 
+  // Carrega disciplinas ao abrir modal
   useEffect(() => {
     const fetchDisciplinas = async () => {
       try {
@@ -81,9 +91,11 @@ export default function EditarAulas({ show, onHide, onConfirm, defaults }) {
         setListaDisciplinas([]);
       }
     };
+
     if (show) fetchDisciplinas();
   }, [show]);
 
+  // Resetar estado ao abrir
   useEffect(() => {
     if (show) {
       setMensagemErro('');
@@ -96,6 +108,7 @@ export default function EditarAulas({ show, onHide, onConfirm, defaults }) {
     }
   }, [show, defaults]);
 
+  // Cor fixa por professor
   const teacherColor = useMemo(() => {
     if (!teacherId) return '';
     const existing = getColorForProfessor(teacherId);
@@ -107,12 +120,29 @@ export default function EditarAulas({ show, onHide, onConfirm, defaults }) {
     return color;
   }, [teacherId]);
 
+  // Carga do professor
+  const cargaAtualProfessor = useMemo(() => {
+    if (!teacherId) return 0;
+    return cargaProfessores[teacherId] || 0;
+  }, [teacherId, cargaProfessores]);
+
+  // Checar se disciplina está entre as habilitações conhecidas do professor
+  const compatibilidadeOk = useMemo(() => {
+    if (!teacherId || !subject) return true;
+    const lista = disciplinasProfessorMap[teacherId] || [];
+    return lista.some(
+      (disc) => String(disc).toLowerCase() === String(subject).toLowerCase()
+    );
+  }, [teacherId, subject, disciplinasProfessorMap]);
+
+  // Seleciona professor
   const handleSelectProfessor = (professor) => {
     setTeacherId(professor.id);
     setTeacherName(professor.nome);
     setShowListaProfessoresModal(false);
   };
 
+  // Seleciona disciplina
   const handleChangeDisciplina = (e) => {
     const id = e.target.value;
     setSubjectId(id);
@@ -120,6 +150,7 @@ export default function EditarAulas({ show, onHide, onConfirm, defaults }) {
     setSubject(sel?.nome || '');
   };
 
+  // Confirmar aula
   const handleSubmit = (e) => {
     e?.preventDefault?.();
     setMensagemErro('');
@@ -133,6 +164,15 @@ export default function EditarAulas({ show, onHide, onConfirm, defaults }) {
       return;
     }
 
+    // Se o professor não bate com a disciplina, agora NÃO bloqueia
+    if (!compatibilidadeOk) {
+      toast.warning(
+        `Aviso: ${teacherName} não está marcado como habilitado para ${subject}.`,
+        { autoClose: 5000 }
+      );
+      // segue adiante mesmo assim
+    }
+
     onConfirm?.({
       subjectId,
       subject,
@@ -144,6 +184,13 @@ export default function EditarAulas({ show, onHide, onConfirm, defaults }) {
     onHide?.();
   };
 
+  // Marcar aula vaga
+  const handleVaga = () => {
+    onConfirm?.(null); // célula vira null
+    onHide?.();
+    toast.info('Aula marcada como vaga.');
+  };
+
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
@@ -151,9 +198,19 @@ export default function EditarAulas({ show, onHide, onConfirm, defaults }) {
       </Modal.Header>
 
       <Modal.Body>
+        {/* Erros obrigatórios tipo "falta disciplina" ou "falta professor" */}
         {mensagemErro && <Alert variant='danger'>{mensagemErro}</Alert>}
 
+        {/* Alerta visual de compatibilidade (só informativo, não bloqueia) */}
+        {!compatibilidadeOk && teacherId && subject && (
+          <Alert variant='warning' className='py-2'>
+            O professor <b>{teacherName}</b> não está marcado como habilitado
+            para <b>{subject}</b>. Você pode continuar mesmo assim.
+          </Alert>
+        )}
+
         <Form onSubmit={handleSubmit}>
+          {/* DISCIPLINA */}
           <Form.Group controlId='formDisciplina' className='mb-3'>
             <Form.Label>Disciplina</Form.Label>
             <Form.Select
@@ -170,6 +227,7 @@ export default function EditarAulas({ show, onHide, onConfirm, defaults }) {
             </Form.Select>
           </Form.Group>
 
+          {/* PROFESSOR */}
           <Form.Group controlId='formProfessor' className='mb-2'>
             <Form.Label>Professor</Form.Label>
             <div className='d-flex align-items-center'>
@@ -190,35 +248,57 @@ export default function EditarAulas({ show, onHide, onConfirm, defaults }) {
             </div>
           </Form.Group>
 
-          {/* Preview da cor do professor */}
+          {/* Info do professor: carga e cor */}
           {teacherId && (
-            <div className='mb-3' style={{ fontSize: 12, color: '#6c757d' }}>
-              Cor do professor:
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: 16,
-                  height: 16,
-                  borderRadius: 4,
-                  marginLeft: 8,
-                  border: '1px solid rgba(0,0,0,.1)',
-                  background: teacherColor || '#ddd',
-                  verticalAlign: 'middle',
-                }}
-              />
+            <div
+              className='mb-2'
+              style={{ fontSize: 12, color: '#6c757d', lineHeight: 1.4 }}
+            >
+              <div>
+                Aulas atribuídas a <b>{teacherName}</b>:{' '}
+                <b>{cargaAtualProfessor}</b>
+              </div>
+
+              <div className='d-flex align-items-center'>
+                Cor do professor:
+                <span
+                  style={{
+                    display: 'inline-block',
+                    width: 16,
+                    height: 16,
+                    borderRadius: 4,
+                    marginLeft: 8,
+                    border: '1px solid rgba(0,0,0,.1)',
+                    background: teacherColor || '#ddd',
+                    verticalAlign: 'middle',
+                  }}
+                />
+              </div>
             </div>
           )}
 
+          {/* Botões */}
           <div className='d-flex justify-content-end gap-2 mt-3'>
             <Button variant='outline-secondary' onClick={onHide} type='button'>
               Cancelar
             </Button>
+
+            <Button
+              variant='warning'
+              type='button'
+              onClick={handleVaga}
+              style={{ color: '#000', fontWeight: 600 }}
+            >
+              Aula Vaga
+            </Button>
+
             <Button variant='success' type='submit'>
               Confirmar
             </Button>
           </div>
         </Form>
 
+        {/* Modal de seleção de professor */}
         <ListaProfessoresModal
           show={showListaProfessoresModal}
           onHide={() => setShowListaProfessoresModal(false)}

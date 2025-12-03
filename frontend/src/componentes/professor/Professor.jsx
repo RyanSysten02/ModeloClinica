@@ -15,10 +15,7 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
     cidade: "",
     cep: "",
     data_nasc: "",
-    num_regis: "",
     habilitacao: "",
-    especializacao: "",
-    cursos: "",
     telefone: "",
     email: "",
     sexo: "",
@@ -29,7 +26,7 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
   const [camposComErro, setCamposComErro] = useState({});
   const navigate = useNavigate();
 
- {/* useEffect(() => {
+  useEffect(() => {
     const fetchDisciplinas = async () => {
       try {
         const disciplinas = await DisciplinaService.findAll();
@@ -39,11 +36,11 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
       }
     };
     fetchDisciplinas();
-  }, []);*/}
+  }, []);
 
   const camposObrigatorios = [
     "nome", "cpf", "rg", "data_nasc", "end_rua", "end_numero", "bairro",
-    "cidade", "num_regis","telefone", "email", "sexo"
+    "cidade", "telefone", "email", "sexo"
   ];
 
   const validarCampos = () => {
@@ -116,8 +113,8 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
 
         setProfessor({
           nome: "", cpf: "", rg: "", end_rua: "", end_numero: "", bairro: "",
-          cidade: "", cep: "", data_nasc: "", num_regis: "", habilitacao: "",
-          especializacao: "", cursos: "", telefone: "", email: "", sexo: ""
+          cidade: "", cep: "", data_nasc: "", habilitacao: "",
+          telefone: "", email: "", sexo: ""
         });
 
         setCamposComErro({});
@@ -151,7 +148,6 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
                 { label: "Cidade*", name: "cidade", md: 3 },
                 { label: "CEP*", name: "cep", md: 2 },
                 { label: "Data de Nascimento*", name: "data_nasc", md: 2, type: "date" },
-                { label: "Número de Registro (CRE)*", name: "num_regis", md: 3 }
               ].map(({ label, name, md, type = "text" }) => (
                 <Col md={md} key={name}>
                   <Form.Group className="mb-3 text-start">
@@ -170,7 +166,7 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
                 </Col>
               ))}
 
-              {/*<Col md={5}>
+              <Col md={5}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Disciplina*</Form.Label>
                   <Form.Select
@@ -190,7 +186,7 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
                     Campo obrigatório
                   </Form.Control.Feedback>
                 </Form.Group>
-              </Col>*/}
+              </Col>
 
               <Col md={4}>
                 <Form.Group className="mb-3 text-start">
@@ -214,8 +210,6 @@ function FormularioProfessor({ show, onHide, onCadastroSuccess }) {
               {[
                 { label: "Telefone*", name: "telefone", md: 4 },
                 { label: "Email*", name: "email", md: 4 },
-                { label: "Especializações", name: "especializacao", md: 12 },
-                { label: "Cursos e Experiências", name: "cursos", md: 12 }
               ].map(({ label, name, md }) => (
                 <Col md={md} key={name}>
                   <Form.Group className="mb-3 text-start">
