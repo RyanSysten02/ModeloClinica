@@ -35,7 +35,7 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
     setFormData(professor);
     setErros({});
   }, [professor]);
-{/*
+
   useEffect(() => {
     const fetchDisciplinas = async () => {
       try {
@@ -46,7 +46,7 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
       }
     };
     fetchDisciplinas();
-  }, []);*/}
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -315,7 +315,7 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
                 </Form.Group>
               </Col>
 
-              {/*<Col md={5}>
+              <Col md={5}>
                 <Form.Group className="mb-3 text-start">
                   <Form.Label>Disciplina*</Form.Label>
                   <Form.Select
@@ -335,7 +335,7 @@ const ProfessorDetalhesModal = ({ show, onHide, professor, onSave }) => {
                     {erros.habilitacao}
                   </Form.Control.Feedback>
                 </Form.Group>
-              </Col>*/}
+              </Col>
 
               <Col md={12}>
                 <Form.Group className="mb-3 text-start">
