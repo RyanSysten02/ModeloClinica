@@ -8,11 +8,10 @@ const createMatricula = async (
   observacoes,
   data_matricula,
   ano_letivo,
-  turno
 ) => {
   const [result] = await pool.query(
-    `INSERT INTO matricula (aluno_id, turma_id, responsavel_id, observacoes, data_matricula, ano_letivo, turno)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO matricula (aluno_id, turma_id, responsavel_id, observacoes, data_matricula, ano_letivo)
+     VALUES (?, ?, ?, ?, ?, ?)`,
     [
       aluno_id,
       turma_id,
@@ -20,7 +19,6 @@ const createMatricula = async (
       observacoes,
       data_matricula,
       ano_letivo,
-      turno,
     ]
   );
   return result.insertId;

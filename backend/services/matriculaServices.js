@@ -1,7 +1,7 @@
 const matriculaModel = require('../models/matriculaModel');
 
-const createMatricula = async (aluno_id, turma_id, responsavel_id, observacoes, data_matricula, ano_letivo, turno) => {
-  return await matriculaModel.createMatricula(aluno_id, turma_id, responsavel_id, observacoes, data_matricula, ano_letivo, turno);
+const createMatricula = async (aluno_id, turma_id, responsavel_id, observacoes, data_matricula, ano_letivo) => {
+  return await matriculaModel.createMatricula(aluno_id, turma_id, responsavel_id, observacoes, data_matricula, ano_letivo);
 };
 
 

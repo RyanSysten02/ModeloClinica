@@ -19,6 +19,7 @@ function FormularioMatricula({
   modoEdicao = false,
   matriculaEdicao = null,
 }) {
+  // 1. Removido 'turno' do estado inicial
   const [dados, setDados] = useState({
     aluno_id: '',
     turma_id: null,
@@ -26,7 +27,6 @@ function FormularioMatricula({
     observacoes: '',
     data_matricula: new Date().toISOString().split('T')[0],
     ano_letivo: new Date().getFullYear(),
-    turno: '',
   });
 
   const [alunos, setAlunos] = useState([]);
@@ -64,6 +64,7 @@ function FormularioMatricula({
     if (show) {
       carregarDados();
     } else {
+      // 2. Removido 'turno' do reset do formulário
       setDados({
         aluno_id: '',
         turma_id: null,
@@ -71,7 +72,6 @@ function FormularioMatricula({
         observacoes: '',
         data_matricula: new Date().toISOString().split('T')[0],
         ano_letivo: new Date().getFullYear(),
-        turno: '',
       });
       setErro('');
       setValidados({});
@@ -87,6 +87,7 @@ function FormularioMatricula({
       turmas.length > 0 &&
       responsaveis.length > 0
     ) {
+      // 3. Removido 'turno' do preenchimento de edição
       setDados({
         aluno_id: matriculaEdicao.aluno?.id || '',
         turma_id: matriculaEdicao.turma?.id || null,
@@ -96,7 +97,6 @@ function FormularioMatricula({
           matriculaEdicao.data_matricula?.split('T')[0] ||
           new Date().toISOString().split('T')[0],
         ano_letivo: matriculaEdicao.ano_letivo || new Date().getFullYear(),
-        turno: matriculaEdicao.turno || '',
       });
     }
   }, [show, modoEdicao, matriculaEdicao, alunos, turmas, responsaveis]);
@@ -113,7 +113,8 @@ function FormularioMatricula({
   const handleSubmit = async () => {
     setErro('');
 
-    const camposObrigatorios = ['aluno_id', 'ano_letivo', 'turno'];
+    // 4. Removido 'turno' da validação de campos obrigatórios
+    const camposObrigatorios = ['aluno_id', 'ano_letivo'];
     const erros = {};
     camposObrigatorios.forEach((campo) => {
       if (!dados[campo]) erros[campo] = true;
@@ -272,7 +273,7 @@ function FormularioMatricula({
             </Row>
 
             <Row className='mt-3'>
-              <Col md={4}>
+              <Col md={6}>
                 <Form.Group>
                   <Form.Label>Data da Matrícula</Form.Label>
                   <Form.Control
@@ -283,7 +284,7 @@ function FormularioMatricula({
                   />
                 </Form.Group>
               </Col>
-              <Col md={4}>
+              <Col md={6}>
                 <Form.Group>
                   <Form.Label>Ano Letivo *</Form.Label>
                   <Form.Control
@@ -295,22 +296,7 @@ function FormularioMatricula({
                   />
                 </Form.Group>
               </Col>
-              <Col md={4}>
-                <Form.Group>
-                  <Form.Label>Turno *</Form.Label>
-                  <Form.Select
-                    name='turno'
-                    value={dados.turno}
-                    onChange={handleChange}
-                    isInvalid={validados.turno}
-                  >
-                    <option value=''>Selecione o turno</option>
-                    <option value='manhã'>Manhã</option>
-                    <option value='tarde'>Tarde</option>
-                    <option value='noite'>Noite</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
+              {/* 5. Removido Coluna e Select visual do Turno */}
             </Row>
 
             <Button className='mt-4' variant='primary' onClick={handleSubmit}>

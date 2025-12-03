@@ -2,7 +2,7 @@ const matriculaService = require('../services/matriculaServices');
 const jwt = require('jsonwebtoken');
 
 const createMatricula = async (req, res) => {
-  const { aluno_id, turma_id, responsavel_id, observacoes, data_matricula, ano_letivo, turno } = req.body;
+  const { aluno_id, turma_id, responsavel_id, observacoes, data_matricula, ano_letivo} = req.body;
 
   const token = req.header('Authorization');
   if (!token) return res.status(401).json({ message: 'Token não fornecido' });
@@ -19,7 +19,7 @@ const createMatricula = async (req, res) => {
       observacoes,
       data_matricula,
       ano_letivo,
-      turno
+      
     );
 
     res.status(201).json({ message: 'Matrícula realizada com sucesso' });
