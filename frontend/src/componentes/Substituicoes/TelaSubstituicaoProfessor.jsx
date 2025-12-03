@@ -11,29 +11,33 @@ import { Link } from 'react-router-dom';
 import { getProfessoresSubstitutosPriorizados } from './AnaliseSubstituicaoUtils.js';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:5001/api', 
+    baseURL: 'http://localhost:5001/api', 
 });
 
 apiClient.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) { config.headers.Authorization = `Bearer ${token}`; }
-  return config;
+    const token = localStorage.getItem('token');
+    if (token) { config.headers.Authorization = `Bearer ${token}`; }
+    return config;
 }, error => Promise.reject(error));
-
-
 
 export default function TelaSubstituicaoProfessor() {
     const [alocacoes, setAlocacoes] = useState([]);
     const [todosProfessoresDB, setTodosProfessoresDB] = useState([]); 
     const [disciplinasFiltro, setDisciplinasFiltro] = useState([]);
     const [turmasFiltro, setTurmasFiltro] = useState([]);
+    
+    // States de UI
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [filtro, setFiltro] = useState({ disciplinaId: '', professorId: '', turmaId: '', data: '' });
     const [buscaRealizada, setBuscaRealizada] = useState(false);
+    
+    // States de Controle da Substituição
     const [showSubstituicaoModal, setShowSubstituicaoModal] = useState(false);
     const [aulaParaSubstituir, setAulaParaSubstituir] = useState(null);
     const [novoProfessorId, setNovoProfessorId] = useState('');
+    const [motivoSubstituicao, setMotivoSubstituicao] = useState(''); // NOVO: Motivo da troca
+    
     const [modalConfig, setModalConfig] = useState({ show: false, title: "", message: "", onConfirm: () => {}, confirmVariant: "primary" });
     const [historicoAberto, setHistoricoAberto] = useState(null);
     const [professoresPriorizados, setProfessoresPriorizados] = useState([]);
@@ -64,18 +68,28 @@ export default function TelaSubstituicaoProfessor() {
     };
 
     const handleBuscar = async () => {
+        // Validação básica
+        if (!filtro.data) {
+            toast.warn("Por favor, selecione uma data para buscar a grade.");
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
         setBuscaRealizada(true);
         try {
             const disciplinaSelecionada = disciplinasFiltro.find(d => d.id === parseInt(filtro.disciplinaId));
+            
             const params = {
-                data: filtro.data || null,
+                data: filtro.data, // Obrigatório
                 id_turma: filtro.turmaId || null,
                 id_professor: filtro.professorId || null,
                 disciplinaNome: disciplinaSelecionada ? disciplinaSelecionada.nome : null,
             };
+            
+            // Limpa chaves nulas/undefined
             Object.keys(params).forEach(key => params[key] == null && delete params[key]);
+            
             const response = await apiClient.get('/substituicoes/agendamentos', { params });
             setAlocacoes(response.data);
         } catch (err) {
@@ -93,18 +107,28 @@ export default function TelaSubstituicaoProfessor() {
         setError(null);
     };
 
+    // --- Lógica de Substituição (Atualizada) ---
     const executarSubstituicao = async () => {
         try {
             const payload = {
-                id_agendamento_aula: aulaParaSubstituir.id,
-                id_professor_anterior: aulaParaSubstituir.professor_id,
+                // Envia o ID da grade fixa (tabela aulas)
+                id_aula: aulaParaSubstituir.id, 
+                
+                // O novo professor
                 id_professor_novo: parseInt(novoProfessorId),
-                motivo: null
+                
+                // DATA É FUNDAMENTAL PARA SUBSTITUIÇÃO EVENTUAL
+                data_aula: filtro.data, 
+                
+                // Envia o motivo digitado ou um padrão
+                motivo: motivoSubstituicao.trim() || "Substituição solicitada via sistema"
             };
+    
             await apiClient.post('/substituicoes/substituir', payload);
+            
             toast.success(`Substituição realizada com sucesso!`);
             handleFecharModalSubstituicao();
-            await handleBuscar();
+            await handleBuscar(); // Recarrega a lista para mostrar o card amarelo
         } catch (err) {
             toast.error(err.response?.data?.message || 'Falha ao salvar a substituição.');
         }
@@ -120,40 +144,37 @@ export default function TelaSubstituicaoProfessor() {
         setModalConfig({
             show: true,
             title: "Confirmar Substituição",
-            message: `Deseja substituir ${aulaParaSubstituir.professor_nome} por ${professorNovo.nome}?`,
+            message: `Deseja substituir ${aulaParaSubstituir.professor_nome} por ${professorNovo.nome} no dia ${dayjs(filtro.data).format('DD/MM/YYYY')}?`,
             confirmVariant: 'primary',
             onConfirm: () => {
-                executarSubstituicao(); // Chama a função que salva no backend
+                executarSubstituicao(); 
                 handleCloseConfirmModal();
             }
         });
     }
 
-   const handleConfirmarSubstituicao = () => {
-        // 1. Validação inicial (já existia)
+    const handleConfirmarSubstituicao = () => {
         if (!novoProfessorId) {
             toast.warn('Por favor, selecione um professor substituto.');
             return;
         }
 
-        // 2. Verifica a data da aula
-        const dataAula = dayjs(aulaParaSubstituir.start);
-        const hoje = dayjs().startOf('day'); // Pega o início do dia atual
+        // Validação de data para aviso retroativo
+        const dataAula = dayjs(filtro.data); // A data vem do filtro agora
+        const hoje = dayjs().startOf('day');
 
         if (dataAula.isBefore(hoje)) {
-            // 3. Se a data for passada, mostra o aviso de substituição retroativa
             setModalConfig({
                 show: true,
                 title: "Atenção: Substituição Retroativa",
-                message: "Esta aula já ocorreu. Deseja realmente registrar essa substituição retroativa?",
-                confirmVariant: 'warning', // Usamos warning para destacar
+                message: "Esta aula já ocorreu no passado. Deseja realmente registrar essa substituição?",
+                confirmVariant: 'warning',
                 onConfirm: () => {
-                    // Se o usuário confirmar o aviso, chamamos a função para mostrar o modal final
+                    // Se confirmar o aviso retroativo, vai para a confirmação final
                     prosseguirParaConfirmacaoFinal(); 
                 }
             });
         } else {
-            // 4. Se a data for hoje ou futura, vai direto para o modal de confirmação final
             prosseguirParaConfirmacaoFinal();
         }
     };
@@ -164,7 +185,9 @@ export default function TelaSubstituicaoProfessor() {
             return;
         }
         try {
+            // Chama o endpoint novo que busca o histórico eventual daquela aula de grade
             const response = await apiClient.get(`/substituicoes/historico/${alocId}`);
+            
             setAlocacoes(alocacoesAtuais =>
                 alocacoesAtuais.map(aloc =>
                     aloc.id === alocId ? { ...aloc, historicoSubstituicao: response.data } : aloc
@@ -184,16 +207,22 @@ export default function TelaSubstituicaoProfessor() {
     const handleAbrirModalSubstituicao = (alocacao) => {
         const disciplinaCompleta = disciplinasFiltro.find(d => d.nome === alocacao.disciplina_nome) || {};
         const turmaCompleta = turmasFiltro.find(t => t.id === alocacao.turma_id) || {};
+        
         const alocacaoAdaptada = {
             ...alocacao,
             professorAtual: { id: alocacao.professor_id, nome: alocacao.professor_nome },
             disciplina: { nome: alocacao.disciplina_nome, areaConhecimento: disciplinaCompleta.areaConhecimento },
             turma: { nome: alocacao.turma_nome, nivel: turmaCompleta.nivel }
         }
+        
         setAulaParaSubstituir(alocacao);
         setNovoProfessorId('');
+        setMotivoSubstituicao(''); // Limpa o motivo ao abrir
+        
+        // Lógica de Artigo 12 (mantida no frontend)
         const listaPriorizada = getProfessoresSubstitutosPriorizados(alocacaoAdaptada, todosProfessoresDB);
         setProfessoresPriorizados(listaPriorizada);
+        
         setShowSubstituicaoModal(true);
     };
 
@@ -209,22 +238,18 @@ export default function TelaSubstituicaoProfessor() {
             >
                 <Card.Body>
                     <div className="d-flex align-items-center">
-                        {/* Ícone */}
                         <i className="bi bi-clipboard-data fs-1 text-primary me-4"></i>
-                        
-                        {/* Textos */}
                         <div className="flex-grow-1">
                             <h5 className="mb-0">Simular Substuições</h5>
                             <p className="mb-0 text-muted small">
-                                Veja a Matriz de cobertura de professores e identificar aulas sensiveis ou simule possiveis faltas para se organizar melhor.
+                                Veja a Matriz de cobertura de professores e identifique aulas sensíveis ou simule possíveis faltas.
                             </p>
                         </div>
-
-                        {/* Seta (ms-auto empurra para a direita) */}
                         <i className="bi bi-arrow-right-circle fs-3 text-primary ms-auto d-none d-sm-block"></i>
                     </div>
                 </Card.Body>
             </Card>
+            
             <Card className="shadow-sm p-4 mb-5">
                 <Row className="g-3 align-items-end">
                     <Col md={2}>
@@ -268,17 +293,32 @@ export default function TelaSubstituicaoProfessor() {
                 {alocacoes.length > 0 ? (
                     alocacoes.map((aloc) => (
                     <motion.div key={aloc.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                        <Card className="mb-3 shadow-sm">
+                        {/* COR DINÂMICA NA BORDA: Se for substituída, fica amarelo/warning */}
+                        <Card className="mb-3 shadow-sm" style={{ borderLeft: `6px solid ${aloc.cor || '#0d6efd'}` }}>
                         <Card.Body>
                             <Row className="align-items-center">
                                 <Col xs={12} md={2} className="text-center mb-3 mb-md-0">
                                     <div className="fw-bold fs-5">{dayjs(aloc.start).format('HH:mm')} - {dayjs(aloc.end).format('HH:mm')}</div>
                                     <div className="text-muted">{dayjs(aloc.start).format('DD/MM/YYYY')}</div>
+                                    {/* Badge indicando que é uma substituição */}
+                                    {aloc.is_substituida && <Badge bg="warning" text="dark" className="mt-1">Substituição</Badge>}
                                 </Col>
                                 <Col xs={12} md={7}>
                                     <h5>{aloc.disciplina_nome}</h5>
                                     <p className="mb-1"><strong>Turma:</strong> {aloc.turma_nome}</p>
-                                    <p className="mb-0"><strong>Professor(a):</strong> <Badge bg="primary">{aloc.professor_nome}</Badge></p>
+                                    <p className="mb-0">
+                                        <strong>Professor(a):</strong>{' '}
+                                        {/* Se for substituto, muda a cor do badge para chamar atenção */}
+                                        <Badge bg={aloc.is_substituida ? "warning" : "primary"} text={aloc.is_substituida ? "dark" : "light"}>
+                                            {aloc.professor_nome}
+                                        </Badge>
+                                    </p>
+                                    {/* Se houver motivo salvo, mostra aqui */}
+                                    {aloc.is_substituida && aloc.motivo && (
+                                        <small className="text-muted d-block mt-1">
+                                            <i className="bi bi-chat-quote me-1"></i>{aloc.motivo}
+                                        </small>
+                                    )}
                                 </Col>
                                 <Col xs={12} md={3} className="text-md-end mt-3 mt-md-0 d-flex flex-column align-items-end">
                                     <Button variant="warning" onClick={() => handleAbrirModalSubstituicao(aloc)} className="w-100 mb-2">
@@ -299,16 +339,17 @@ export default function TelaSubstituicaoProfessor() {
                                         {aloc.historicoSubstituicao.map((hist) => (
                                         <ListGroup.Item key={hist.id} className="px-0">
                                             <small className="text-muted">
-                                                Em {dayjs(hist.data_substituicao).format('DD/MM/YYYY [às] HH:mm')}:<br/>
-                                                <span className="text-danger">{hist.professor_anterior_nome}</span> {' -> '}
-                                                <span className="text-success">{hist.professor_novo_nome}</span>
+                                                Registrado em {dayjs(hist.data_substituicao).format('DD/MM/YYYY [às] HH:mm')}:<br/>
+                                                <span className="text-success fw-bold">Novo: {hist.professor_novo_nome}</span>
+                                                <br/>
+                                                <i>Motivo: {hist.motivo}</i>
                                                 {hist.usuario_responsavel_nome && <><br/><span className="text-info">Operador: {hist.usuario_responsavel_nome}</span></>}
                                             </small>
                                         </ListGroup.Item>
                                         ))}
                                     </ListGroup>
                                     ) : (
-                                        <p className='text-muted small mt-2'>Nenhuma substituição anterior para esta aula.</p>
+                                        <p className='text-muted small mt-2'>Nenhum registro histórico encontrado.</p>
                                     )}
                                 </div>
                             </Collapse>
@@ -333,7 +374,7 @@ export default function TelaSubstituicaoProfessor() {
                         <p><strong>Turma:</strong> {aulaParaSubstituir.turma_nome}</p>
                         <p><strong>Professor(a) Atual:</strong> {aulaParaSubstituir.professor_nome}</p>
                         <hr />
-                        <Form.Group>
+                        <Form.Group className="mb-3">
                             <Form.Label className="fw-bold">Selecione o(a) novo(a) professor(a):</Form.Label>
                             <Form.Select value={novoProfessorId} onChange={(e) => setNovoProfessorId(e.target.value)}>
                                 <option value="">Selecione...</option>
@@ -347,6 +388,18 @@ export default function TelaSubstituicaoProfessor() {
                                     </optgroup>
                                 ))}
                             </Form.Select>
+                        </Form.Group>
+                        
+                        {/* CAMPO DE MOTIVO ADICIONADO */}
+                        <Form.Group>
+                            <Form.Label>Motivo da Substituição (Opcional):</Form.Label>
+                            <Form.Control 
+                                as="textarea" 
+                                rows={2} 
+                                value={motivoSubstituicao}
+                                onChange={(e) => setMotivoSubstituicao(e.target.value)}
+                                placeholder="Ex: Atestado médico, falta, troca de horário..."
+                            />
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
