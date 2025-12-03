@@ -84,19 +84,14 @@ const listarAtendimentosRelatorio = async (
     responsavel
   );
 
+  console.log(atendimentos);
+
   const dir = 'public/relatorios/atendimentos';
   await fs.ensureDir(dir);
   const filePath = path.join(
     dir,
     `Relatorio-Atendimentos-${new Date().toISOString().split('T')[0]}.pdf`
   );
-
-  const formatarData = (data) => {
-    if (!data) return '-';
-    const d = new Date(data);
-    if (isNaN(d.getTime())) return data;
-    return d.toLocaleDateString('pt-BR');
-  };
 
   const getStatusClass = (status) => {
     switch (parseInt(status)) {
@@ -144,7 +139,6 @@ const listarAtendimentosRelatorio = async (
 
   const linhasTabela = atendimentos
     .map((item) => {
-      const dataFormatada = formatarData(item.data);
       const statusClass = getStatusClass(item.status);
 
       return `
@@ -153,7 +147,7 @@ const listarAtendimentosRelatorio = async (
         <td class="nome-cell">${escapeHtml(item.nome)}</td>
         <td class="motivo-cell">${escapeHtml(item.motivo)}</td>
         <td class="resolucao-cell">${escapeHtml(item.resolucao)}</td>
-        <td class="data-cell">${dataFormatada}</td>
+        <td class="data-cell">${item.data}</td>
         <td class="status-cell">
           <span class="status-badge status-${statusClass}">
             ${escapeHtml(item.status_descricao)}
