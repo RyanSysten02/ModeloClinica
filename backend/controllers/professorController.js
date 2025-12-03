@@ -12,10 +12,10 @@ const createProfessor = async (req, res) => {
     bairro,
     cidade,
     data_nasc,
-    num_regis,
+    
     habilitacao,
-    especializacao,
-    cursos,
+    
+    
     telefone,
     sexo,
     email
@@ -40,10 +40,10 @@ const createProfessor = async (req, res) => {
       bairro,
       cidade,
       data_nasc,
-      num_regis,
+      
       habilitacao,
-      especializacao,
-      cursos,
+      
+      
       telefone,
       sexo,
       email,
@@ -92,10 +92,10 @@ const updateProfessor = async (req, res) => {
     bairro,
     cidade,
     data_nasc,
-    num_regis,
+    
     habilitacao,
-    especializacao,
-    cursos,
+    
+    
     telefone,
     sexo,
     email
@@ -127,10 +127,10 @@ const updateProfessor = async (req, res) => {
       bairro,
       cidade,
       data_nasc,
-      num_regis,
+      
       habilitacao,
-      especializacao,
-      cursos,
+      
+      
       telefone,
       sexo,
       email
