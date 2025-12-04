@@ -23,6 +23,16 @@
     margin-top: 10px;
   }
   
-  .bg-gradient {
-    background: linear-gradient(135deg, #a2c2e9, #e0f7fa);
+/* Mudei o nome para não brigar com o Bootstrap */
+.login-background {
+    /* Gradiente preto 60% + Imagem */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('./assets/images/bg/background_escola.jpg');
+    
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    
+    /* Garante que o fundo ocupe tudo se o conteúdo for pequeno */
+    min-height: 100vh; 
+    width: 100%;
 }
