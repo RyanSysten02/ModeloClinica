@@ -208,62 +208,86 @@ export default function TelaRegistroFrequencia() {
 
   const fadeVariant = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 } };
 
-  return (
-    <Container className="py-5">
-      <h2 className="text-center mb-4">Registro de Frequência</h2>
-      <AnimatePresence mode="wait">
-        {menuInicial ? (
-          <motion.div key="menu-inicial" variants={fadeVariant} initial="hidden" animate="visible" exit="exit">
-            
-            <Row className="justify-content-center">
-              <Col lg={9} xl={8}>
-                <Row className="g-4">
-                  <Col md={6}>
-                    <Card className="shadow p-4 text-center" onClick={() => navigate("/pagConsultarFrequencias")} style={{ cursor: "pointer", aspectRatio: '1 / 1' }}>
-                      <Card.Body className="d-flex flex-column justify-content-center align-items-center">
-                        <i className="bi bi-journal-text display-4 text-primary mb-3"></i>
-                        <h5 className="fw-bold">Consultar Lançamentos</h5>
-                        <p className="text-muted">Visualize e edite registros já lançados.</p>
-                      </Card.Body>
-                    </Card>
-                  </Col>
+return (
+  <Container className="py-4"> {/* Padding reduzido de 5 para 4 */}
+    <h2 className="text-center mb-4">Registro de Frequência</h2>
+    <AnimatePresence mode="wait">
+      {menuInicial ? (
+        <motion.div key="menu-inicial" variants={fadeVariant} initial="hidden" animate="visible" exit="exit">
+          
+          <Row className="justify-content-center">
+            <Col lg={10} xl={8}>
+              {/* g-3 diminui um pouco o espaço entre os cards no mobile */}
+              <Row className="g-3"> 
+                
+                {/* CARD 1 */}
+                <Col xs={6} md={6}>
+                  <Card 
+                    className="shadow-sm border-0 h-100 text-center card-hover" 
+                    onClick={() => navigate("/pagConsultarFrequencias")} 
+                    style={{ cursor: "pointer", transition: '0.2s' }}
+                  >
+                    <Card.Body className="d-flex flex-column justify-content-center align-items-center p-3">
+                      {/* fs-1 é grande, mas menor que display-4, ideal para mobile */}
+                      <i className="bi bi-journal-text fs-1 text-primary mb-2"></i>
+                      <h6 className="fw-bold mb-1">Consultar</h6>
+                      {/* Oculta descrição em telas muito pequenas (opcional) ou deixa texto pequeno */}
+                      <p className="text-muted small mb-0 d-none d-sm-block">Visualize e edite lançamentos.</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
 
-                  <Col md={6}>
-                    <Card className="shadow p-4 text-center" onClick={() => setMenuInicial(false)} style={{ cursor: "pointer", aspectRatio: '1 / 1' }}>
-                      <Card.Body className="d-flex flex-column justify-content-center align-items-center">
-                        <i className="bi bi-plus-circle display-4 text-success mb-3"></i>
-                        <h5 className="fw-bold">Lançar Nova Frequência</h5>
-                        <p className="text-muted">Registre a frequência de uma nova aula.</p>
-                      </Card.Body>
-                    </Card>
-                  </Col>
+                {/* CARD 2 */}
+                <Col xs={6} md={6}>
+                  <Card 
+                    className="shadow-sm border-0 h-100 text-center card-hover" 
+                    onClick={() => setMenuInicial(false)} 
+                    style={{ cursor: "pointer", transition: '0.2s' }}
+                  >
+                    <Card.Body className="d-flex flex-column justify-content-center align-items-center p-3">
+                      <i className="bi bi-plus-circle fs-1 text-success mb-2"></i>
+                      <h6 className="fw-bold mb-1">Nova Frequência</h6>
+                      <p className="text-muted small mb-0 d-none d-sm-block">Registre uma nova aula.</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
 
-                  <Col md={6}>
-                    <Card className="shadow p-4 text-center" onClick={() => navigate("/notifica")} style={{ cursor: "pointer", aspectRatio: '1 / 1' }}>
-                      <Card.Body className="d-flex flex-column justify-content-center align-items-center">
-                        <i className="bi bi-bell-fill display-4 text-warning mb-3"></i>
-                        <h5 className="fw-bold">Notificar Ausências</h5>
-                        <p className="text-muted">Envie avisos de faltas para os responsáveis.</p>
-                      </Card.Body>
-                    </Card>
-                  </Col>
+                {/* CARD 3 */}
+                <Col xs={6} md={6}>
+                  <Card 
+                    className="shadow-sm border-0 h-100 text-center card-hover" 
+                    onClick={() => navigate("/notifica")} 
+                    style={{ cursor: "pointer", transition: '0.2s' }}
+                  >
+                    <Card.Body className="d-flex flex-column justify-content-center align-items-center p-3">
+                      <i className="bi bi-bell-fill fs-1 text-warning mb-2"></i>
+                      <h6 className="fw-bold mb-1">Notificar</h6>
+                      <p className="text-muted small mb-0 d-none d-sm-block">Envie avisos de faltas.</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
 
-                  <Col md={6}>
-                    <Card className="shadow p-4 text-center" onClick={() => navigate("/relatorios")} style={{ cursor: "pointer", aspectRatio: '1 / 1' }}>
-                      <Card.Body className="d-flex flex-column justify-content-center align-items-center">
-                        <i className="bi bi-bar-chart-line-fill display-4 text-info mb-3"></i> 
-                        <h5 className="fw-bold">Relatórios e Gráficos</h5>
-                        <p className="text-muted">Visualize dados e estatísticas.</p>
-                      </Card.Body>
-                    </Card>
-                  </Col>
+                {/* CARD 4 */}
+                <Col xs={6} md={6}>
+                  <Card 
+                    className="shadow-sm border-0 h-100 text-center card-hover" 
+                    onClick={() => navigate("/relatorios")} 
+                    style={{ cursor: "pointer", transition: '0.2s' }}
+                  >
+                    <Card.Body className="d-flex flex-column justify-content-center align-items-center p-3">
+                      <i className="bi bi-bar-chart-line-fill fs-1 text-info mb-2"></i> 
+                      <h6 className="fw-bold mb-1">Relatórios</h6>
+                      <p className="text-muted small mb-0 d-none d-sm-block">Visualize estatísticas.</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
 
-                </Row>
-              </Col>
-            </Row>
-            
-          </motion.div>
-        ) : !filtrosConfirmados ? (
+              </Row>
+            </Col>
+          </Row>
+          
+        </motion.div>
+      ) : !filtrosConfirmados ? (
           <motion.div key="filtros" variants={fadeVariant} initial="hidden" animate="visible" exit="exit">
             <Card className="shadow p-4">
               <Card.Body>

@@ -1,34 +1,39 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './login.css'; 
+import { ApiConfig } from '.././api/config';
+import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
 
-export default function Login() {
+function PagLogin() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [loading, setLoading] = useState(false); // Novo estado para controlar o botão
+    
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true); // Bloqueia o botão
+        setErrorMessage(''); // Limpa erros antigos
+
         try {
-            const response = await fetch('http://localhost:5001/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: username, password })
+            // Requisição usando sua configuração centralizada
+            const { data } = await ApiConfig.post('/auth/login', { 
+                email: username, 
+                password 
             });
 
-            const data = await response.json();
+            // Se chegou aqui, deu sucesso (200/201)
+            localStorage.setItem('token', data.token);
+            navigate('/paginicial');
 
-            if (response.ok) {
-                localStorage.setItem('token', data.token);
-                navigate('/paginicial');
-            } else {
-                setErrorMessage(data.message || 'Falha no login');
-            }
         } catch (error) {
-            setErrorMessage('Ocorreu um erro. Tente novamente!');
+            console.error(error);
+            // Pega a mensagem do backend ou usa uma genérica
+            const msgErro = error.response?.data?.message || 'Falha ao conectar com o servidor.';
+            setErrorMessage(msgErro);
+        } finally {
+            setLoading(false); // Libera o botão independente do resultado
         }
     };
 
@@ -41,12 +46,14 @@ export default function Login() {
             <Row className="w-100 justify-content-center">
                 <Col xs={12} sm={10} md={8} lg={6} xl={5} xxl={4} className="my-4">
                     <div className="text-center mb-4">
+                        {/* Se tiver uma logo, pode colocar aqui */}
                         <h1>Login</h1>
                     </div>
+                    
                     {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
                     
                     <Form onSubmit={handleSubmit} className="shadow p-4 rounded bg-light">
-                        <Form.Group className="mb-3" >
+                        <Form.Group className="mb-3">
                             <Form.Label>Email</Form.Label>
                             <Form.Control
                                 type="email"
@@ -68,10 +75,21 @@ export default function Login() {
                             />
                         </Form.Group>
 
-                        <Button variant="primary" type="submit" className="w-100 mb-2">
-                            Log In
+                        <Button 
+                            variant="primary" 
+                            type="submit" 
+                            className="w-100 mb-2"
+                            disabled={loading} // Desabilita se estiver carregando
+                        >
+                            {loading ? 'Entrando...' : 'Log In'}
                         </Button>
-                        <Button variant="secondary" onClick={handleRegisterRedirect} className="w-100">
+                        
+                        <Button 
+                            variant="secondary" 
+                            onClick={handleRegisterRedirect} 
+                            className="w-100"
+                            disabled={loading}
+                        >
                             Criar Conta
                         </Button>
                     </Form>
@@ -80,3 +98,5 @@ export default function Login() {
         </Container>
     );
 }
+
+export default PagLogin;
