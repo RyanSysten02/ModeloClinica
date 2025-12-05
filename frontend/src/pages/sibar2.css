@@ -1,34 +1,122 @@
+/* =========================================
+   1. ESTILOS GERAIS (DESKTOP E BASE)
+   ========================================= */
 
 .sidebarArea {
+  /* Layout e Dimensões */
   flex-shrink: 0;
-  width: 250px; 
-  background-color: #f8f9fa; 
+  width: 250px;
+  background-color: #f8f9fa;
+  
+  /* --- LÓGICA DE SCROLL (NOVIDADE) --- */
+  height: 100vh; /* Força a barra a ter a altura total da janela */
+  overflow-y: auto; /* Cria a rolagem vertical se o conteúdo for grande */
+  overflow-x: hidden; /* Evita rolagem horizontal indesejada */
+  
+  /* Posicionamento */
+  position: relative; /* No desktop ela fica no fluxo normal */
+  z-index: 100; /* Garante que fique acima de elementos simples */
+  
+  /* Scroll suave */
+  scroll-behavior: smooth;
 }
 
+/* --- Estilização da Barra de Rolagem (Fica mais bonito no Chrome/Edge) --- */
+.sidebarArea::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebarArea::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.sidebarArea::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+.sidebarArea::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+/* --- Estilos dos Botões do Menu --- */
 .sidebarArea .sidenav-bg:hover {
-  background-color: #f1f3f5; 
-  border-radius: 5px; 
+  background-color: #f1f3f5;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 .sidebarArea .sidenav-bg .active {
-  background-color: #17a2b8; 
-  border-radius: 5px; 
+  background-color: #17a2b8;
+  border-radius: 5px;
   color: white;
 }
 
+/* --- Botão de Fechar (Estilo Redondo) --- */
+.closeBtn {
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  margin-bottom: 10px;
+  border: none;
+}
 
+/* =========================================
+   2. OVERLAY (Fundo Escuro)
+   ========================================= */
+.sidebarOverlay {
+  display: none; /* Escondido por padrão no Desktop */
+}
+
+/* =========================================
+   3. REGRAS PARA CELULAR/TABLET (Mobile)
+   ========================================= */
 @media (max-width: 991px) {
+  
   .sidebarArea {
-    position: fixed;
-    height: 100%;
-    overflow: auto;
+    position: fixed; /* Fixa na tela */
     top: 0;
-    z-index: 1;
-    margin-left: -250px; 
-    transition: 0.2s ease-in;
+    left: 0;
+    height: 100vh; /* Garante altura total */
+    
+    /* Z-INDEX ALTO: Para ficar acima do Calendário e outros componentes */
+    z-index: 9999 !important; 
+    
+    margin-left: -250px; /* Esconde o menu inicialmente */
+    transition: margin-left 0.3s ease-in-out; /* Animação mais suave */
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1); /* Sombra lateral */
   }
 
+  /* Quando a classe showSidebar é adicionada pelo React */
   .sidebarArea.showSidebar {
-    margin-left: 0px;
+    margin-left: 0px; /* Menu entra na tela */
+  }
+
+  /* --- Lógica do Fundo Escuro (Overlay) no Mobile --- */
+  .sidebarArea.showSidebar .sidebarOverlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Preto 50% transparente */
+    
+    /* Truque: Z-index -1 joga o overlay para trás do menu, 
+       mas como o pai (.sidebarArea) tem z-index 9999, 
+       o overlay fica acima do resto do site */
+    z-index: -1; 
+    cursor: pointer;
+    backdrop-filter: blur(2px); /* Opcional: Desfoque no fundo */
+  }
+  
+  /* Wrapper do conteúdo para garantir fundo sólido */
+  .sidebarContent {
+    background-color: #f8f9fa;
+    min-height: 100%;
+    position: relative;
+    z-index: 2; /* Garante que os botões fiquem acima do overlay */
   }
 }

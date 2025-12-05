@@ -167,3 +167,68 @@
     color: #333333;
     background-color: #e9e9e9;
 }
+
+/* =========================================
+   AJUSTES RESPONSIVOS (MOBILE)
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    /* 1. Solta a altura fixa para o cabeçalho crescer conforme necessário */
+    .rbc-toolbar,
+    .toolbar-container {
+        height: auto !important;
+        flex-direction: column; /* Empilha um bloco embaixo do outro */
+        padding: 10px 0;
+    }
+
+    /* 2. Remove a divisão de 50%/50% e usa a largura total */
+    .mesAno, 
+    .dirtop {
+        width: 100% !important;
+        justify-content: center !important; /* Centraliza tudo */
+        padding: 5px 0 !important;
+        display: flex;
+        flex-wrap: wrap; /* Permite que botões quebrem linha se necessário */
+    }
+
+    /* 3. Ajuste específico para o container dos botões à direita */
+    .dirtop {
+        margin-top: 10px;
+        gap: 10px; /* Espaço entre os botões */
+    }
+
+    /* 4. Reduz o tamanho da fonte gigante de 25px para algo legível no celular */
+    .rbc-toolbar {
+        font-size: 16px !important; 
+    }
+
+    /* 5. Melhora os botões para toque (dedo) */
+    .rbc-toolbar button {
+        padding: 8px 12px;
+        font-size: 14px;
+        flex: 1; /* Faz os botões esticarem para preencher espaços vazios */
+    }
+
+    /* 6. Ajuste do título do mês */
+    .rbc-toolbar-label {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 10px 0;
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* 7. Garante que o container principal também ajuste a altura */
+    .tela {
+        height: auto; 
+        min-height: 100vh;
+        flex-direction: column;
+    }
+    
+    /* 8. Esconde a sidebar lateral "fantasma" se ela estiver ocupando espaço visual */
+    .toolbar {
+       display: none; /* Se essa for a barra lateral cinza, no mobile ela deve sumir ou virar menu */
+       /* Se você precisa dela, mude para width: 100% e height: auto */
+    }
+}

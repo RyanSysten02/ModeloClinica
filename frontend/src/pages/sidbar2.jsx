@@ -51,7 +51,13 @@ const Sidebar = () => {
   }, []);
 
   return (
-    <div className='sidebarArea'>
+   <div id="sidebarArea" className='sidebarArea'>
+    {/* 1. NOVO: Overlay (Fundo escuro que detecta o clique fora) */}
+    <div className="sidebarOverlay" onClick={() => showMobilemenu()}></div>
+
+    {/* Container principal do conteúdo da Sidebar */}
+    <div className="sidebarContent"> 
+
       <div className='d-flex align-items-center'></div>
       <div
         className='profilebg'
@@ -59,13 +65,9 @@ const Sidebar = () => {
       >
         <div className='p-3'>
           <img src={user1} alt='user' width='50' className='rounded-circle' />
-          <Button
-            color='white'
-            className='ms-auto text-white d-lg-none'
-            onClick={() => showMobilemenu()}
-          >
-            <i className='bi bi-x'></i>
-          </Button>
+          
+          {/* REMOVA O BOTÃO ANTIGO DAQUI, pois criamos um melhor acima */}
+          
         </div>
         <div className='bg-dark text-white p-2 opacity-75'>
           {userName ? userName : ''}
@@ -274,6 +276,7 @@ const Sidebar = () => {
         show={showProfessoresModal}
         onHide={() => setShowProfessoresModal(false)}
       />
+    </div>
     </div>
   );
 };

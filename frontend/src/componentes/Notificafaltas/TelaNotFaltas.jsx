@@ -662,138 +662,213 @@ const appendarStatusNotificacao = async (frequencia_ids, statusParaAdicionar) =>
 
 
 
-  // --- Renderização ---
+// --- Renderização ---
   return (
-    <Container className="py-5">
+    <Container className="py-4"> {/* Padding ajustado */}
       <motion.div initial="hidden" animate="visible" variants={animationVariants}>
-        <h2 className="text-center mb-4">Notificar Ausências de Alunos</h2>
+        <h2 className="text-center mb-4">Notificar Ausências</h2>
 
-        {/* --- Card de Filtros --- */}
-        {/* (Sem alterações no JSX do card de filtros) */}
-        <Card className="shadow-sm p-4 mb-4">
+        {/* --- Card de Filtros (Responsivo) --- */}
+        <Card className="shadow-sm p-3 p-md-4 mb-4">
             <Row className="g-3 align-items-end">
-                <Col md={3}><Form.Label>Turma (*)</Form.Label><Form.Select value={filtroTurma} onChange={(e) => setFiltroTurma(e.target.value)}><option value="">Selecione...</option>{turmas.map(t => (<option key={t.id} value={t.id}>{t.nome}</option>))}</Form.Select></Col>
-                <Col md={3}><Form.Label>Disciplina</Form.Label><Form.Select value={filtroDisciplina} onChange={(e) => setFiltroDisciplina(e.target.value)}><option value="">Todas</option>{disciplinas.map(d => (<option key={d.id} value={d.id}>{d.nome}</option>))}</Form.Select></Col>
-                <Col md={3}><Form.Label>Data Inicial (*)</Form.Label><Form.Control type="date" value={filtroDataInicio} onChange={(e) => setFiltroDataInicio(e.target.value)} /></Col>
-                <Col md={2}><Form.Label>Data Final (*)</Form.Label><Form.Control type="date" value={filtroDataFim} onChange={(e) => setFiltroDataFim(e.target.value)} /></Col>
-                <Col md={1}><Button variant="primary" onClick={handleBuscarAusentes} className="w-100" disabled={loading} title="Buscar"><i className="bi bi-search"></i></Button></Col>
+                {/* Inputs ocupam 100% no mobile (xs=12) e dividem espaço no PC (md) */}
+                <Col xs={12} md={6} lg={3}>
+                    <Form.Label>Turma (*)</Form.Label>
+                    <Form.Select value={filtroTurma} onChange={(e) => setFiltroTurma(e.target.value)}>
+                        <option value="">Selecione...</option>
+                        {turmas.map(t => (<option key={t.id} value={t.id}>{t.nome}</option>))}
+                    </Form.Select>
+                </Col>
+                <Col xs={12} md={6} lg={3}>
+                    <Form.Label>Disciplina</Form.Label>
+                    <Form.Select value={filtroDisciplina} onChange={(e) => setFiltroDisciplina(e.target.value)}>
+                        <option value="">Todas</option>
+                        {disciplinas.map(d => (<option key={d.id} value={d.id}>{d.nome}</option>))}
+                    </Form.Select>
+                </Col>
+                <Col xs={6} md={4} lg={3}>
+                    <Form.Label>Data Inicial (*)</Form.Label>
+                    <Form.Control type="date" value={filtroDataInicio} onChange={(e) => setFiltroDataInicio(e.target.value)} />
+                </Col>
+                <Col xs={6} md={4} lg={2}>
+                    <Form.Label>Data Final (*)</Form.Label>
+                    <Form.Control type="date" value={filtroDataFim} onChange={(e) => setFiltroDataFim(e.target.value)} />
+                </Col>
+                <Col xs={12} md={4} lg={1}>
+                    <Button variant="primary" onClick={handleBuscarAusentes} className="w-100" disabled={loading} title="Buscar">
+                        <i className="bi bi-search"></i>
+                    </Button>
+                </Col>
             </Row>
+
              <Collapse in={buscaRealizada && faltasAgrupadas.length > 0}>
                  <div className="mt-4 pt-3 border-top">
-                     <Row className="align-items-center">
-                         <Col md={5} lg={6}>
-                           <strong>{numSelecionados} dia(s) de falta selecionado(s)</strong>
+                     <Row className="align-items-center g-3">
+                         <Col xs={12} md={5} lg={6} className="text-center text-md-start">
+                           <strong>{numSelecionados} dia(s) selecionado(s)</strong>
                          </Col>
-                         <Col md={7} lg={6} className="d-flex gap-2 justify-content-md-end">
-                             <Button variant="success" onClick={handleNotificarWhatsApp} disabled={numSelecionados === 0}> <i className="bi bi-whatsapp me-2"></i>WhatsApp </Button>
-                             <Button variant="info" onClick={handleNotificarEmail} disabled={numSelecionados === 0 || isSendingEmail || showCancelCountdown}>
-                                 {(isSendingEmail || showCancelCountdown) ? <Spinner as="span" animation="border" size="sm" /> : <i className="bi bi-envelope me-2"></i>} E-mail
-                            </Button>
-                           <Dropdown onSelect={(status) => alterarStatusEmMassa(status)}>
-                   <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-options" disabled={numSelecionados === 0}/>
-                               <Dropdown.Menu>
-                                 <Dropdown.Header>Alterar status</Dropdown.Header>
-                                 <Dropdown.Item eventKey="pendente">Pendente</Dropdown.Item>
-                                 <Dropdown.Item eventKey="notificado_whatsapp">Notif. WhatsApp</Dropdown.Item>
-                                 <Dropdown.Item eventKey="notificado_email">Notif. E-mail</Dropdown.Item>
-                               </Dropdown.Menu>
-                           </Dropdown>
+                         
+                         {/* Botões de Ação: Grid no Mobile, Flex no Desktop */}
+                         <Col xs={12} md={7} lg={6}>
+                             <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <Button variant="success" onClick={handleNotificarWhatsApp} disabled={numSelecionados === 0}> 
+                                    <i className="bi bi-whatsapp me-2"></i>WhatsApp 
+                                </Button>
+                                <Button variant="info" onClick={handleNotificarEmail} disabled={numSelecionados === 0 || isSendingEmail || showCancelCountdown}>
+                                    {(isSendingEmail || showCancelCountdown) ? <Spinner as="span" animation="border" size="sm" /> : <i className="bi bi-envelope me-2"></i>} E-mail
+                                </Button>
+                                <Dropdown onSelect={(status) => alterarStatusEmMassa(status)} className="d-grid d-md-inline-block">
+                                   <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-options" disabled={numSelecionados === 0} className="w-100"/>
+                                       <Dropdown.Menu>
+                                         <Dropdown.Header>Alterar status</Dropdown.Header>
+                                         <Dropdown.Item eventKey="pendente">Pendente</Dropdown.Item>
+                                         <Dropdown.Item eventKey="notificado_whatsapp">Notif. WhatsApp</Dropdown.Item>
+                                         <Dropdown.Item eventKey="notificado_email">Notif. E-mail</Dropdown.Item>
+                                       </Dropdown.Menu>
+                                </Dropdown>
+                             </div>
                          </Col>
                      </Row>
                  </div>
              </Collapse>
         </Card>
 
-        {/* --- Card de Resultados e Tabela (MODIFICADO) --- */}
-        {/* (Sem alterações no JSX da tabela) */}
+        {/* --- Card de Resultados --- */}
         <AnimatePresence>
           {buscaRealizada && (
             <motion.div key="resultados" variants={animationVariants} initial="hidden" animate="visible" exit="exit">
-              <Card className="shadow-sm">
-                <Card.Header className="d-flex justify-content-between align-items-center flex-wrap">
-                  <span className="fw-bold">Resultados da Busca</span>
+              <Card className="shadow-sm border-0">
+                <Card.Header className="bg-white d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 py-3">
+                  <span className="fw-bold fs-5">Resultados</span>
                   {faltasAgrupadas.length > 0 && (
-                    <Form.Control type="text" placeholder="Filtrar por nome..." value={filtroNome} onChange={(e) => setFiltroNome(e.target.value)} style={{ width: '300px' }} className="mt-2 mt-md-0" />
+                    <Form.Control 
+                        type="text" 
+                        placeholder="Filtrar por nome..." 
+                        value={filtroNome} 
+                        onChange={(e) => setFiltroNome(e.target.value)} 
+                        style={{ maxWidth: '100%', width: '300px' }} 
+                    />
                   )}
                 </Card.Header>
-                <Card.Body>
-                  {loading ? ( <div className="text-center"><Spinner /></div>
+                <Card.Body className="p-0 p-md-3"> {/* Remove padding no mobile para aproveitar espaço */}
+                  {loading ? ( <div className="text-center p-4"><Spinner /></div>
                   ) : faltasAgrupadas.length === 0 ? (
                     <div className="text-center text-muted p-4">Nenhuma falta encontrada.</div>
                   ) : faltasAgrupadasFiltradas.length === 0 ? (
                     <div className="text-center text-muted p-4">Nenhum aluno com o nome "{filtroNome}".</div>
                   ) : (
-                    <Table hover responsive>
-                      <thead>
-                        <tr>
-                          <th style={{ width: '50px' }}><Form.Check type="checkbox" title="Selecionar Todos Visíveis" checked={selectAll} onChange={handleSelectAll}/></th>
-                          <th>Aluno</th>
-                          <th>Responsável</th>
-                          <th>Data da Falta</th>
-                          <th>Contato</th>
-                          <th className="text-center">Status</th>
-                          <th className="text-center" style={{width: '90px'}}>Detalhes</th> {/* Ajuste largura */}
-                        </tr>
-                      </thead>
-                      <tbody>
-                            {faltasAgrupadasFiltradas.map(grupo => {
-                              
-                              // --- MODIFICADO: Lógica de Status Consolidado ---
-                              const statusUnicos = new Set(grupo.faltas.map(f => f.notificacao_status));
-                              
-                              let statusConsolidado = 'Pendente'; 
-                              let statusVariant = 'warning';
-                              
-                              if (statusUnicos.size === 1) {
-                                  const unicoStatus = statusUnicos.values().next().value;
-                                  
-                                  if (unicoStatus === 'pendente') {
-                                    // Mantém o default 'Pendente' / 'warning'
-                                  } else {
-                                      const hasWhats = unicoStatus.includes('whatsapp');
-                                      const hasEmail = unicoStatus.includes('email');
-                                      
-                                      if (hasWhats && hasEmail) {
-                                          statusConsolidado = 'Wpp/Email';
-                                          statusVariant = 'primary';
-                                      } else if (hasWhats) {
-                                          statusConsolidado = 'WhatsApp';
-                                          statusVariant = 'success';
-                                      } else if (hasEmail) {
-                                          statusConsolidado = 'Email';
-                                          statusVariant = 'info';
-                                      } else {
-                                          statusConsolidado = unicoStatus; // ex: 'ignorado'
-                                          statusVariant = 'secondary';
-                                      }
-                                  }
-                              } else if (statusUnicos.size > 1) {
-                                  // Múltiplas faltas (disciplinas) com status diferentes (ex: uma 'pendente', uma 'email')
-                                  statusConsolidado = 'Misto';
-                                  statusVariant = 'secondary';
-                              }
-                              // --- FIM DA MODIFICAÇÃO ---
-                              
-                              return (
-                                <tr key={grupo.chaveUnica}>
-                                  <td><Form.Check type="checkbox" checked={!!selecionados[grupo.chaveUnica]} onChange={() => toggleSelecionado(grupo.chaveUnica)}/></td>
-                                  <td>{grupo.aluno_nome}</td>
-                                  <td>{grupo.responsavel_nome || <span className="text-muted">N/I</span>}</td>
-                                  {/* Usa data_aula do grupo com UTC */}
-                                  <td>{new Date(grupo.data_aula + 'T00:00:00Z').toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
-                                  <td>{grupo.responsavel_celular || grupo.responsavel_email || <span className="text-muted">N/I</span>}</td>
-                                  <td className="text-center"> <Badge bg={statusVariant}>{statusConsolidado}</Badge> </td>
-                                  {/* --- Botão Detalhes --- */}
-                                  <td className="text-center">
-                                    <Button variant="outline-secondary" size="sm" onClick={() => handleShowDetails(grupo)} title="Ver detalhes">
-                                      <i className="bi bi-list-ul"></i>
-                                    </Button>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                    </Table>
+                    <>
+                    {/* --- VERSÃO DESKTOP (TABELA) --- */}
+                    <div className="d-none d-md-block">
+                        <Table hover responsive>
+                        <thead>
+                            <tr>
+                            <th style={{ width: '50px' }}><Form.Check type="checkbox" title="Selecionar Todos" checked={selectAll} onChange={handleSelectAll}/></th>
+                            <th>Aluno</th>
+                            <th>Responsável</th>
+                            <th>Data da Falta</th>
+                            <th>Contato</th>
+                            <th className="text-center">Status</th>
+                            <th className="text-center" style={{width: '90px'}}>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                                {faltasAgrupadasFiltradas.map(grupo => {
+                                    // Lógica de Status (Copiada para consistência)
+                                    const statusUnicos = new Set(grupo.faltas.map(f => f.notificacao_status));
+                                    let statusConsolidado = 'Pendente'; let statusVariant = 'warning';
+                                    if (statusUnicos.size === 1) {
+                                        const unicoStatus = statusUnicos.values().next().value;
+                                        if (unicoStatus !== 'pendente') {
+                                            const hasWhats = unicoStatus.includes('whatsapp');
+                                            const hasEmail = unicoStatus.includes('email');
+                                            if (hasWhats && hasEmail) { statusConsolidado = 'Wpp/Email'; statusVariant = 'primary'; }
+                                            else if (hasWhats) { statusConsolidado = 'WhatsApp'; statusVariant = 'success'; }
+                                            else if (hasEmail) { statusConsolidado = 'Email'; statusVariant = 'info'; }
+                                            else { statusConsolidado = unicoStatus; statusVariant = 'secondary'; }
+                                        }
+                                    } else if (statusUnicos.size > 1) { statusConsolidado = 'Misto'; statusVariant = 'secondary'; }
+                                    
+                                    return (
+                                    <tr key={grupo.chaveUnica} className={!!selecionados[grupo.chaveUnica] ? 'table-active' : ''}>
+                                        <td><Form.Check type="checkbox" checked={!!selecionados[grupo.chaveUnica]} onChange={() => toggleSelecionado(grupo.chaveUnica)}/></td>
+                                        <td>{grupo.aluno_nome}</td>
+                                        <td>{grupo.responsavel_nome || <span className="text-muted">N/I</span>}</td>
+                                        <td>{new Date(grupo.data_aula + 'T00:00:00Z').toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
+                                        <td>{grupo.responsavel_celular || grupo.responsavel_email || <span className="text-muted">N/I</span>}</td>
+                                        <td className="text-center"> <Badge bg={statusVariant}>{statusConsolidado}</Badge> </td>
+                                        <td className="text-center">
+                                            <Button variant="outline-secondary" size="sm" onClick={() => handleShowDetails(grupo)} title="Ver detalhes">
+                                            <i className="bi bi-list-ul"></i>
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                    );
+                                })}
+                        </tbody>
+                        </Table>
+                    </div>
+
+                    {/* --- VERSÃO MOBILE (CARDS) --- */}
+                    <div className="d-md-none bg-light">
+                        {/* Checkbox "Selecionar Todos" no Mobile */}
+                        <div className="p-3 bg-white border-bottom d-flex align-items-center mb-2">
+                             <Form.Check type="checkbox" checked={selectAll} onChange={handleSelectAll} label="Selecionar Todos da Lista" className="fw-bold"/>
+                        </div>
+
+                        {faltasAgrupadasFiltradas.map(grupo => {
+                             // Mesma lógica de status para os Cards
+                             const statusUnicos = new Set(grupo.faltas.map(f => f.notificacao_status));
+                             let statusConsolidado = 'Pendente'; let statusVariant = 'warning';
+                             if (statusUnicos.size === 1) {
+                                 const unicoStatus = statusUnicos.values().next().value;
+                                 if (unicoStatus !== 'pendente') {
+                                     const hasWhats = unicoStatus.includes('whatsapp');
+                                     const hasEmail = unicoStatus.includes('email');
+                                     if (hasWhats && hasEmail) { statusConsolidado = 'Wpp/Email'; statusVariant = 'primary'; }
+                                     else if (hasWhats) { statusConsolidado = 'WhatsApp'; statusVariant = 'success'; }
+                                     else if (hasEmail) { statusConsolidado = 'Email'; statusVariant = 'info'; }
+                                     else { statusConsolidado = unicoStatus; statusVariant = 'secondary'; }
+                                 }
+                             } else if (statusUnicos.size > 1) { statusConsolidado = 'Misto'; statusVariant = 'secondary'; }
+
+                            return (
+                                <Card key={grupo.chaveUnica} className={`mb-3 mx-2 shadow-sm border-0 ${!!selecionados[grupo.chaveUnica] ? 'border border-2 border-primary' : ''}`}>
+                                    <Card.Body>
+                                        <div className="d-flex justify-content-between align-items-start mb-2">
+                                            <div className="d-flex gap-2">
+                                                <Form.Check 
+                                                    type="checkbox" 
+                                                    style={{ transform: 'scale(1.2)' }}
+                                                    checked={!!selecionados[grupo.chaveUnica]} 
+                                                    onChange={() => toggleSelecionado(grupo.chaveUnica)}
+                                                />
+                                                <div>
+                                                    <h6 className="fw-bold mb-0">{grupo.aluno_nome}</h6>
+                                                    <small className="text-muted">
+                                                        {new Date(grupo.data_aula + 'T00:00:00Z').toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <Badge bg={statusVariant}>{statusConsolidado}</Badge>
+                                        </div>
+                                        
+                                        <div className="ms-4 ps-2 border-start">
+                                            <p className="mb-1 small text-muted">Resp: <span className="text-dark">{grupo.responsavel_nome || 'N/I'}</span></p>
+                                            <p className="mb-0 small text-muted">Contato: <span className="text-dark">{grupo.responsavel_celular || grupo.responsavel_email || 'N/I'}</span></p>
+                                        </div>
+
+                                        <div className="d-grid mt-3">
+                                            <Button variant="outline-secondary" size="sm" onClick={() => handleShowDetails(grupo)}>
+                                                <i className="bi bi-list-ul me-2"></i> Ver Detalhes / Disciplinas
+                                            </Button>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            )
+                        })}
+                    </div>
+                    </>
                   )}
                 </Card.Body>
               </Card>
@@ -804,59 +879,57 @@ const appendarStatusNotificacao = async (frequencia_ids, statusParaAdicionar) =>
 
       {/* --- MODAL DA FILA WHATSAPP (Estrutura Mantida) --- */}
       {/* (Sem alterações no JSX do modal WhatsApp) */}
-      <Modal show={showFilaModalWhats} onHide={handleCancelarFilaWhats} backdrop="static" keyboard={false} centered size="lg" >
+      <Modal show={showFilaModalWhats} onHide={handleCancelarFilaWhats} backdrop="static" keyboard={false} centered size="lg" scrollable>
         <Modal.Header closeButton><Modal.Title>Fila de Notificação - WhatsApp</Modal.Title></Modal.Header>
         {filaNotificacaoWhats.length > 0 && filaNotificacaoWhats[indiceFilaWhats] ? (
           <>
             <Modal.Body>
-              {/* --- Aviso Mantido --- */}
-              <Alert variant="danger">
-                  <Alert.Heading as="h6">Atenção!</Alert.Heading>
-                  <p className="mb-0" style={{ fontSize: '0.9rem' }}>
-                    Realizar o envio de diversas notificações de whatsapp em um curto espaço de tempo, podem acarretar no bloqueio ou perca do numero de whatsapp.
-                    <strong> Utilize a funcionalidade com moderação.</strong>
-                  </p>
+              <Alert variant="danger" className="py-2">
+                  <small><i className="bi bi-exclamation-triangle-fill me-1"></i> Envios em massa rápidos podem bloquear seu WhatsApp. Use com moderação.</small>
               </Alert>
-              <p className="text-muted"> Clique em "Enviar Notificação" para abrir o WhatsApp ou copie os dados. </p>
               <AnimatePresence mode="wait">
                 <motion.div key={indiceFilaWhats} variants={modalContentVariants} initial="hidden" animate="visible" exit="exit" transition={{ duration: 0.3 }} >
-                  <Card bg="light" className="mb-3">
+                  <Card bg="light" className="mb-3 border-0">
                     <Card.Body>
                       <div className="d-flex justify-content-between align-items-start">
-                        <Card.Title className="mb-1">{filaNotificacaoWhats[indiceFilaWhats].aluno_nome}</Card.Title>
-                        {/* --- Status Mantido --- */}
-                        <Badge bg="primary" pill>{indiceFilaWhats + 1} de {filaNotificacaoWhats.length}</Badge>
+                        <h5 className="mb-1 fw-bold">{filaNotificacaoWhats[indiceFilaWhats].aluno_nome}</h5>
+                        <Badge bg="primary" pill>{indiceFilaWhats + 1} / {filaNotificacaoWhats.length}</Badge>
                       </div>
-                      <Card.Text>
-                        <strong>Responsável:</strong> {filaNotificacaoWhats[indiceFilaWhats].responsavel_nome || <span className="text-danger">N/I</span>}<br/>
-                        <strong>Contato:</strong>
-                        {filaNotificacaoWhats[indiceFilaWhats].responsavel_celular ? ( <> {filaNotificacaoWhats[indiceFilaWhats].responsavel_celular} <Button variant="link" size="sm" className="p-0 ms-2" title="Copiar" onClick={() => copyToClipboard(filaNotificacaoWhats[indiceFilaWhats].responsavel_celular.replace(/\D/g, ''), "Número copiado!")} > <i className="bi bi-clipboard-check"></i> </Button> </> ) : ( <span className="text-danger">Sem celular</span> )}
-                      </Card.Text>
+                      <div className="text-muted small mb-2">Responsável: {filaNotificacaoWhats[indiceFilaWhats].responsavel_nome || 'N/I'}</div>
+                      
+                      <div className="d-flex align-items-center gap-2">
+                        {filaNotificacaoWhats[indiceFilaWhats].responsavel_celular ? ( 
+                            <> 
+                                <span className="fw-bold text-success"><i className="bi bi-whatsapp"></i> {filaNotificacaoWhats[indiceFilaWhats].responsavel_celular}</span> 
+                                <Button variant="link" size="sm" className="p-0 text-decoration-none" onClick={() => copyToClipboard(filaNotificacaoWhats[indiceFilaWhats].responsavel_celular.replace(/\D/g, ''), "Copiado!")}> <i className="bi bi-clipboard"></i></Button> 
+                            </> 
+                        ) : ( <span className="text-danger">Sem celular cadastrado</span> )}
+                      </div>
                     </Card.Body>
                   </Card>
                   <Form.Group>
-                    <Form.Label className="fw-bold">Mensagem:</Form.Label>
+                    <Form.Label className="fw-bold small">Mensagem:</Form.Label>
                     <Form.Control as="textarea" rows={5} value={mensagemAtualWhats} readOnly style={{ backgroundColor: '#f8f9fa', fontSize: '0.9rem' }} />
-                    <Button variant="outline-secondary" size="sm" className="mt-2" onClick={() => copyToClipboard(mensagemAtualWhats, "Mensagem copiada!")} > <i className="bi bi-clipboard me-2"></i> Copiar </Button>
+                    <Button variant="outline-secondary" size="sm" className="mt-2" onClick={() => copyToClipboard(mensagemAtualWhats, "Mensagem copiada!")} > <i className="bi bi-clipboard me-2"></i> Copiar Texto </Button>
                   </Form.Group>
                 </motion.div>
               </AnimatePresence>
             </Modal.Body>
-            <Modal.Footer>
-               <Button variant="secondary" onClick={handleCancelarFilaWhats} className="me-auto" disabled={isSavingWhats}>Cancelar Fila</Button>
-               <Button variant="outline-secondary" onClick={handleVoltarAoAnteriorWhats} disabled={indiceFilaWhats === 0 || isSavingWhats} > Voltar </Button>
-               <Button
-                 variant="outline-warning" // Ou outra cor que preferir
-                 onClick={handleIgnorarAtualWhats}
-                 disabled={isSavingWhats}
-               >
-                 Ignorar
-               </Button>
-               <Button variant="success" onClick={handleEnviarNotificacaoAtualWhats} disabled={isSavingWhats}> <i className="bi bi-whatsapp me-2"></i> Enviar Notificação </Button>
-               <Button variant="primary" onClick={handleProximoDaFilaWhats} disabled={isSavingWhats}>
-                 {isSavingWhats ? ( <><Spinner as="span" size="sm" /> Salvando...</> ) : ( (indiceFilaWhats === filaNotificacaoWhats.length - 1) ? "Salvar e Concluir" : "Salvar e Próximo" )}
-               </Button>
-             </Modal.Footer>
+            <Modal.Footer className="d-flex flex-column flex-md-row gap-2">
+               <div className="d-flex gap-2 w-100 justify-content-between order-2 order-md-1">
+                    <Button variant="secondary" onClick={handleCancelarFilaWhats} disabled={isSavingWhats}>Cancelar</Button>
+                    <div className="d-flex gap-2">
+                        <Button variant="outline-secondary" onClick={handleVoltarAoAnteriorWhats} disabled={indiceFilaWhats === 0 || isSavingWhats} ><i className="bi bi-arrow-left"></i></Button>
+                        <Button variant="outline-warning" onClick={handleIgnorarAtualWhats} disabled={isSavingWhats}>Ignorar</Button>
+                    </div>
+               </div>
+               <div className="d-flex gap-2 w-100 justify-content-end order-1 order-md-2">
+                    <Button variant="success" className="flex-grow-1 flex-md-grow-0" onClick={handleEnviarNotificacaoAtualWhats} disabled={isSavingWhats}> <i className="bi bi-whatsapp me-2"></i> Enviar </Button>
+                    <Button variant="primary" className="flex-grow-1 flex-md-grow-0" onClick={handleProximoDaFilaWhats} disabled={isSavingWhats}>
+                        {isSavingWhats ? <Spinner as="span" size="sm" /> : (indiceFilaWhats === filaNotificacaoWhats.length - 1) ? "Concluir" : "Próximo"} <i className="bi bi-arrow-right ms-1"></i>
+                    </Button>
+               </div>
+            </Modal.Footer>
           </>
         ) : ( <Modal.Body> <Spinner size="sm" /> Carregando... </Modal.Body> )}
       </Modal>
@@ -870,17 +943,17 @@ const appendarStatusNotificacao = async (frequencia_ids, statusParaAdicionar) =>
         keyboard={!(isSendingEmail || showCancelCountdown)}
         centered size="lg" >
         <Modal.Header closeButton={!(isSendingEmail || showCancelCountdown)}>
-         <Modal.Title>
-          {showCancelCountdown
+          <Modal.Title>
+           {showCancelCountdown
             ? "Confirmar Envio de E-mail" // <--- Texto Fixo durante countdown
             : isSendingEmail
             ? "Enviando E-mails..."
             : "Resultado do Envio de E-mails"}
-         </Modal.Title>
-       </Modal.Header>
-        <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-         {showCancelCountdown && ( <div className="text-center mb-3 p-3 bg-light border rounded"> <p className="mb-2">Envio automático em:</p> <h3 className="display-6 mb-3">{countdown}</h3> <Button variant="danger" onClick={handleCancelSending}> <i className="bi bi-x-circle me-2"></i> Cancelar </Button> </div> )}
-          {emailStatusList.length === 0 && !showCancelCountdown ? ( <div className="text-center"><Spinner /> Preparando...</div> ) : (
+          </Modal.Title>
+        </Modal.Header>
+         <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+          {showCancelCountdown && ( <div className="text-center mb-3 p-3 bg-light border rounded"> <p className="mb-2">Envio automático em:</p> <h3 className="display-6 mb-3">{countdown}</h3> <Button variant="danger" onClick={handleCancelSending}> <i className="bi bi-x-circle me-2"></i> Cancelar </Button> </div> )}
+           {emailStatusList.length === 0 && !showCancelCountdown ? ( <div className="text-center"><Spinner /> Preparando...</div> ) : (
           <ListGroup variant="flush">
             {emailStatusList.map((itemGrupo) => (
               <ListGroup.Item key={itemGrupo.chaveUnica} className="d-flex justify-content-between align-items-center flex-wrap">
@@ -979,4 +1052,4 @@ const appendarStatusNotificacao = async (frequencia_ids, statusParaAdicionar) =>
 
     </Container>
   );
-}
+  }

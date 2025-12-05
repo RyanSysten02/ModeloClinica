@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+export const BASE_URL = 'http://localhost:5001'; 
+
 const ApiConfig = axios.create({
-  baseURL: 'http://localhost:5001/api',
+
+  baseURL: `${BASE_URL}/api`,
 });
 
 ApiConfig.interceptors.request.use((config) => {
@@ -13,5 +16,6 @@ ApiConfig.interceptors.request.use((config) => {
 
   return config;
 });
+
 
 export { ApiConfig };

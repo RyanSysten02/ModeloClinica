@@ -236,7 +236,6 @@ const gerarRelatorioPDFTurmas = async (filtros = {}) => {
       t.nome,
       t.nivel,
       t.ano_letivo,
-      t.periodo,
       t.semestre,
       t.status,
       JSON_ARRAYAGG(
@@ -276,7 +275,7 @@ const gerarRelatorioPDFTurmas = async (filtros = {}) => {
     params.push(status);
   }
 
-  query += ` GROUP BY t.id, t.nome, t.nivel, t.ano_letivo, t.periodo, t.semestre, t.status`;
+  query += ` GROUP BY t.id, t.nome, t.nivel, t.ano_letivo, t.semestre, t.status`;
   query += ` ORDER BY t.nome`;
 
   const [rows] = await pool.query(query, params);

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Button, ButtonGroup, Container } from 'react-bootstrap';
+import { Container, Button, ButtonGroup, Dropdown, Row, Col } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import EditarAulas from './EditarAulas';
 import RelatorioProfessoresModal from './RelatorioProfessoresModal';
@@ -9,7 +9,13 @@ const DAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 
 const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
 
+// Função auxiliar visual
+const darkenColor = (color) => {
+    return 'rgba(0,0,0,0.1)'; 
+};
+
 export default function AtribuicaoDeAulas() {
+  // --- ESTADOS E LÓGICA ---
   const [horarios, setHorarios] = useState([]);
   const [turmas, setTurmas] = useState([]);
 
@@ -80,21 +86,14 @@ export default function AtribuicaoDeAulas() {
       if (!horarios.length || !columns.length) return;
 
       const resp = await fetch(
-        `http://localhost:5001/api/aulas?dia=${encodeURIComponent(
-          currentDay
-        )}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        `http://localhost:5001/api/aulas?dia=${encodeURIComponent(currentDay)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await resp.json();
 
       const matrix = emptyDayFactory();
-
       const rowIndexByHorario = {};
-      horarios.forEach((h, idx) => {
-        rowIndexByHorario[h.id] = idx;
-      });
+      horarios.forEach((h, idx) => { rowIndexByHorario[h.id] = idx; });
 
       data.forEach((a) => {
         const r = rowIndexByHorario[a.horario_id];
@@ -110,19 +109,10 @@ export default function AtribuicaoDeAulas() {
         }
       });
 
-      setScheduleByDay((prev) => ({
-        ...prev,
-        [currentDay]: matrix,
-      }));
-
+      setScheduleByDay((prev) => ({ ...prev, [currentDay]: matrix }));
       setDraftByDay((prev) => {
-        if (prev[currentDay] && prev[currentDay].length) {
-          return prev;
-        }
-        return {
-          ...prev,
-          [currentDay]: deepClone(matrix),
-        };
+        if (prev[currentDay] && prev[currentDay].length) return prev;
+        return { ...prev, [currentDay]: deepClone(matrix) };
       });
     };
 
@@ -130,18 +120,14 @@ export default function AtribuicaoDeAulas() {
   }, [token, currentDay, horarios, columns, emptyDayFactory]);
 
   useEffect(() => {
-    if (editMode) {
-      toast.info(`Editando horário de ${currentDay}`, { autoClose: 2500 });
-    }
+    if (editMode) toast.info(`Editando horário de ${currentDay}`, { autoClose: 2500 });
   }, [currentDay, editMode]);
 
+  // --- COMPUTED PROPERTIES ---
   const cargaProfessores = useMemo(() => {
     const contador = {};
     DAYS.forEach((dia) => {
-      const matriz =
-        (draftByDay[dia] && draftByDay[dia].length
-          ? draftByDay[dia]
-          : scheduleByDay[dia]) || [];
+      const matriz = (draftByDay[dia] && draftByDay[dia].length ? draftByDay[dia] : scheduleByDay[dia]) || [];
       matriz.forEach((linha) => {
         linha.forEach((cell) => {
           if (cell && cell.teacherId) {
@@ -164,13 +150,12 @@ export default function AtribuicaoDeAulas() {
     };
   }, []);
 
+  // --- HANDLERS ---
   const handleEditToggle = () => {
     if (!editMode) {
       setDraftByDay((prev) => ({
         ...prev,
-        [currentDay]: deepClone(
-          prev[currentDay]?.length ? prev[currentDay] : currentSchedule
-        ),
+        [currentDay]: deepClone(prev[currentDay]?.length ? prev[currentDay] : currentSchedule),
       }));
       setEditMode(true);
       toast.info(`Modo edição ativado (${currentDay})`, { autoClose: 2500 });
@@ -425,217 +410,143 @@ export default function AtribuicaoDeAulas() {
     setShowHistorico(false);
   };
 
-  return (
-    <Container fluid className="py-3">
-      <h2 className="text-center mb-4">Aulas</h2>
-
-      <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-        <ButtonGroup className="flex-wrap">
-          {DAYS.map((d) => (
-            <Button
-              key={d}
-              size="sm"
-              variant={currentDay === d ? 'primary' : 'outline-secondary'}
-              onClick={() => setCurrentDay(d)}
-              style={{ borderRadius: 999, marginRight: 6, marginBottom: 6 }}
-            >
-              {d}
-            </Button>
-          ))}
+  // --- SUBCOMPONENTES (Para Layout) ---
+  const DaySelector = () => (
+    <div className="d-flex overflow-auto pb-2" style={{ whiteSpace: 'nowrap', scrollbarWidth: 'none' }}>
+        <ButtonGroup>
+            {DAYS.map((d) => (
+                <Button
+                    key={d}
+                    size="sm"
+                    variant={currentDay === d ? 'primary' : 'outline-secondary'}
+                    onClick={() => setCurrentDay(d)}
+                    style={{ borderRadius: 20 }}
+                    className="px-3"
+                >
+                    {d}
+                </Button>
+            ))}
         </ButtonGroup>
+    </div>
+  );
 
-        <div className="d-flex align-items-center gap-2">
-          {!editMode ? (
-            <Button
-              size="sm"
-              variant="outline-secondary"
-              onClick={handleEditToggle}
-              style={{ borderRadius: 999 }}
-            >
-              ✏️ Editar
-            </Button>
-          ) : (
-            <>
-              <Button
-                size="sm"
-                variant="primary"
-                onClick={handleSave}
-                style={{ borderRadius: 999 }}
-              >
-                💾 Salvar
-              </Button>
-              <Button
-                size="sm"
-                variant="outline-secondary"
-                onClick={handleCancel}
-                style={{ borderRadius: 999 }}
-              >
-                ❌ Cancelar
-              </Button>
-            </>
-          )}
+  // --- RENDERIZAÇÃO PRINCIPAL (JSX RESPONSIVO) ---
+  return (
+    <Container fluid className="py-3 px-2 px-md-3">
+      <h3 className="text-center mb-3">Grade de Aulas</h3>
 
-          <div style={{ width: 1, height: 24, background: '#dee2e6' }} />
+      {/* --- BARRA DE CONTROLE --- */}
+      <Row className="gy-3 mb-3 align-items-center">
+        <Col xs={12} lg={4} className="order-2 order-lg-1">
+             <DaySelector />
+        </Col>
 
-          <Button
-            size="sm"
-            variant="outline-secondary"
-            onClick={handleCopy}
-            style={{ borderRadius: 999 }}
-          >
-            📋 Copiar
-          </Button>
-          <Button
-            size="sm"
-            variant="outline-secondary"
-            onClick={handlePaste}
-            disabled={!editMode || !clipboard}
-            style={{ borderRadius: 999 }}
-          >
-            📥 Colar
-          </Button>
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={handleClear}
-            disabled={!editMode}
-            style={{ borderRadius: 999 }}
-          >
-            🧹 Limpar
-          </Button>
+        <Col xs={12} lg={8} className="order-1 order-lg-2">
+            <div className="d-flex justify-content-end align-items-center gap-2 flex-wrap">
+                {!editMode ? (
+                    <Button size="sm" variant="outline-secondary" onClick={handleEditToggle} className="rounded-pill px-3">
+                        ✏️ Editar
+                    </Button>
+                ) : (
+                    <>
+                        <Button size="sm" variant="primary" onClick={handleSave} className="rounded-pill px-3">
+                            💾 Salvar
+                        </Button>
+                        <Button size="sm" variant="outline-danger" onClick={handleCancel} className="rounded-pill px-3">
+                            ❌ Cancelar
+                        </Button>
+                    </>
+                )}
 
-          <Button
-            size="sm"
-            variant="success"
-            onClick={() => setShowRelatorio(true)}
-            style={{ borderRadius: 999 }}
-          >
-            📊 Relatório
-          </Button>
+                <div className="vr d-none d-md-block mx-2" style={{ height: 24 }}></div>
 
-          <Button
-            size="sm"
-            variant="outline-primary"
-            onClick={() => setShowHistorico(true)}
-            style={{ borderRadius: 999 }}
-          >
-            🕒 Histórico
-          </Button>
-        </div>
-      </div>
+                {/* Desktop Buttons */}
+                <div className="d-none d-md-flex gap-2">
+                    <Button size="sm" variant="outline-secondary" onClick={handleCopy} className="rounded-pill">📋 Copiar</Button>
+                    <Button size="sm" variant="outline-secondary" onClick={handlePaste} disabled={!editMode || !clipboard} className="rounded-pill">📥 Colar</Button>
+                    <Button size="sm" variant="danger" onClick={handleClear} disabled={!editMode} className="rounded-pill">🧹 Limpar</Button>
+                    <Button size="sm" variant="success" onClick={() => setShowRelatorio(true)} className="rounded-pill">📊 Relatório</Button>
+                    <Button size="sm" variant="outline-primary" onClick={() => setShowHistorico(true)} className="rounded-pill">🕒 Histórico</Button>
+                </div>
 
-      <div
-        className="table-responsive"
-        style={{
-          border: '1px solid #dee2e6',
-          borderRadius: 16,
-          overflow: 'hidden',
-        }}
-      >
-        <table className="table mb-0" style={{ minWidth: 960 }}>
+                {/* Mobile Dropdown */}
+                <div className="d-md-none">
+                    <Dropdown align="end">
+                        <Dropdown.Toggle variant="secondary" size="sm" className="rounded-pill">
+                            <i className="bi bi-three-dots-vertical"></i> Mais Ações
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            <Dropdown.Item onClick={handleCopy}><i className="bi bi-clipboard me-2"></i> Copiar Grade</Dropdown.Item>
+                            <Dropdown.Item onClick={handlePaste} disabled={!editMode || !clipboard}><i className="bi bi-clipboard-check me-2"></i> Colar Grade</Dropdown.Item>
+                            <Dropdown.Divider />
+                            <Dropdown.Item onClick={handleClear} disabled={!editMode} className="text-danger"><i className="bi bi-eraser me-2"></i> Limpar Tudo</Dropdown.Item>
+                            <Dropdown.Divider />
+                            <Dropdown.Item onClick={() => setShowRelatorio(true)}><i className="bi bi-bar-chart me-2"></i> Relatórios</Dropdown.Item>
+                            <Dropdown.Item onClick={() => setShowHistorico(true)}><i className="bi bi-clock-history me-2"></i> Histórico</Dropdown.Item>
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </div>
+            </div>
+        </Col>
+      </Row>
+
+      {/* --- TABELA COM SCROLL --- */}
+      <div className="table-responsive shadow-sm" style={{ border: '1px solid #dee2e6', borderRadius: 12, maxHeight: '75vh', overflow: 'auto', background: '#fff' }}>
+        <table className="table mb-0 table-borderless" style={{ minWidth: 960, borderCollapse: 'separate', borderSpacing: 0 }}>
           <thead className="table-light">
             <tr>
-              <th
-                style={{
-                  position: 'sticky',
-                  left: 0,
-                  zIndex: 1,
-                  background: '#f8f9fa',
-                  width: 160,
-                }}
-              >
-                HORA
+              <th style={{ position: 'sticky', left: 0, top: 0, zIndex: 3, background: '#f8f9fa', width: 120, borderBottom: '2px solid #dee2e6', borderRight: '1px solid #dee2e6' }} className="text-center align-middle py-3">
+                HORÁRIO
               </th>
               {columns.map((col) => (
-                <th key={col}>{col}</th>
+                <th key={col} style={{ position: 'sticky', top: 0, zIndex: 2, background: '#f8f9fa', borderBottom: '2px solid #dee2e6' }} className="text-center py-3">
+                    {col}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {horarios.map((h, rowIdx) => (
               <tr key={h.id}>
-                <td
-                  style={{
-                    position: 'sticky',
-                    left: 0,
-                    zIndex: 1,
-                    background: '#fff',
-                    width: 160,
-                  }}
-                >
+                <td style={{ position: 'sticky', left: 0, zIndex: 1, background: '#fff', borderRight: '1px solid #dee2e6', fontWeight: 'bold', fontSize: '0.9rem' }} className="text-center align-middle">
                   {h.rotulo}
                 </td>
                 {columns.map((_, colIdx) => {
                   const entry = currentMatrix[rowIdx]?.[colIdx] || null;
                   const isBreak = Number(h.is_intervalo) === 1;
+
                   if (isBreak) {
                     return (
-                      <td
-                        key={`${rowIdx}-${colIdx}`}
-                        className="text-center text-muted"
-                      >
-                        —
+                      <td key={`${rowIdx}-${colIdx}`} className="text-center align-middle p-1" style={{ backgroundColor: '#f1f1f1' }}>
+                        <small className="text-muted opacity-50">Intervalo</small>
                       </td>
                     );
                   }
+
                   return (
-                    <td key={`${rowIdx}-${colIdx}`}>
+                    <td key={`${rowIdx}-${colIdx}`} className="p-1 align-middle border-bottom border-end-0">
                       <button
                         onClick={() => openCellModal(rowIdx, colIdx)}
                         disabled={!editMode}
-                        className={`w-100 btn btn-sm ${
-                          editMode
-                            ? 'btn-outline-secondary'
-                            : 'btn-outline-secondary disabled'
-                        }`}
-                        style={{
-                          textAlign: 'left',
-                          borderRadius: 12,
-                          padding: 4,
-                        }}
+                        className={`w-100 btn p-0 border-0 text-start`}
+                        style={{ background: 'transparent' }}
                       >
                         {entry ? (
-                          <div
+                          <div className="d-flex flex-column justify-content-center p-2 shadow-sm"
                             style={{
-                              background: entry.teacherColor,
-                              borderRadius: 8,
-                              padding: '6px 10px',
-                              lineHeight: 1.1,
-                              boxShadow: '0 1px 2px rgba(0,0,0,.06)',
-                              opacity: editMode ? 0.6 : 1,
-                              transition: 'opacity .3s ease-in-out',
+                              background: entry.teacherColor || '#e9ecef', borderRadius: 8, minHeight: 60,
+                              opacity: editMode ? 0.9 : 1, borderLeft: `4px solid ${darkenColor(entry.teacherColor || '#e9ecef')}`
                             }}
                           >
-                            <div
-                              style={{
-                                fontWeight: 600,
-                                marginBottom: 2,
-                                fontSize: 13,
-                                color: '#000',
-                              }}
-                            >
-                              {entry.subject}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 12,
-                                color: '#000',
-                              }}
-                            >
-                              {entry.teacherName}
-                            </div>
+                            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#212529', lineHeight: 1.2 }}>{entry.subject}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#495057' }}>{entry.teacherName}</div>
                           </div>
                         ) : (
-                          <span
-                            className="text-muted"
-                            style={{
-                              fontSize: 12,
-                              display: 'block',
-                              padding: '6px 10px',
-                            }}
+                          <div className="d-flex align-items-center justify-content-center rounded"
+                            style={{ minHeight: 60, border: editMode ? '2px dashed #dee2e6' : '1px solid transparent', backgroundColor: editMode ? '#fff' : 'transparent' }}
                           >
-                            {editMode ? 'Clique para definir' : '—'}
-                          </span>
+                            {editMode && <span className="text-muted small"><i className="bi bi-plus-lg"></i></span>}
+                          </div>
                         )}
                       </button>
                     </td>
@@ -647,18 +558,17 @@ export default function AtribuicaoDeAulas() {
         </table>
       </div>
 
-      <EditarAulas
-        show={modalOpen}
-        onHide={() => setModalOpen(false)}
-        defaults={
-          modalCell && currentMatrix?.[modalCell.row]?.[modalCell.col]
-            ? currentMatrix[modalCell.row][modalCell.col]
-            : undefined
-        }
-        onConfirm={confirmCell}
-        cargaProfessores={cargaProfessores}
-        disciplinasProfessorMap={disciplinasProfessorMap}
-      />
+      {/* --- MODAIS --- */}
+      {modalOpen && (
+        <EditarAulas
+            show={modalOpen}
+            onHide={() => setModalOpen(false)}
+            defaults={modalCell && currentMatrix?.[modalCell.row]?.[modalCell.col] ? currentMatrix[modalCell.row][modalCell.col] : undefined}
+            onConfirm={confirmCell}
+            cargaProfessores={cargaProfessores}
+            disciplinasProfessorMap={disciplinasProfessorMap}
+        />
+      )}
 
       <RelatorioProfessoresModal
         show={showRelatorio}

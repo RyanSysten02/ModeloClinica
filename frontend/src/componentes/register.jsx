@@ -49,7 +49,7 @@ export default function Registro() {
     };
 
     return (
-        <Container fluid className="d-flex justify-content-center align-items-center min-vh-100 bg-gradient">
+        <Container fluid className="d-flex justify-content-center align-items-center min-vh-100 login-background ">
             <Row className="w-100 justify-content-center">
                 <Col xs={12} sm={10} md={8} lg={6} xl={5} xxl={4} className="my-4">
                     <div className="text-center mb-4">
