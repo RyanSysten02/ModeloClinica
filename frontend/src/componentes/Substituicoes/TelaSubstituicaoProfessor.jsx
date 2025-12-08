@@ -301,7 +301,7 @@ export default function TelaSubstituicaoProfessor() {
                                     <div className="fw-bold fs-5">{dayjs(aloc.start).format('HH:mm')} - {dayjs(aloc.end).format('HH:mm')}</div>
                                     <div className="text-muted">{dayjs(aloc.start).format('DD/MM/YYYY')}</div>
                                     {/* Badge indicando que é uma substituição */}
-                                    {aloc.is_substituida && <Badge bg="warning" text="dark" className="mt-1">Substituição</Badge>}
+                                    {!!aloc.is_substituida && <Badge bg="warning" text="dark" className="mt-1">Substituição</Badge>}
                                 </Col>
                                 <Col xs={12} md={7}>
                                     <h5>{aloc.disciplina_nome}</h5>
@@ -314,11 +314,12 @@ export default function TelaSubstituicaoProfessor() {
                                         </Badge>
                                     </p>
                                     {/* Se houver motivo salvo, mostra aqui */}
-                                    {aloc.is_substituida && aloc.motivo && (
-                                        <small className="text-muted d-block mt-1">
-                                            <i className="bi bi-chat-quote me-1"></i>{aloc.motivo}
-                                        </small>
-                                    )}
+                                    {/* Correção: O !! força o 0 a virar 'false', e o React não renderiza nada */}
+                                   {!!aloc.is_substituida && !!aloc.motivo && (
+    <small className="text-muted d-block mt-1">
+        <i className="bi bi-chat-quote me-1"></i>{aloc.motivo}
+    </small>
+)}
                                 </Col>
                                 <Col xs={12} md={3} className="text-md-end mt-3 mt-md-0 d-flex flex-column align-items-end">
                                     <Button variant="warning" onClick={() => handleAbrirModalSubstituicao(aloc)} className="w-100 mb-2">
